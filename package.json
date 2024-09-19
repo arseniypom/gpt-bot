@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "bot.js",
   "scripts": {
-    "start": "nodemon --exec ts-node bot.ts"
+    "start": "nodemon --exec ts-node bot.ts",
+    "build": "tsc",
+    "start:prod": "node dist/bot.js"
   },
   "author": "",
   "license": "ISC",
