@@ -1,10 +1,11 @@
 import OpenAI from 'openai';
 import 'dotenv/config';
 import logger from '../logger';
+import { IMessage } from '../db/Message';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export const answerWithChatGPT = async (messages: Array<{ role: string, content: string }>): Promise<string> => {
+export const answerWithChatGPT = async (messages: IMessage[]): Promise<string> => {
   const formattedMessages = messages.map((msg) => ({
     role: msg.role as 'system' | 'user' | 'assistant',
     content: msg.content,
@@ -22,7 +23,6 @@ export const answerWithChatGPT = async (messages: Array<{ role: string, content:
     return response.choices[0].message.content ?? 'Пришел пустой ответ от GPT-4, обратитесь к администратору';
   } catch (error) {
     const err = error as Error;
-    logger.error(`Error in answerWithChatGPT: ${err.message}`);
     throw err;
   }
 };

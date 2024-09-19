@@ -13,7 +13,6 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: () => Date.now(),
   },
-  history: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }],
 });
 
-export default mongoose.model('Users', userSchema);
+export default mongoose.model('User', userSchema);
