@@ -57,7 +57,7 @@ bot.on('message', async (ctx) => {
 
     await responseMessage.editText(answer);
   } catch (error) {
-    await responseMessage.editText('Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте позже.');
+    await responseMessage.editText('Произошла ошибка при обработке вашего запроса. Пожалуйста, обратитесь к администратору.');
   }
 });
 
