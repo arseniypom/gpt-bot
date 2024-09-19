@@ -11,7 +11,7 @@ if (!process.env.BOT_API_KEY) {
 }
 const bot = new Bot<MyContext>(process.env.BOT_API_KEY);
 
-// bot.use(hydrate());
+bot.use(hydrate());
 
 bot.api.setMyCommands([
   {
@@ -44,17 +44,21 @@ bot.on('message', async (ctx) => {
 
   saveUserHistory(ctx.chat.id, userHistory);
 
-  const answer = await answerWithChatGPT(userHistory);
+  try {
+    const answer = await answerWithChatGPT(userHistory);
 
-  userHistory.push({ role: 'assistant', content: answer });
+    userHistory.push({ role: 'assistant', content: answer });
 
-  if (userHistory.length > MAX_HISTORY_LENGTH) {
-    userHistory.shift();
+    if (userHistory.length > MAX_HISTORY_LENGTH) {
+      userHistory.shift();
+    }
+
+    saveUserHistory(ctx.chat.id, userHistory);
+
+    await responseMessage.editText(answer);
+  } catch (error) {
+    await responseMessage.editText('Произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте позже.');
   }
-
-  saveUserHistory(ctx.chat.id, userHistory);
-
-  await responseMessage.editText(answer);
 });
 
 bot.catch((err) => {
