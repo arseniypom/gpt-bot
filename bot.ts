@@ -89,6 +89,7 @@ bot.command('stats', getAnalytics);
 
 bot.on('message', async (ctx) => {
   const chatId = ctx.session.chatId;
+  const userId = ctx.from.id;
   const messageText = ctx.message.text;
 
   if (!chatId) {
@@ -104,14 +105,16 @@ bot.on('message', async (ctx) => {
   const responseMessage = await ctx.reply('Загрузка...');
 
   try {
+    const user = await User.findById(userId);
     const chat = await Chat.findById(chatId);
-    if (!chat) {
+    if (!user || !chat) {
       await ctx.reply('Чат не найден. Пожалуйста, начните новый чат с помощью команды /start.');
       return;
     }
 
     await Message.create({
       chatId: chat._id,
+      userId: user._id,
       role: 'user',
       content: messageText,
     });
@@ -126,6 +129,7 @@ bot.on('message', async (ctx) => {
 
     await Message.create({
       chatId: chat._id,
+      userId: user._id,
       role: 'assistant',
       content: answer,
     });
