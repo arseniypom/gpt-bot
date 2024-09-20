@@ -130,7 +130,7 @@ bot.on('message:text', async (ctx) => {
 
   const responseMessage = await ctx.reply('Загрузка...', {
     parse_mode: 'HTML'
-  },);
+  });
 
   try {
     const user = await User.findOne({ telegramId });
@@ -182,7 +182,9 @@ bot.on('message:text', async (ctx) => {
     chat.updatedAt = new Date();
     await chat.save();
 
-    await responseMessage.editText(answer);
+    await responseMessage.editText(answer, {
+      parse_mode: 'HTML'
+    });
   } catch (error) {
     await responseMessage.editText(
       'Произошла ошибка при обработке запроса. Пожалуйста, обратитесь к администратору.',
