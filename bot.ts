@@ -1,17 +1,17 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import { Bot, GrammyError, HttpError } from 'grammy';
+import { Bot, GrammyError, HttpError, session } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import { hydrate } from '@grammyjs/hydrate';
-import { session } from 'grammy';
-import { MyContext } from './types';
+import { MyContext, AiModelsLabels } from './types/types';
+import { isValidAiModel } from './types/typeguards';
 import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
 import { answerWithChatGPT } from './utis/gpt';
-import { MAX_HISTORY_LENGTH } from './utis/contst';
+import { MAX_HISTORY_LENGTH } from './utis/consts';
 import logger from './logger';
-import { getAnalytics } from './commands/analytics';
+import { getAnalytics, changeModel } from './commands';
 
 if (!process.env.BOT_API_KEY) {
   throw new Error('BOT_API_KEY is not defined');
@@ -27,11 +27,16 @@ bot.api.setMyCommands([
     description: 'Начать диалог',
   },
   {
-    command: 'newChat',
+    command: 'newchat',
     description: 'Начать новый чат',
+  },
+  {
+    command: 'models',
+    description: 'Выбрать AI-модель',
   },
 ]);
 
+// User commands
 bot.command('start', async (ctx) => {
   const { id, first_name, username } = ctx.from as TelegramUser;
 
@@ -61,8 +66,7 @@ bot.command('start', async (ctx) => {
     logger.error('Error in /start command:', error);
   }
 });
-
-bot.command('newChat', async (ctx) => {
+bot.command('newchat', async (ctx) => {
   const { id } = ctx.from as TelegramUser;
 
   try {
@@ -84,21 +88,47 @@ bot.command('newChat', async (ctx) => {
     logger.error('Error in /newchat command:', error);
   }
 });
+bot.command('models', changeModel);
 
+// Admin commands
 bot.command('stats', getAnalytics);
 
-bot.on('message', async (ctx) => {
-  const chatId = ctx.session.chatId;
-  const userId = ctx.from.id;
-  const messageText = ctx.message.text;
+// Callback queries
+bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
+  await ctx.answerCallbackQuery();
+  const selectedModel = ctx.callbackQuery.data;
+  const { id } = ctx.from;
 
-  if (!chatId) {
-    await ctx.reply('Пожалуйста, начните новый чат с помощью команды /start.');
+  if (!isValidAiModel(selectedModel)) {
+    await ctx.callbackQuery.message!.editText('Неверная модель. Пожалуйста, выберите правильную модель.');
     return;
   }
 
-  if (!messageText) {
-    await ctx.reply('Пожалуйста, введите ваш вопрос');
+  try {
+    const user = await User.findOne({ telegramId: id });
+    if (!user) {
+      await ctx.reply('Пожалуйста, начните с команды /start.');
+      return;
+    }
+
+    user.selectedModel = selectedModel;
+    await user.save();
+
+    await ctx.callbackQuery.message!.editText(`Вы переключились на модель ${AiModelsLabels[selectedModel]}  ✅`);
+  } catch (error) {
+    await ctx.reply('Произошла ошибка при сохранении модели. Пожалуйста, попробуйте позже.');
+    logger.error('Error in callbackQuery handler:', error);
+  }
+});
+
+// Message handler
+bot.on('message:text', async (ctx) => {
+  const chatId = ctx.session.chatId;
+  const userId = ctx.from.id;
+  const userMessageText = ctx.message.text;
+
+  if (!chatId) {
+    await ctx.reply('Пожалуйста, начните новый чат с помощью команды /start.');
     return;
   }
 
@@ -116,7 +146,7 @@ bot.on('message', async (ctx) => {
       chatId: chat._id,
       userId: user._id,
       role: 'user',
-      content: messageText,
+      content: userMessageText,
     });
 
     const messages = await Message.find({ chatId: chat._id })
@@ -124,8 +154,8 @@ bot.on('message', async (ctx) => {
       .lean();
 
     const history = messages.slice(-MAX_HISTORY_LENGTH);
-
-    const answer = await answerWithChatGPT(history);
+    const selectedModelName = user.selectedModel;
+    const answer = await answerWithChatGPT(history, selectedModelName);
 
     await Message.create({
       chatId: chat._id,
@@ -176,3 +206,7 @@ async function startBot() {
 }
 
 startBot();
+function isValidModel(selectedModel: string) {
+  throw new Error('Function not implemented.');
+}
+
