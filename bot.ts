@@ -123,20 +123,29 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
 
 // Message handler
 bot.on('message:text', async (ctx) => {
-  const chatId = ctx.session.chatId;
-  const userId = ctx.from.id;
+  let chatId = ctx.session.chatId;
+  let chatObj;
+  const telegramId = ctx.from.id;
   const userMessageText = ctx.message.text;
-
-  if (!chatId) {
-    await ctx.reply('Пожалуйста, начните новый чат с помощью команды /start.');
-    return;
-  }
 
   const responseMessage = await ctx.reply('Загрузка...');
 
   try {
-    const user = await User.findById(userId);
-    const chat = await Chat.findById(chatId);
+
+    if (!chatId) {
+      const latestChat = await Chat.findOne({ userId: telegramId }).sort({ createdAt: -1 });
+      if (latestChat) {
+        chatObj = latestChat;
+        chatId = latestChat._id.toString();
+        ctx.session.chatId = chatId;
+      } else {
+        await responseMessage.editText('Пожалуйста, начните новый чат с помощью команды /start.');
+        return;
+      }
+    }
+
+    const user = await User.findOne({ telegramId });
+    const chat = chatObj || await Chat.findById(chatId);
     if (!user || !chat) {
       await ctx.reply('Чат не найден. Пожалуйста, начните новый чат с помощью команды /start.');
       return;
