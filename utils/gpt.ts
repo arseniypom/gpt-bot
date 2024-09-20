@@ -15,7 +15,7 @@ export const answerWithChatGPT = async (
     role: msg.role as 'system' | 'user' | 'assistant',
     content: msg.content,
   }));
-  
+
   if (!isValidAiModel(modelName)) {
     throw new Error('Invalid model name');
   }
@@ -24,7 +24,7 @@ export const answerWithChatGPT = async (
     const response = await openai.chat.completions.create({
       model: AiModels[modelName],
       messages: [
-        { role: 'system', content: 'Ты полезный ассистент, отвечай кратко, форматируй текст тэгами <b>,i,s,<u>,<code>,<pre> и <blockquote> для лучшего отображения, символы начала ```html и конца ``` и другие тэги использовать запрещено. Заменяй символы <, >, &, если они не части тэга, на &lt;, &gt;, &amp;' },
+        { role: 'system', content: "Ты полезный ассистент, отвечай кратко, форматируй текст с MarkdownV2 для лучшего отображения, во всех остальных местах символы _*[]()~`>#+-=|{}.! должны быть экранированы предыдущим символом '\'" },
         ...formattedMessages,
       ],
     });

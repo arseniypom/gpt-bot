@@ -128,8 +128,8 @@ bot.on('message:text', async (ctx) => {
   const telegramId = ctx.from.id;
   const userMessageText = ctx.message.text;
 
-  const responseMessage = await ctx.reply('Загрузка...', {
-    parse_mode: 'HTML'
+  const responseMessage = await ctx.reply('Загрузка\.\.\.', {
+    parse_mode: 'MarkdownV2'
   });
 
   try {
@@ -183,7 +183,7 @@ bot.on('message:text', async (ctx) => {
     await chat.save();
 
     await responseMessage.editText(answer, {
-      parse_mode: 'HTML'
+      parse_mode: 'MarkdownV2'
     });
   } catch (error) {
     await responseMessage.editText(
