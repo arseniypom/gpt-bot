@@ -24,7 +24,7 @@ export const answerWithChatGPT = async (
     const response = await openai.chat.completions.create({
       model: AiModels[modelName],
       messages: [
-        { role: 'system', content: 'Ты полезный ассистент, отвечай кратко и по делу' },
+        { role: 'system', content: 'Ты полезный ассистент, отвечай кратко и по делу, форматируй текст в виде HTML для лучшего отображения' },
         ...formattedMessages,
       ],
     });

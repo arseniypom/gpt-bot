@@ -8,8 +8,8 @@ import { isValidAiModel } from './types/typeguards';
 import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
-import { answerWithChatGPT } from './utis/gpt';
-import { MAX_HISTORY_LENGTH } from './utis/consts';
+import { answerWithChatGPT } from './utils/gpt';
+import { MAX_HISTORY_LENGTH } from './utils/consts';
 import logger from './logger';
 import { getAnalytics, changeModel } from './commands';
 
@@ -128,12 +128,14 @@ bot.on('message:text', async (ctx) => {
   const telegramId = ctx.from.id;
   const userMessageText = ctx.message.text;
 
-  const responseMessage = await ctx.reply('Загрузка...');
+  const responseMessage = await ctx.reply('Загрузка...', {
+    parse_mode: 'HTML'
+  },);
 
   try {
     const user = await User.findOne({ telegramId });
     if (!user) {
-      await ctx.reply('Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.');
+      await responseMessage.editText('Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.');
       return;
     }
 

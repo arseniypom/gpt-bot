@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { DEFAULT_AI_MODEL } from '../utis/consts';
+import { DEFAULT_AI_MODEL } from '../utils/consts';
 
 const userSchema = new mongoose.Schema({
   telegramId: { type: Number, unique: true },
