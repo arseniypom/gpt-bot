@@ -131,9 +131,14 @@ bot.on('message:text', async (ctx) => {
   const responseMessage = await ctx.reply('Загрузка...');
 
   try {
+    const user = await User.findOne({ telegramId });
+    if (!user) {
+      await ctx.reply('Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.');
+      return;
+    }
 
     if (!chatId) {
-      const latestChat = await Chat.findOne({ userId: telegramId }).sort({ createdAt: -1 });
+      const latestChat = await Chat.findOne({ userId: user._id }).sort({ createdAt: -1 });
       if (latestChat) {
         chatObj = latestChat;
         chatId = latestChat._id.toString();
@@ -144,9 +149,8 @@ bot.on('message:text', async (ctx) => {
       }
     }
 
-    const user = await User.findOne({ telegramId });
     const chat = chatObj || await Chat.findById(chatId);
-    if (!user || !chat) {
+    if (!chat) {
       await ctx.reply('Чат не найден. Пожалуйста, начните новый чат с помощью команды /start.');
       return;
     }
