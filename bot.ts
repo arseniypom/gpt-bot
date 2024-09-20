@@ -1,4 +1,4 @@
-import { config } from 'dotenv';
+import 'dotenv/config';
 import mongoose from 'mongoose';
 import { Bot, GrammyError, HttpError } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
@@ -27,7 +27,7 @@ bot.api.setMyCommands([
     description: 'Начать диалог',
   },
   {
-    command: 'newchat',
+    command: 'newChat',
     description: 'Начать новый чат',
   },
 ]);
@@ -62,7 +62,7 @@ bot.command('start', async (ctx) => {
   }
 });
 
-bot.command('newchat', async (ctx) => {
+bot.command('newChat', async (ctx) => {
   const { id } = ctx.from as TelegramUser;
 
   try {
