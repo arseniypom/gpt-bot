@@ -24,7 +24,7 @@ export const answerWithChatGPT = async (
     const response = await openai.chat.completions.create({
       model: AiModels[modelName],
       messages: [
-        { role: 'system', content: 'Ты полезный ассистент, отвечай кратко, форматируй текст HTML-тэгами b,i,s,u,code,pre,blockquote для лучшего отображения, символы начала ```html и конца ``` и другие тэги не используй. Заменяй символы <, >, &, если они не части тэга, на &lt;, &gt;, &amp;' },
+        { role: 'system', content: 'Ты полезный ассистент, отвечай кратко, форматируй текст тэгами <b>,i,s,<u>,<code>,<pre> и <blockquote> для лучшего отображения, символы начала ```html и конца ``` и другие тэги использовать запрещено. Заменяй символы <, >, &, если они не части тэга, на &lt;, &gt;, &amp;' },
         ...formattedMessages,
       ],
     });
