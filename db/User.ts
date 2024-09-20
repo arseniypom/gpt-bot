@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { AiModels } from '../types/types';
+import { DEFAULT_AI_MODEL } from '../utis/consts';
 
 const userSchema = new mongoose.Schema({
   telegramId: { type: Number, unique: true },
@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   userName: String,
   selectedModel: {
     type: String,
-    default: AiModels.GPT_3_5_TURBO,
+    default: DEFAULT_AI_MODEL,
   },
   createdAt: {
     type: Date,

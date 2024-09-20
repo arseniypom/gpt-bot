@@ -3,18 +3,19 @@ import 'dotenv/config';
 import { IMessage } from '../db/Message';
 import { AiModels } from '../types/types';
 import { isValidAiModel } from '../types/typeguards';
+import { DEFAULT_AI_MODEL } from './consts';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const answerWithChatGPT = async (
   messages: IMessage[],
-  modelName: string = 'GPT_3_5_TURBO',
+  modelName: string = DEFAULT_AI_MODEL,
 ): Promise<string> => {
   const formattedMessages = messages.map((msg) => ({
     role: msg.role as 'system' | 'user' | 'assistant',
     content: msg.content,
   }));
-
+  
   if (!isValidAiModel(modelName)) {
     throw new Error('Invalid model name');
   }
