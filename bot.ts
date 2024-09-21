@@ -128,9 +128,7 @@ bot.on('message:text', async (ctx) => {
   const telegramId = ctx.from.id;
   const userMessageText = ctx.message.text;
 
-  const responseMessage = await ctx.reply('Загрузка...', {
-    parse_mode: 'HTML'
-  });
+  const responseMessage = await ctx.reply('Загрузка...');
 
   try {
     const user = await User.findOne({ telegramId });
@@ -182,9 +180,7 @@ bot.on('message:text', async (ctx) => {
     chat.updatedAt = new Date();
     await chat.save();
 
-    await responseMessage.editText(answer, {
-      parse_mode: 'HTML'
-    });
+    await responseMessage.editText(answer);
   } catch (error) {
     await responseMessage.editText(
       'Произошла ошибка при обработке запроса. Пожалуйста, обратитесь к администратору.',
