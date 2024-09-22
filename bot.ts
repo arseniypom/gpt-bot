@@ -8,16 +8,16 @@ import {
   createConversation,
 } from "@grammyjs/conversations";
 
-import { MyContext, AiModelsLabels } from './types/types';
-import { isValidAiModel } from './types/typeguards';
+import { MyContext, AiModelsLabels } from './src/types/types';
+import { isValidAiModel } from './src/types/typeguards';
 import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
-import { answerWithChatGPT } from './utils/gpt';
-import { MAX_HISTORY_LENGTH } from './utils/consts';
+import { answerWithChatGPT } from './src/utils/gpt';
+import { MAX_HISTORY_LENGTH } from './src/utils/consts';
 import logger from './logger';
-import { getAnalytics, changeModel } from './commands';
-import { imageConversation } from './imageConversation';
+import { getAnalytics, changeModel } from './src/commands';
+import { imageConversation } from './src/conversations/imageConversation';
 
 if (!process.env.BOT_API_KEY) {
   throw new Error('BOT_API_KEY is not defined');

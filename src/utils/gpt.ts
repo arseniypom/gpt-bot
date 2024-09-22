@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import 'dotenv/config';
-import { IMessage } from '../db/Message';
+import { IMessage } from '../../db/Message';
 import { AiModels } from '../types/types';
 import { isValidAiModel } from '../types/typeguards';
 import { DEFAULT_AI_MODEL } from './consts';

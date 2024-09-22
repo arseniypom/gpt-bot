@@ -1,7 +1,7 @@
 import { InlineKeyboard } from 'grammy';
-import { generateImage } from './utils/gpt';
-import logger from './logger';
-import { type MyConversation, type MyContext } from './types/types';
+import { generateImage } from '../utils/gpt';
+import logger from '../../logger';
+import { type MyConversation, type MyContext } from '../types/types';
 
 const inlineKeyboard = new InlineKeyboard()
   .text("Отменить ❌", "cancelImageGeneration");
