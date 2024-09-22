@@ -136,12 +136,6 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
   }
 });
 
-bot.callbackQuery("cancelImageGeneration", async (ctx) => {
-  await ctx.answerCallbackQuery();
-  await ctx.conversation.exit("imageConversation");
-  await ctx.callbackQuery.message?.editText("Генерация изображения отменена");
-});
-
 // Message handler
 bot.on('message:text', async (ctx) => {
   let chatId = ctx.session.chatId;

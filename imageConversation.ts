@@ -7,14 +7,23 @@ const inlineKeyboard = new InlineKeyboard()
   .text("Отменить ❌", "cancelImageGeneration");
 
 export async function imageConversation(conversation: MyConversation, ctx: MyContext) {
-  await ctx.reply("Опишите, что должно быть на изображении (промпт для генерации):", {
+  const promptRequestMessage = await ctx.reply("Опишите, что должно быть на изображении (промпт для генерации):", {
     reply_markup: inlineKeyboard,
   });
-  const { message } = await conversation.wait();
-  console.log(message);
+  const conversationData = await conversation.wait();
+  const { message, callbackQuery } = conversationData;
+
+  if (callbackQuery?.data === 'cancelImageGeneration') {
+    await conversationData.answerCallbackQuery();
+    await callbackQuery.message!.editText("Генерация изображения отменена");
+    return;
+  }
+
   if (message?.text) {
 
-    const responseMessage = await ctx.reply('Генерация изображения...');
+    const responseMessage = await ctx.reply('Генерация изображения...', {
+      reply_markup: { remove_keyboard: true },
+    });
 
     try {
       const imageUrl = await generateImage(message.text);
