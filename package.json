@@ -15,6 +15,7 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
+    "@grammyjs/conversations": "^1.2.0",
     "@grammyjs/hydrate": "^1.4.1",
     "dotenv": "^16.4.5",
     "grammy": "^1.27.0",

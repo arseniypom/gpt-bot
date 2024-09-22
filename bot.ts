@@ -3,15 +3,21 @@ import mongoose from 'mongoose';
 import { Bot, GrammyError, HttpError, session } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import { hydrate } from '@grammyjs/hydrate';
+import {
+  conversations,
+  createConversation,
+} from "@grammyjs/conversations";
+
 import { MyContext, AiModelsLabels } from './types/types';
 import { isValidAiModel } from './types/typeguards';
 import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
-import { answerWithChatGPT, generateImage } from './utils/gpt';
+import { answerWithChatGPT } from './utils/gpt';
 import { MAX_HISTORY_LENGTH } from './utils/consts';
 import logger from './logger';
 import { getAnalytics, changeModel } from './commands';
+import { imageConversation } from './imageConversation';
 
 if (!process.env.BOT_API_KEY) {
   throw new Error('BOT_API_KEY is not defined');
@@ -19,6 +25,9 @@ if (!process.env.BOT_API_KEY) {
 const bot = new Bot<MyContext>(process.env.BOT_API_KEY);
 
 bot.use(session({ initial: () => ({}) }));
+bot.use(conversations());
+bot.use(createConversation(imageConversation));
+
 bot.use(hydrate());
 
 bot.api.setMyCommands([
@@ -93,21 +102,7 @@ bot.command('newchat', async (ctx) => {
   }
 });
 bot.command('image', async (ctx) => {
-  // const { id } = ctx.from as TelegramUser;
-  const responseMessage = await ctx.reply('Генерация изображения...');
-
-  try {
-    const imageUrl = await generateImage('Кот играет в шахматы в стиле комикса');
-    if (!imageUrl) {
-      await ctx.reply('Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
-      return;
-    }
-    await responseMessage.editText('Готово!');
-    await ctx.replyWithPhoto(imageUrl);
-  } catch (error) {
-    await ctx.reply('Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
-    logger.error('Error in /image command:', error);
-  }
+  await ctx.conversation.enter("imageConversation");
 });
 bot.command('models', changeModel);
 
@@ -140,6 +135,12 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
     await ctx.reply('Произошла ошибка при сохранении модели. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
     logger.error('Error in callbackQuery handler:', error);
   }
+});
+
+bot.callbackQuery("cancelImageGeneration", async (ctx) => {
+  await ctx.conversation.exit("imageConversation");
+  await ctx.callbackQuery.message?.editText("Генерация изображения отменена");
+  await ctx.answerCallbackQuery();
 });
 
 // Message handler
@@ -245,7 +246,4 @@ async function startBot() {
 }
 
 startBot();
-function isValidModel(selectedModel: string) {
-  throw new Error('Function not implemented.');
-}
 

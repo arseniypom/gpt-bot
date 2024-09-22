@@ -1,12 +1,16 @@
-import { Context } from 'grammy';
+import { Context, type SessionFlavor } from 'grammy';
 import { HydrateFlavor } from '@grammyjs/hydrate';
-import { SessionFlavor } from 'grammy';
+import {
+  type Conversation,
+  type ConversationFlavor,
+} from "@grammyjs/conversations";
 
 export interface SessionData {
   chatId?: string;
 }
 
-export type MyContext = HydrateFlavor<Context & SessionFlavor<SessionData>>;
+export type MyContext = HydrateFlavor<Context & SessionFlavor<SessionData> & ConversationFlavor>;
+export type MyConversation = Conversation<MyContext>;
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
