@@ -1,8 +1,8 @@
-import User from '../db/User';
-import Chat from '../db/Chat';
-import Message from '../db/Message';
-import logger from '../logger';
-import { MyContext } from '../src/types/types';
+import { MyContext } from '../types/types';
+import User from '../../db/User';
+import Chat from '../../db/Chat';
+import Message from '../../db/Message';
+import logger from '../../logger';
 
 export const getAnalytics = async (ctx: MyContext) => {
   const adminId = 265162348;
