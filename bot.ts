@@ -8,7 +8,7 @@ import { isValidAiModel } from './types/typeguards';
 import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
-import { answerWithChatGPT } from './utils/gpt';
+import { answerWithChatGPT, generateImage } from './utils/gpt';
 import { MAX_HISTORY_LENGTH } from './utils/consts';
 import logger from './logger';
 import { getAnalytics, changeModel } from './commands';
@@ -29,6 +29,10 @@ bot.api.setMyCommands([
   {
     command: 'newchat',
     description: 'Начать новый чат',
+  },
+  {
+    command: 'image',
+    description: 'Сгенерировать изображение',
   },
   {
     command: 'models',
@@ -62,7 +66,7 @@ bot.command('start', async (ctx) => {
 
     ctx.session.chatId = chat._id.toString();
   } catch (error) {
-    await ctx.reply('Произошла ошибка при создании персонального чат-бота. Пожалуйста, попробуйте позже.');
+    await ctx.reply('Произошла ошибка при создании персонального чат-бота. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
     logger.error('Error in /start command:', error);
   }
 });
@@ -84,8 +88,25 @@ bot.command('newchat', async (ctx) => {
 
     await ctx.reply('Новый чат создан. Пожалуйста, введите ваш вопрос.');
   } catch (error) {
-    await ctx.reply('Произошла ошибка при создании нового чата. Пожалуйста, попробуйте позже.');
+    await ctx.reply('Произошла ошибка при создании нового чата. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
     logger.error('Error in /newchat command:', error);
+  }
+});
+bot.command('image', async (ctx) => {
+  // const { id } = ctx.from as TelegramUser;
+  const responseMessage = await ctx.reply('Генерация изображения...');
+
+  try {
+    const imageUrl = await generateImage('Кот играет в шахматы в стиле комикса');
+    if (!imageUrl) {
+      await ctx.reply('Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
+      return;
+    }
+    await responseMessage.editText('Готово!');
+    await ctx.replyWithPhoto(imageUrl);
+  } catch (error) {
+    await ctx.reply('Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
+    logger.error('Error in /image command:', error);
   }
 });
 bot.command('models', changeModel);
@@ -116,7 +137,7 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
 
     await ctx.callbackQuery.message!.editText(`Вы переключились на модель ${AiModelsLabels[selectedModel]}  ✅`);
   } catch (error) {
-    await ctx.reply('Произошла ошибка при сохранении модели. Пожалуйста, попробуйте позже.');
+    await ctx.reply('Произошла ошибка при сохранении модели. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
     logger.error('Error in callbackQuery handler:', error);
   }
 });
@@ -170,6 +191,11 @@ bot.on('message:text', async (ctx) => {
     const selectedModelName = user.selectedModel;
     const answer = await answerWithChatGPT(history, selectedModelName);
 
+    if (!answer) {
+      await responseMessage.editText('Произошла ошибка при генерации ответа. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
+      return;
+    }
+
     await Message.create({
       chatId: chat._id,
       userId: user._id,
@@ -208,7 +234,7 @@ async function startBot() {
     if (!process.env.MONGO_DB_URI) {
       throw new Error('MONGO_DB_URI is not defined');
     }
-    await mongoose.connect(process.env.MONGO_DB_URI);
+    // await mongoose.connect(process.env.MONGO_DB_URI);
     console.log('Connected to MongoDB');
     bot.start();
     console.log('Bot started');
