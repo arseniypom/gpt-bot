@@ -25,10 +25,9 @@ if (!process.env.BOT_API_KEY) {
 const bot = new Bot<MyContext>(process.env.BOT_API_KEY);
 
 bot.use(session({ initial: () => ({}) }));
+bot.use(hydrate());
 bot.use(conversations());
 bot.use(createConversation(imageConversation));
-
-bot.use(hydrate());
 
 bot.api.setMyCommands([
   {
