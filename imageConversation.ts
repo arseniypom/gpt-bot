@@ -4,31 +4,31 @@ import logger from './logger';
 import { type MyConversation, type MyContext } from './types/types';
 
 const inlineKeyboard = new InlineKeyboard()
-  .text("Отменить ❌", "cancelImageGeneration")
+  .text("Отменить ❌", "cancelImageGeneration");
 
 export async function imageConversation(conversation: MyConversation, ctx: MyContext) {
-  await ctx.reply("Введите описание изображения (промпт для генерации)", {
+  await ctx.reply("Опишите, что должно быть на изображении (промпт для генерации):", {
     reply_markup: inlineKeyboard,
   });
   const { message } = await conversation.wait();
-  if (!message?.text) {
-    await ctx.reply('Введите описание изображения текстом');
-    return;
-  }
-  const responseMessage = await ctx.reply('Генерация изображения...');
+  console.log(message);
+  if (message?.text) {
 
-  try {
-    const imageUrl = await generateImage(message.text);
-    if (!imageUrl) {
+    const responseMessage = await ctx.reply('Генерация изображения...');
+
+    try {
+      const imageUrl = await generateImage(message.text);
+      if (!imageUrl) {
+        await ctx.reply('Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
+        return;
+      }
+      await responseMessage.editText('Готово!');
+      await ctx.replyWithPhoto(imageUrl);
+    } catch (error) {
       await ctx.reply('Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
-      return;
+      logger.error('Error in /image command:', error);
     }
-    await responseMessage.editText('Готово!');
-    await ctx.replyWithPhoto(imageUrl);
-  } catch (error) {
-    await ctx.reply('Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
-    logger.error('Error in /image command:', error);
   }
 
-  return;
+  return await ctx.reply('Текст не получен, генерация отменена');
 }
