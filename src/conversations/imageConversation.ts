@@ -20,9 +20,7 @@ export async function imageConversation(conversation: MyConversation, ctx: MyCon
   }
 
   if (message?.text) {
-    const responseMessage = await ctx.reply('Генерация изображения...', {
-      reply_markup: { remove_keyboard: true },
-    });
+    const responseMessage = await ctx.reply('Генерация изображения...');
 
     try {
       const imageUrl = await generateImage(message.text);
