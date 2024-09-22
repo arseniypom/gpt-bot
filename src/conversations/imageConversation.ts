@@ -7,7 +7,7 @@ const inlineKeyboard = new InlineKeyboard()
   .text("Отменить ❌", "cancelImageGeneration");
 
 export async function imageConversation(conversation: MyConversation, ctx: MyContext) {
-  const promptRequestMessage = await ctx.reply("Опишите, что должно быть на изображении (промпт для генерации):", {
+  await ctx.reply("Опишите, что должно быть на изображении (промпт для генерации):", {
     reply_markup: inlineKeyboard,
   });
   const conversationData = await conversation.wait();
@@ -20,7 +20,6 @@ export async function imageConversation(conversation: MyConversation, ctx: MyCon
   }
 
   if (message?.text) {
-
     const responseMessage = await ctx.reply('Генерация изображения...', {
       reply_markup: { remove_keyboard: true },
     });
@@ -28,8 +27,7 @@ export async function imageConversation(conversation: MyConversation, ctx: MyCon
     try {
       const imageUrl = await generateImage(message.text);
       if (!imageUrl) {
-        await ctx.reply('Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
-        return;
+        throw new Error('Image generation failed: no image URL');
       }
       await responseMessage.editText('Готово!');
       await ctx.replyWithPhoto(imageUrl);
@@ -37,6 +35,7 @@ export async function imageConversation(conversation: MyConversation, ctx: MyCon
       await ctx.reply('Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
       logger.error('Error in /image command:', error);
     }
+    return;
   }
 
   return await ctx.reply('Текст не получен, генерация отменена');
