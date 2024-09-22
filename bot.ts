@@ -137,9 +137,9 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
 });
 
 bot.callbackQuery("cancelImageGeneration", async (ctx) => {
+  await ctx.answerCallbackQuery();
   await ctx.conversation.exit("imageConversation");
   await ctx.callbackQuery.message?.editText("Генерация изображения отменена");
-  await ctx.answerCallbackQuery();
 });
 
 // Message handler

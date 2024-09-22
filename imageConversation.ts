@@ -1,9 +1,15 @@
+import { InlineKeyboard } from 'grammy';
 import { generateImage } from './utils/gpt';
 import logger from './logger';
 import { type MyConversation, type MyContext } from './types/types';
 
+const inlineKeyboard = new InlineKeyboard()
+  .text("Отменить ❌", "cancelImageGeneration")
+
 export async function imageConversation(conversation: MyConversation, ctx: MyContext) {
-  await ctx.reply("Введите описание изображения (промпт для генерации)");
+  await ctx.reply("Введите описание изображения (промпт для генерации)", {
+    reply_markup: inlineKeyboard,
+  });
   const { message } = await conversation.wait();
   if (!message?.text) {
     await ctx.reply('Введите описание изображения текстом');
