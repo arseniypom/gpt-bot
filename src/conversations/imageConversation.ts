@@ -1,10 +1,7 @@
 import { InlineKeyboard } from 'grammy';
 import { generateImage } from '../utils/gpt';
 import logger from '../../logger';
-import {
-  type MyConversation,
-  type MyContext,
-} from '../types/types';
+import { type MyConversation, type MyContext } from '../types/types';
 
 const cancelKeyboard = new InlineKeyboard().text(
   'Отменить ❌',
@@ -19,13 +16,15 @@ export async function imageConversation(
     reply_markup: cancelKeyboard,
   });
 
-  const obj = await conversation.waitFor('message:text');
-  const { message } = obj
+  const { message } = await conversation.waitFor('message:text');
 
   const responseMessage = await ctx.reply('Генерация изображения...');
 
   try {
-    const imageUrl = await generateImage(message.text, ctx.session.imageQuality);
+    const imageUrl = await generateImage(
+      message.text,
+      ctx.session.imageQuality,
+    );
     if (!imageUrl) {
       throw new Error('Image generation failed: no image URL');
     }

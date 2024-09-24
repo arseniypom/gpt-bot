@@ -41,7 +41,7 @@ bot.use(conversations());
 // Conversations
 bot.use(createConversation(imageConversation));
 
-bot.api.setMyCommands([
+void bot.api.setMyCommands([
   {
     command: 'start',
     description: 'Начать диалог',
@@ -67,7 +67,7 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
   const { id } = ctx.from;
 
   if (!isValidAiModel(selectedModel)) {
-    await ctx.callbackQuery.message!.editText(
+    await ctx.callbackQuery.message?.editText(
       'Неверная модель. Пожалуйста, выберите правильную модель.',
     );
     return;
@@ -83,7 +83,7 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
     user.selectedModel = selectedModel;
     await user.save();
 
-    await ctx.callbackQuery.message!.editText(
+    await ctx.callbackQuery.message?.editText(
       `Вы переключились на модель ${AiModelsLabels[selectedModel]}  ✅`,
     );
   } catch (error) {
@@ -97,20 +97,20 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
 bot.callbackQuery('cancelImageGeneration', async (ctx) => {
   await ctx.answerCallbackQuery('Отменено ✅');
   await ctx.conversation.exit('imageConversation');
-  await ctx.callbackQuery.message!.editText('Генерация изображения отменена');
+  await ctx.callbackQuery.message?.editText('Генерация изображения отменена');
 });
 
 bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
   await ctx.answerCallbackQuery();
   const quality = ctx.callbackQuery.data;
   if (!isValidImageGenerationQuality(quality)) {
-    await ctx.callbackQuery.message!.editText(
+    await ctx.callbackQuery.message?.editText(
       'Что-то пошло не так. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
     return;
   }
   ctx.session.imageQuality = quality;
-  await ctx.callbackQuery.message!.editText(`Выбрано качество: ${quality}`);
+  await ctx.callbackQuery.message?.editText(`Выбрано качество: ${quality}`);
 
   await ctx.conversation.enter('imageConversation');
 });
@@ -297,13 +297,15 @@ async function startBot() {
       throw new Error('MONGO_DB_URI is not defined');
     }
     await mongoose.connect(process.env.MONGO_DB_URI);
+    /* eslint-disable no-console */
     console.log('Connected to MongoDB');
-    bot.start();
+    await bot.start();
     console.log('Bot started');
+    /* eslint-enable no-console */
   } catch (error) {
     const err = error as Error;
     logger.error('Error connecting to MongoDB or starting bot:', err);
   }
 }
 
-startBot();
+void startBot();
