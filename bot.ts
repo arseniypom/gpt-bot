@@ -296,11 +296,11 @@ async function startBot() {
     if (!process.env.MONGO_DB_URI) {
       throw new Error('MONGO_DB_URI is not defined');
     }
-    await mongoose.connect(process.env.MONGO_DB_URI);
+    const mongooseResponse = await mongoose.connect(process.env.MONGO_DB_URI);
     /* eslint-disable no-console */
-    console.log('Connected to MongoDB');
-    await bot.start();
-    console.log('Bot started');
+    console.log('Connected to MongoDB', mongooseResponse);
+    const botResponse = await bot.start();
+    console.log('Bot started', botResponse);
     /* eslint-enable no-console */
   } catch (error) {
     const err = error as Error;
