@@ -297,14 +297,15 @@ async function startBot() {
       throw new Error('MONGO_DB_URI is not defined');
     }
     const mongooseResponse = await mongoose.connect(process.env.MONGO_DB_URI);
-    /* eslint-disable no-console */
-    console.log('Connected to MongoDB', mongooseResponse);
-    const botResponse = await bot.start();
-    console.log('Bot started', botResponse);
-    /* eslint-enable no-console */
+    if (!mongooseResponse.connection.readyState) {
+      throw new Error('Mongoose connection error');
+    }
+    void bot.start();
+    // eslint-disable-next-line no-console
+    console.log('Mongoose connected & bot started');
   } catch (error) {
     const err = error as Error;
-    logger.error('Error connecting to MongoDB or starting bot:', err);
+    logger.error('Error in startBot:', err);
   }
 }
 
