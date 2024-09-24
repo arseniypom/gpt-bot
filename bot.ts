@@ -1,15 +1,19 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import { Bot, GrammyError, HttpError, session } from 'grammy';
+import { Bot, GrammyError, HttpError, InlineKeyboard, session } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import { hydrate } from '@grammyjs/hydrate';
+import { conversations, createConversation } from '@grammyjs/conversations';
 import {
-  conversations,
-  createConversation,
-} from "@grammyjs/conversations";
-
-import { MyContext, AiModelsLabels } from './src/types/types';
-import { isValidAiModel } from './src/types/typeguards';
+  MyContext,
+  AiModelsLabels,
+  ImageGenerationQuality,
+  SessionData,
+} from './src/types/types';
+import {
+  isValidAiModel,
+  isValidImageGenerationQuality,
+} from './src/types/typeguards';
 import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
@@ -24,9 +28,17 @@ if (!process.env.BOT_API_KEY) {
 }
 const bot = new Bot<MyContext>(process.env.BOT_API_KEY);
 
-bot.use(session({ initial: () => ({}) }));
+bot.use(
+  session({
+    initial: (): SessionData => ({
+      imageQuality: ImageGenerationQuality.STANDARD,
+    }),
+  }),
+);
 bot.use(hydrate());
 bot.use(conversations());
+
+// Conversations
 bot.use(createConversation(imageConversation));
 
 bot.api.setMyCommands([
@@ -48,6 +60,61 @@ bot.api.setMyCommands([
   },
 ]);
 
+// Callback queries
+bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
+  await ctx.answerCallbackQuery();
+  const selectedModel = ctx.callbackQuery.data;
+  const { id } = ctx.from;
+
+  if (!isValidAiModel(selectedModel)) {
+    await ctx.callbackQuery.message!.editText(
+      'Неверная модель. Пожалуйста, выберите правильную модель.',
+    );
+    return;
+  }
+
+  try {
+    const user = await User.findOne({ telegramId: id });
+    if (!user) {
+      await ctx.reply('Пожалуйста, начните с команды /start.');
+      return;
+    }
+
+    user.selectedModel = selectedModel;
+    await user.save();
+
+    await ctx.callbackQuery.message!.editText(
+      `Вы переключились на модель ${AiModelsLabels[selectedModel]}  ✅`,
+    );
+  } catch (error) {
+    await ctx.reply(
+      'Произошла ошибка при сохранении модели. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+    );
+    logger.error('Error in callbackQuery handler:', error);
+  }
+});
+
+bot.callbackQuery('cancelImageGeneration', async (ctx) => {
+  await ctx.answerCallbackQuery('Отменено ✅');
+  await ctx.conversation.exit('imageConversation');
+  await ctx.callbackQuery.message!.editText('Генерация изображения отменена');
+});
+
+bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
+  await ctx.answerCallbackQuery();
+  const quality = ctx.callbackQuery.data;
+  if (!isValidImageGenerationQuality(quality)) {
+    await ctx.callbackQuery.message!.editText(
+      'Что-то пошло не так. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+    );
+    return;
+  }
+  ctx.session.imageQuality = quality;
+  await ctx.callbackQuery.message!.editText(`Выбрано качество: ${quality}`);
+
+  await ctx.conversation.enter('imageConversation');
+});
+
 // User commands
 bot.command('start', async (ctx) => {
   const { id, first_name, username } = ctx.from as TelegramUser;
@@ -57,13 +124,17 @@ bot.command('start', async (ctx) => {
   try {
     let user = await User.findOne({ telegramId: id });
     if (!user) {
-      const responseMsg = await ctx.reply('Создаю Ваш персональный чат-бот, одну секунду...');
+      const responseMsg = await ctx.reply(
+        'Создаю Ваш персональный чат-бот, одну секунду...',
+      );
       user = await User.create({
         telegramId: id,
         firstName: first_name,
         userName: username,
       });
-      await responseMsg.editText('Ваш персональный чат-бот создан. Пожалуйста, введите ваш вопрос');
+      await responseMsg.editText(
+        'Ваш персональный чат-бот создан. Пожалуйста, введите ваш вопрос',
+      );
     } else {
       await ctx.reply('Пожалуйста, введите ваш вопрос');
     }
@@ -74,7 +145,9 @@ bot.command('start', async (ctx) => {
 
     ctx.session.chatId = chat._id.toString();
   } catch (error) {
-    await ctx.reply('Произошла ошибка при создании персонального чат-бота. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
+    await ctx.reply(
+      'Произошла ошибка при создании персонального чат-бота. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+    );
     logger.error('Error in /start command:', error);
   }
 });
@@ -96,45 +169,30 @@ bot.command('newchat', async (ctx) => {
 
     await ctx.reply('Новый чат создан. Пожалуйста, введите ваш вопрос.');
   } catch (error) {
-    await ctx.reply('Произошла ошибка при создании нового чата. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
+    await ctx.reply(
+      'Произошла ошибка при создании нового чата. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+    );
     logger.error('Error in /newchat command:', error);
   }
 });
 bot.command('image', async (ctx) => {
-  await ctx.conversation.enter("imageConversation");
+  const qualityKeyboard = new InlineKeyboard()
+    .text('Standard', ImageGenerationQuality.STANDARD)
+    .text('HD', ImageGenerationQuality.HD)
+    .row()
+    .text('Отменить ❌', 'cancelImageGeneration');
+
+  await ctx.reply(
+    'Выберите качество изображения: standard – стандартное, hd – повышенная детализация',
+    {
+      reply_markup: qualityKeyboard,
+    },
+  );
 });
 bot.command('models', changeModel);
 
 // Admin commands
 bot.command('stats', getAnalytics);
-
-// Callback queries
-bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
-  await ctx.answerCallbackQuery();
-  const selectedModel = ctx.callbackQuery.data;
-  const { id } = ctx.from;
-
-  if (!isValidAiModel(selectedModel)) {
-    await ctx.callbackQuery.message!.editText('Неверная модель. Пожалуйста, выберите правильную модель.');
-    return;
-  }
-
-  try {
-    const user = await User.findOne({ telegramId: id });
-    if (!user) {
-      await ctx.reply('Пожалуйста, начните с команды /start.');
-      return;
-    }
-
-    user.selectedModel = selectedModel;
-    await user.save();
-
-    await ctx.callbackQuery.message!.editText(`Вы переключились на модель ${AiModelsLabels[selectedModel]}  ✅`);
-  } catch (error) {
-    await ctx.reply('Произошла ошибка при сохранении модели. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
-    logger.error('Error in callbackQuery handler:', error);
-  }
-});
 
 // Message handler
 bot.on('message:text', async (ctx) => {
@@ -148,25 +206,33 @@ bot.on('message:text', async (ctx) => {
   try {
     const user = await User.findOne({ telegramId });
     if (!user) {
-      await responseMessage.editText('Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.');
+      await responseMessage.editText(
+        'Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.',
+      );
       return;
     }
 
     if (!chatId) {
-      const latestChat = await Chat.findOne({ userId: user._id }).sort({ createdAt: -1 });
+      const latestChat = await Chat.findOne({ userId: user._id }).sort({
+        createdAt: -1,
+      });
       if (latestChat) {
         chatObj = latestChat;
         chatId = latestChat._id.toString();
         ctx.session.chatId = chatId;
       } else {
-        await responseMessage.editText('Пожалуйста, начните новый чат с помощью команды /start.');
+        await responseMessage.editText(
+          'Пожалуйста, начните новый чат с помощью команды /start.',
+        );
         return;
       }
     }
 
-    const chat = chatObj || await Chat.findById(chatId);
+    const chat = chatObj || (await Chat.findById(chatId));
     if (!chat) {
-      await ctx.reply('Чат не найден. Пожалуйста, начните новый чат с помощью команды /start.');
+      await ctx.reply(
+        'Чат не найден. Пожалуйста, начните новый чат с помощью команды /start.',
+      );
       return;
     }
 
@@ -186,7 +252,9 @@ bot.on('message:text', async (ctx) => {
     const answer = await answerWithChatGPT(history, selectedModelName);
 
     if (!answer) {
-      await responseMessage.editText('Произошла ошибка при генерации ответа. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
+      await responseMessage.editText(
+        'Произошла ошибка при генерации ответа. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+      );
       return;
     }
 
@@ -239,4 +307,3 @@ async function startBot() {
 }
 
 startBot();
-

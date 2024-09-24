@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import 'dotenv/config';
 import { IMessage } from '../../db/Message';
-import { AiModels } from '../types/types';
+import { AiModels, ImageGenerationQuality } from '../types/types';
 import { isValidAiModel } from '../types/typeguards';
 import { DEFAULT_AI_MODEL } from './consts';
 
@@ -36,9 +36,10 @@ export const answerWithChatGPT = async (
   }
 };
 
-export const generateImage = async (prompt: string): Promise<string | undefined> => {
+export const generateImage = async (prompt: string, quality: ImageGenerationQuality = ImageGenerationQuality.STANDARD): Promise<string | undefined> => {
   const response = await openai.images.generate({
     model: "dall-e-3",
+    quality: quality,
     prompt,
     n: 1,
     size: "1024x1024",
