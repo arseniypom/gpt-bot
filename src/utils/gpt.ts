@@ -9,6 +9,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const answerWithChatGPT = async (
   messages: IMessage[],
+  telegramId: number,
   modelName: string = DEFAULT_AI_MODEL,
 ): Promise<string | null> => {
   const formattedMessages = messages.map((msg) => ({
@@ -27,6 +28,7 @@ export const answerWithChatGPT = async (
         { role: 'system', content: 'Ты полезный ассистент, отвечай кратко' },
         ...formattedMessages,
       ],
+      user: telegramId.toString(),
     });
 
     return response.choices[0].message.content;

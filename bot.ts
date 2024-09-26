@@ -264,7 +264,7 @@ bot.on('message:text', async (ctx) => {
 
     const history = messages.slice(-MAX_HISTORY_LENGTH);
     const selectedModelName = user.selectedModel;
-    const answer = await answerWithChatGPT(history, selectedModelName);
+    const answer = await answerWithChatGPT(history, telegramId, selectedModelName);
 
     if (!answer) {
       await responseMessage.editText(
