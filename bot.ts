@@ -18,7 +18,11 @@ import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
 import { answerWithChatGPT } from './src/utils/gpt';
-import { HELP_MESSAGE, MAX_HISTORY_LENGTH, START_MESSAGE } from './src/utils/consts';
+import {
+  HELP_MESSAGE,
+  MAX_HISTORY_LENGTH,
+  START_MESSAGE,
+} from './src/utils/consts';
 import logger from './logger';
 import { getAnalytics, changeModel } from './src/commands';
 import { imageConversation } from './src/conversations/imageConversation';
@@ -137,10 +141,10 @@ bot.command('start', async (ctx) => {
         userName: username,
       });
       await responseMsg.editText(
-        'Ваш персональный чат-бот создан. Пожалуйста, введите ваш вопрос',
+        'Ваш персональный чат-бот создан. Пожалуйста, введите запрос',
       );
     } else {
-      await ctx.reply('Пожалуйста, введите ваш вопрос');
+      await ctx.reply('Пожалуйста, введите запрос');
     }
 
     const chat = await Chat.create({
@@ -176,7 +180,7 @@ bot.command('newchat', async (ctx) => {
 
     ctx.session.chatId = chat._id.toString();
 
-    await ctx.reply('Новый чат создан. Пожалуйста, введите ваш вопрос.');
+    await ctx.reply('Новый чат создан. Пожалуйста, введите запрос.');
   } catch (error) {
     await ctx.reply(
       'Произошла ошибка при создании нового чата. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
@@ -192,7 +196,9 @@ bot.command('image', async (ctx) => {
     .text('Отменить ❌', 'cancelImageGeneration');
 
   await ctx.reply(
-    'Выберите качество изображения: standard – стандартное, hd – повышенная детализация',
+    `Выберите качество изображения:
+    standard — стандартное
+    hd — повышенная детализация`,
     {
       reply_markup: qualityKeyboard,
     },
