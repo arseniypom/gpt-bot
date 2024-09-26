@@ -18,7 +18,7 @@ import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
 import { answerWithChatGPT } from './src/utils/gpt';
-import { MAX_HISTORY_LENGTH } from './src/utils/consts';
+import { HELP_MESSAGE, MAX_HISTORY_LENGTH, START_MESSAGE } from './src/utils/consts';
 import logger from './logger';
 import { getAnalytics, changeModel } from './src/commands';
 import { imageConversation } from './src/conversations/imageConversation';
@@ -45,6 +45,10 @@ void bot.api.setMyCommands([
   {
     command: 'start',
     description: 'Начать диалог',
+  },
+  {
+    command: 'help',
+    description: 'Общая информация',
   },
   {
     command: 'newchat',
@@ -117,25 +121,9 @@ bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
 bot.command('start', async (ctx) => {
   const { id, first_name, username } = ctx.from as TelegramUser;
 
-  await ctx.reply(
-    `
-Привет\! 👋  
-Я \- твой универсальный ИИ\-ассистент 🤖  
-Помогу:  
-\- решить задачи по любому предмету 📚  
-\- написать статью, имеил, сообщение или поздравление с днем рождения ✍️🎉  
-\- придумать историю или любой другой креатив 💡  
-\- составить план или предложить несколько решений проблемы 📝  
-\- расписать меню на неделю под любые специфические запросы 🍽️  
-\- сгенерировать изображение 🖼️  
-И многое другое\! 💼  
-
-P\.S\. Я работаю на базе OpenAI API 🔗
-`,
-    {
-      parse_mode: 'MarkdownV2',
-    },
-  );
+  await ctx.reply(START_MESSAGE, {
+    parse_mode: 'MarkdownV2',
+  });
 
   try {
     let user = await User.findOne({ telegramId: id });
@@ -166,6 +154,11 @@ P\.S\. Я работаю на базе OpenAI API 🔗
     );
     logger.error('Error in /start command:', error);
   }
+});
+bot.command('help', async (ctx) => {
+  await ctx.reply(HELP_MESSAGE, {
+    parse_mode: 'MarkdownV2',
+  });
 });
 bot.command('newchat', async (ctx) => {
   const { id } = ctx.from as TelegramUser;
@@ -299,7 +292,7 @@ bot.catch((err) => {
   const e = err.error;
 
   if (e instanceof GrammyError) {
-    logger.error('Error in request:', e.description);
+    logger.error('Error in request:', e);
   } else if (e instanceof HttpError) {
     logger.error('Could not contact Telegram:', e);
   } else {
