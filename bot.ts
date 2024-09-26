@@ -93,13 +93,11 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
     logger.error('Error in callbackQuery handler:', error);
   }
 });
-
 bot.callbackQuery('cancelImageGeneration', async (ctx) => {
   await ctx.answerCallbackQuery('Отменено ✅');
   await ctx.conversation.exit('imageConversation');
   await ctx.callbackQuery.message?.editText('Генерация изображения отменена');
 });
-
 bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
   await ctx.answerCallbackQuery();
   const quality = ctx.callbackQuery.data;
@@ -119,7 +117,25 @@ bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
 bot.command('start', async (ctx) => {
   const { id, first_name, username } = ctx.from as TelegramUser;
 
-  await ctx.reply('Добро пожаловать!');
+  await ctx.reply(
+    `
+Привет\! 👋  
+Я \- твой универсальный ИИ\-ассистент 🤖  
+Помогу:  
+\- решить задачи по любому предмету 📚  
+\- написать статью, имеил, сообщение или поздравление с днем рождения ✍️🎉  
+\- придумать историю или любой другой креатив 💡  
+\- составить план или предложить несколько решений проблемы 📝  
+\- расписать меню на неделю под любые специфические запросы 🍽️  
+\- сгенерировать изображение 🖼️  
+И многое другое\! 💼  
+
+P\.S\. Я работаю на базе OpenAI API 🔗
+`,
+    {
+      parse_mode: 'MarkdownV2',
+    },
+  );
 
   try {
     let user = await User.findOne({ telegramId: id });
