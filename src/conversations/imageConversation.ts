@@ -1,6 +1,6 @@
 import { InlineKeyboard } from 'grammy';
 import { generateImage } from '../utils/gpt';
-import logger from '../../logger';
+import { logError } from '../utils/alert';
 import { type MyConversation, type MyContext } from '../types/types';
 
 const cancelKeyboard = new InlineKeyboard().text(
@@ -34,7 +34,7 @@ export async function imageConversation(
     await ctx.reply(
       'Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
-    logger.error('Error in /image command:', error);
+    logError('Error in /image command:', error);
   }
 
   return;

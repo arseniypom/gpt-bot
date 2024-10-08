@@ -23,9 +23,9 @@ import {
   MAX_HISTORY_LENGTH,
   START_MESSAGE,
 } from './src/utils/consts';
-import logger from './logger';
 import { getAnalytics, changeModel } from './src/commands';
 import { imageConversation } from './src/conversations/imageConversation';
+import { logError } from './src/utils/alert';
 
 if (!process.env.BOT_API_KEY) {
   throw new Error('BOT_API_KEY is not defined');
@@ -98,7 +98,7 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
     await ctx.reply(
       'Произошла ошибка при сохранении модели. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
-    logger.error('Error in callbackQuery handler:', error);
+    logError('Error in callbackQuery handler:', error);
   }
 });
 bot.callbackQuery('cancelImageGeneration', async (ctx) => {
@@ -156,7 +156,7 @@ bot.command('start', async (ctx) => {
     await ctx.reply(
       'Произошла ошибка при создании персонального чат-бота. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
-    logger.error('Error in /start command:', error);
+    logError('Error in /start command:', error);
   }
 });
 bot.command('help', async (ctx) => {
@@ -185,7 +185,7 @@ bot.command('newchat', async (ctx) => {
     await ctx.reply(
       'Произошла ошибка при создании нового чата. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
-    logger.error('Error in /newchat command:', error);
+    logError('Error in /newchat command:', error);
   }
 });
 bot.command('image', async (ctx) => {
@@ -264,7 +264,11 @@ bot.on('message:text', async (ctx) => {
 
     const history = messages.slice(-MAX_HISTORY_LENGTH);
     const selectedModelName = user.selectedModel;
-    const answer = await answerWithChatGPT(history, telegramId, selectedModelName);
+    const answer = await answerWithChatGPT(
+      history,
+      telegramId,
+      selectedModelName,
+    );
 
     if (!answer) {
       await responseMessage.editText(
@@ -288,21 +292,28 @@ bot.on('message:text', async (ctx) => {
     await responseMessage.editText(
       'Произошла ошибка при обработке запроса. Пожалуйста, обратитесь к администратору.',
     );
-    logger.error('Error in message handler:', error);
+    logError('Error in message handler:', error);
   }
 });
 
-bot.catch((err) => {
+// Updated catch handler
+bot.catch(async (err) => {
   const ctx = err.ctx;
-  logger.error(`Error while handling update ${ctx.update.update_id}:`);
+  logError(`Error while handling update ${ctx.update.update_id}:`);
   const e = err.error;
 
   if (e instanceof GrammyError) {
-    logger.error('Error in request:', e);
+    logError('Error in request:', e);
   } else if (e instanceof HttpError) {
-    logger.error('Could not contact Telegram:', e);
+    logError('Could not contact Telegram:', e);
   } else {
-    logger.error('Unknown error:', e);
+    logError('Unknown error:', e);
+  }
+
+  try {
+    await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
+  } catch (replyError) {
+    logError('Failed to send error message to user:', replyError);
   }
 });
 
@@ -320,8 +331,11 @@ async function startBot() {
     console.log('Mongoose connected & bot started');
   } catch (error) {
     const err = error as Error;
-    logger.error('Error in startBot:', err);
+    logError('Error in startBot:', err);
   }
 }
 
+
 void startBot();
+
+export default bot;
