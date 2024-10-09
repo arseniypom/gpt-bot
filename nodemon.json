@@ -1,5 +1,5 @@
 {
-  "watch": ["bot.ts", "gpt.ts", "fs.ts"],
-  "ignore": ["*.test.ts", "node_modules/*", "history/*"],
+  "watch": ["bot.ts", "src/**/*.ts"],
+  "ignore": ["*.test.ts", "node_modules/*"],
   "exec": "ts-node bot.ts"
 }

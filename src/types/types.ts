@@ -7,6 +7,7 @@ import {
 
 export interface SessionData {
   chatId?: string;
+  imageQuality: ImageGenerationQuality;
 }
 
 export type MyContext = HydrateFlavor<Context & SessionFlavor<SessionData> & ConversationFlavor>;
@@ -27,5 +28,10 @@ export enum AiModelsLabels {
   GPT_3_5_TURBO = 'GPT-3.5 Turbo',
   GPT_4O = 'GPT-4o',
   GPT_4O_MINI = 'GPT-4o-mini',
+}
+
+export enum ImageGenerationQuality {
+  STANDARD = 'standard',
+  HD = 'hd',
 }
 
