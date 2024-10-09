@@ -9,6 +9,7 @@ import {
   AiModelsLabels,
   ImageGenerationQuality,
   SessionData,
+  AiModels,
 } from './src/types/types';
 import {
   isValidAiModel,
@@ -53,6 +54,10 @@ void bot.api.setMyCommands([
   {
     command: 'help',
     description: 'Общая информация',
+  },
+  {
+    command: 'balance',
+    description: 'Узнать текущий баланс запросов',
   },
   {
     command: 'newchat',
@@ -209,6 +214,29 @@ bot.command('image', async (ctx) => {
   );
 });
 bot.command('models', changeModel);
+bot.command('balance', async (ctx) => {
+  const { id } = ctx.from as TelegramUser;
+
+  try {
+    const user = await User.findOne({ telegramId: id });
+    if (!user) {
+      await ctx.reply('Пожалуйста, начните с команды /start.');
+      return;
+    }
+
+    await ctx.reply(
+      `Ваш текущий баланс:
+      - Базовые запросы (GPT-3.5, GPT-4o-mini): ${user.basicRequestsBalance}
+      - ПРО запросы (GPT-4o): ${user.proRequestsBalance}
+      - Генерация изображений: ${user.imageGenerationBalance}`,
+    );
+  } catch (error) {
+    await ctx.reply(
+      'Произошла ошибка при получении балансов. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+    );
+    logError('Error in /balance command:', error);
+  }
+});
 
 // Admin commands
 bot.command('stats', getAnalytics);
@@ -229,6 +257,26 @@ bot.on('message:text', async (ctx) => {
         'Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.',
       );
       return;
+    }
+
+    if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
+      if (user.proRequestsBalance === 0) {
+        await responseMessage.editText(
+          'У вас нет доступных запросов. Используйте команду /buy для пополнения баланса.',
+        );
+        return;
+      }
+      user.proRequestsBalance -= 1;
+      await user.save();
+    } else {
+      if (user.basicRequestsBalance === 0) {
+        await responseMessage.editText(
+          'У вас нет доступных запросов. Используйте команду /buy для пополнения баланса.',
+        );
+        return;
+      }
+      user.basicRequestsBalance -= 1;
+      await user.save();
     }
 
     if (!chatId) {
@@ -338,7 +386,6 @@ async function startBot() {
     logError('Error in startBot:', err);
   }
 }
-
 
 void startBot();
 
