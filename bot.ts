@@ -189,6 +189,10 @@ bot.command('newchat', async (ctx) => {
   }
 });
 bot.command('image', async (ctx) => {
+  if (!process.env.IMAGE_QUALITY_CHANGE_AVAILABLE) {
+    await ctx.conversation.enter('imageConversation');
+    return;
+  }
   const qualityKeyboard = new InlineKeyboard()
     .text('Standard', ImageGenerationQuality.STANDARD)
     .text('HD', ImageGenerationQuality.HD)
