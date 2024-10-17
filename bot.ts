@@ -281,9 +281,10 @@ bot.command('balance', async (ctx) => {
       return;
     }
 
-    const balanceMessage = `Ваш текущий баланс:
-      \\- *Базовые запросы* \\(GPT-3.5, GPT-4o-mini\\): ${user.basicRequestsBalance}
-      \\- *ПРО запросы* \\(GPT-4o\\): ${user.proRequestsBalance}
+    const balanceMessage = `
+      Ваш текущий баланс:
+      \\- *Базовые запросы* \\(GPT\\-3.5, GPT\\-4o\\-mini\\): ${user.basicRequestsBalance}
+      \\- *ПРО запросы* \\(GPT\\-4o\\): ${user.proRequestsBalance}
       \\- *Генерация изображений*: ${user.imageGenerationBalance}
     `;
 
