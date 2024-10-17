@@ -24,9 +24,10 @@ import {
   MAX_HISTORY_LENGTH,
   START_MESSAGE,
 } from './src/utils/consts';
-import { getAnalytics, changeModel } from './src/commands';
+import { getAnalytics, changeModel, topup } from './src/commands';
 import { imageConversation } from './src/conversations/imageConversation';
 import { logError } from './src/utils/alert';
+import { startTopupKeyboard } from './src/commands/topup';
 
 if (!process.env.BOT_API_KEY) {
   throw new Error('BOT_API_KEY is not defined');
@@ -52,12 +53,12 @@ void bot.api.setMyCommands([
     description: 'Начать диалог',
   },
   {
-    command: 'help',
-    description: 'Общая информация',
-  },
-  {
     command: 'balance',
     description: 'Узнать текущий баланс запросов',
+  },
+  {
+    command: 'topup',
+    description: 'Пополнить баланс',
   },
   {
     command: 'newchat',
@@ -70,6 +71,10 @@ void bot.api.setMyCommands([
   {
     command: 'models',
     description: 'Выбрать AI-модель',
+  },
+  {
+    command: 'help',
+    description: 'Общая информация',
   },
 ]);
 
@@ -125,6 +130,58 @@ bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
 
   await ctx.conversation.enter('imageConversation');
 });
+bot.callbackQuery(/^topup (100|500|1000)$/, async (ctx) => {
+  await ctx.answerCallbackQuery();
+  const amount = ctx.callbackQuery.data.split(' ')[1];
+  const amountInt = parseInt(amount, 10);
+  const { id } = ctx.from;
+
+  try {
+    const user = await User.findOne({ telegramId: id });
+    if (!user) {
+      await ctx.reply('Пожалуйста, начните с команды /start.');
+      return;
+    }
+
+    switch (amountInt) {
+      case 100:
+        user.basicRequestsBalance += 100;
+        break;
+      case 500:
+        user.basicRequestsBalance += 500;
+        break;
+      case 1000:
+        user.basicRequestsBalance += 950;
+        user.proRequestsBalance += 50;
+        break;
+      default:
+        break;
+    }
+
+    await user.save();
+
+    await ctx.callbackQuery.message?.editText(
+      `Баланс пополнен на ${amountInt} запросов ✅`,
+    );
+    await ctx.reply(
+      `
+      Ваш текущий баланс:
+      \\- *Базовые запросы* (GPT-3.5, GPT-4o-mini): ${user.basicRequestsBalance}
+      \\- *ПРО запросы* (GPT-4o): ${user.proRequestsBalance}
+      \\- *Генерация изображений*: ${user.imageGenerationBalance}
+    `,
+      {
+        parse_mode: 'MarkdownV2',
+      },
+    );
+  } catch (error) {
+    await ctx.reply(
+      'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+    );
+    logError('Error in topup callbackQuery:', error);
+  }
+});
+bot.callbackQuery('topup', topup);
 
 // User commands
 bot.command('start', async (ctx) => {
@@ -224,12 +281,16 @@ bot.command('balance', async (ctx) => {
       return;
     }
 
-    await ctx.reply(
-      `Ваш текущий баланс:
-      - Базовые запросы (GPT-3.5, GPT-4o-mini): ${user.basicRequestsBalance}
-      - ПРО запросы (GPT-4o): ${user.proRequestsBalance}
-      - Генерация изображений: ${user.imageGenerationBalance}`,
-    );
+    const balanceMessage = `Ваш текущий баланс:
+      \\- *Базовые запросы* (GPT-3.5, GPT-4o-mini): ${user.basicRequestsBalance}
+      \\- *ПРО запросы* (GPT-4o): ${user.proRequestsBalance}
+      \\- *Генерация изображений*: ${user.imageGenerationBalance}
+    `;
+
+    await ctx.reply(balanceMessage, {
+      parse_mode: 'MarkdownV2',
+      reply_markup: startTopupKeyboard,
+    });
   } catch (error) {
     await ctx.reply(
       'Произошла ошибка при получении балансов. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
@@ -237,6 +298,7 @@ bot.command('balance', async (ctx) => {
     logError('Error in /balance command:', error);
   }
 });
+bot.command('topup', topup);
 
 // Admin commands
 bot.command('stats', getAnalytics);
@@ -262,22 +324,21 @@ bot.on('message:text', async (ctx) => {
     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
       if (user.proRequestsBalance === 0) {
         await responseMessage.editText(
-          'У вас нет доступных запросов. Используйте команду /buy для пополнения баланса.',
+          'У вас нет доступных запросов. Используйте команду /topup для пополнения баланса.',
         );
         return;
       }
       user.proRequestsBalance -= 1;
-      await user.save();
     } else {
       if (user.basicRequestsBalance === 0) {
         await responseMessage.editText(
-          'У вас нет доступных запросов. Используйте команду /buy для пополнения баланса.',
+          'У вас нет доступных запросов. Используйте команду /topup для пополнения баланса.',
         );
         return;
       }
       user.basicRequestsBalance -= 1;
-      await user.save();
     }
+    await user.save();
 
     if (!chatId) {
       const latestChat = await Chat.findOne({ userId: user._id }).sort({
