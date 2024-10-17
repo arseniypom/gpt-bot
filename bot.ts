@@ -166,7 +166,7 @@ bot.callbackQuery(/^topup (100|500|1000)$/, async (ctx) => {
     await ctx.reply(
       `
       Ваш текущий баланс:
-      \\- *Базовые запросы* \\(GPT\\-3.5, GPT\\-4o\\-mini\\): ${user.basicRequestsBalance}
+      \\- *Базовые запросы* \\(GPT\\-3\\.5, GPT\\-4o\\-mini\\): ${user.basicRequestsBalance}
       \\- *ПРО запросы* \\(GPT\\-4o\\): ${user.proRequestsBalance}
       \\- *Генерация изображений*: ${user.imageGenerationBalance}
     `,
@@ -283,7 +283,7 @@ bot.command('balance', async (ctx) => {
 
     const balanceMessage = `
       Ваш текущий баланс:
-      \\- *Базовые запросы* \\(GPT\\-3.5, GPT\\-4o\\-mini\\): ${user.basicRequestsBalance}
+      \\- *Базовые запросы* \\(GPT\\-3\\.5, GPT\\-4o\\-mini\\): ${user.basicRequestsBalance}
       \\- *ПРО запросы* \\(GPT\\-4o\\): ${user.proRequestsBalance}
       \\- *Генерация изображений*: ${user.imageGenerationBalance}
     `;
