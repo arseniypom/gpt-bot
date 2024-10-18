@@ -3,14 +3,18 @@ import { HydrateFlavor } from '@grammyjs/hydrate';
 import {
   type Conversation,
   type ConversationFlavor,
-} from "@grammyjs/conversations";
+} from '@grammyjs/conversations';
+import { UserDocument } from '../../db/User';
 
 export interface SessionData {
   chatId?: string;
   imageQuality: ImageGenerationQuality;
+  user?: Pick<UserDocument, '_id' | 'telegramId' | 'firstName' | 'userName'>;
 }
 
-export type MyContext = HydrateFlavor<Context & SessionFlavor<SessionData> & ConversationFlavor>;
+export type MyContext = HydrateFlavor<
+  Context & SessionFlavor<SessionData> & ConversationFlavor
+>;
 export type MyConversation = Conversation<MyContext>;
 
 export interface ChatMessage {
@@ -34,4 +38,3 @@ export enum ImageGenerationQuality {
   STANDARD = 'standard',
   HD = 'hd',
 }
-

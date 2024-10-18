@@ -3,7 +3,7 @@ import mongoose, { Document, Schema, Model } from 'mongoose';
 import { DEFAULT_AI_MODEL } from '../src/utils/consts';
 import { AiModels } from '../src/types/types';
 
-interface UserDocument extends Document {
+export interface UserDocument extends Document {
   telegramId: number;
   firstName?: string;
   userName?: string;
