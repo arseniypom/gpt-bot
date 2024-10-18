@@ -200,7 +200,7 @@ bot.command('start', async (ctx) => {
         'Ваш персональный чат-бот создан. Пожалуйста, введите запрос',
       );
     } else {
-      await ctx.reply('Пожалуйста, введите запрос');
+      await ctx.reply('Напишите мне запрос, и я помогу Вам с ним!');
     }
 
     const chat = await Chat.create({
