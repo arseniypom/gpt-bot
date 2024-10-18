@@ -17,6 +17,9 @@ export const answerWithChatGPT = async (
     content: msg.content,
   }));
 
+  //TODO: delete after debug
+  console.log('formattedMessages', formattedMessages);
+
   if (!isValidAiModel(modelName)) {
     throw new Error('Invalid model name');
   }
