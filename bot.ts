@@ -311,13 +311,23 @@ bot.on('message:text', async (ctx) => {
 
     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
       if (user.proRequestsBalance === 0) {
-        await responseMessage.editText(getNoBalanceMessage(user.selectedModel));
+        await responseMessage.editText(
+          getNoBalanceMessage(user.selectedModel),
+          {
+            reply_markup: startTopupKeyboard,
+          },
+        );
         return;
       }
       user.proRequestsBalance -= 1;
     } else {
       if (user.basicRequestsBalance === 0) {
-        await responseMessage.editText(getNoBalanceMessage(user.selectedModel));
+        await responseMessage.editText(
+          getNoBalanceMessage(user.selectedModel),
+          {
+            reply_markup: startTopupKeyboard,
+          },
+        );
         return;
       }
       user.basicRequestsBalance -= 1;
