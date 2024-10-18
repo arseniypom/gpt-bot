@@ -3,7 +3,7 @@ import 'dotenv/config';
 import { IMessage } from '../../db/Message';
 import { AiModel, AiModels, ImageGenerationQuality } from '../types/types';
 import { isValidAiModel } from '../types/typeguards';
-import { DEFAULT_AI_MODEL } from './consts';
+import { DEFAULT_AI_MODEL, PROMPT_MESSAGE } from './consts';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -25,7 +25,7 @@ export const answerWithChatGPT = async (
     const response = await openai.chat.completions.create({
       model: AiModels[modelName],
       messages: [
-        { role: 'system', content: 'Ты полезный ассистент, отвечай кратко' },
+        { role: 'system', content: PROMPT_MESSAGE },
         ...formattedMessages,
       ],
       user: telegramId.toString(),
