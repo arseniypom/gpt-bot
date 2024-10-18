@@ -6,12 +6,10 @@ import { MyContext } from '../types/types';
 
 export const startTopupKeyboard = new InlineKeyboard().text('Пополнить баланс', 'topup');
 const topupKeyboard = new InlineKeyboard()
-.text('100', 'topup 100')
-.text('500', 'topup 500')
-.text('1000', 'topup 1000')
-.text('2000', 'topup 2000')
-.text('5000', 'topup 5000')
-.row();
+  .text('100', 'topup 100')
+  .text('500', 'topup 500')
+  .text('1000', 'topup 1000')
+  .row();
 
 export const topup = async (ctx: MyContext) => {
   const { id } = ctx.from as TelegramUser;
