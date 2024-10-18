@@ -1,6 +1,6 @@
-import { AiModels, ImageGenerationQuality } from './types';
+import { AiModel, AiModels, ImageGenerationQuality } from './types';
 
-export const isValidAiModel = (model: unknown): model is keyof typeof AiModels => {
+export const isValidAiModel = (model: unknown): model is AiModel => {
   return typeof model === 'string' && model in AiModels;
 };
 

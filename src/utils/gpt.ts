@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import 'dotenv/config';
 import { IMessage } from '../../db/Message';
-import { AiModels, ImageGenerationQuality } from '../types/types';
+import { AiModel, AiModels, ImageGenerationQuality } from '../types/types';
 import { isValidAiModel } from '../types/typeguards';
 import { DEFAULT_AI_MODEL } from './consts';
 
@@ -10,7 +10,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export const answerWithChatGPT = async (
   messages: IMessage[],
   telegramId: number,
-  modelName: string = DEFAULT_AI_MODEL,
+  modelName: AiModel = DEFAULT_AI_MODEL,
 ): Promise<string | null> => {
   const formattedMessages = messages.map((msg) => ({
     role: msg.role as 'system' | 'user' | 'assistant',

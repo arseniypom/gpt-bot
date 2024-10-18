@@ -1,7 +1,7 @@
 // Импорт необходимых модулей и типов
 import mongoose, { Document, Schema, Model } from 'mongoose';
 import { DEFAULT_AI_MODEL } from '../src/utils/consts';
-import { AiModels } from '../src/types/types';
+import { AiModel, AiModels } from '../src/types/types';
 
 export interface UserDocument extends Document {
   telegramId: number;
@@ -10,7 +10,7 @@ export interface UserDocument extends Document {
   basicRequestsBalance: number;
   proRequestsBalance: number;
   imageGenerationBalance: number;
-  selectedModel: keyof typeof AiModels;
+  selectedModel: AiModel;
   createdAt: Date;
   updatedAt: Date;
 }

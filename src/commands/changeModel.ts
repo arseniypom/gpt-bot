@@ -19,7 +19,7 @@ export const changeModel = async (ctx: MyContext) => {
   }
 
   await ctx.reply(
-    `Текущая модель: ${user.selectedModel}\nВыберите модель, на которую хотите переключиться:`,
+    `Текущая модель: ${AiModelsLabels[user.selectedModel]}\nВыберите модель, на которую хотите переключиться:`,
     {
       reply_markup: keyboard,
     },

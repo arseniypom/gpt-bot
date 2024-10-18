@@ -1,3 +1,6 @@
+import { UserDocument } from '../../db/User';
+import { AiModel, AiModelsLabels } from '../types/types';
+
 export const MAX_HISTORY_LENGTH = 6;
 export const DEFAULT_AI_MODEL = 'GPT_3_5_TURBO';
 
@@ -35,3 +38,16 @@ export const HELP_MESSAGE = `
 *Важная информация*:  
 1\\. В текущей версии при ответе на любой вопрос бот использует 7 последних сообщений: три от пользователя \\+ запрос и три своих\\. Доступа к более старым сообщениям у него нет, то есть он не может учитывать контекст, данный пользователем 4 и более сообщений назад\\.
   `;
+
+export const getNoBalanceMessage = (model: AiModel) => {
+  return `У вас нет доступных запросов для обращения к ${AiModelsLabels[model]}. Используйте команду /topup для пополнения баланса.`;
+};
+
+export const getBalanceMessage = (user: UserDocument) => {
+  return `
+  Ваш текущий баланс:
+  \\- *Базовые запросы* \\(GPT\\-3\\.5, GPT\\-4o\\-mini\\): ${user.basicRequestsBalance}
+  \\- *ПРО запросы* \\(GPT\\-4o\\): ${user.proRequestsBalance}
+  \\- *Генерация изображений*: ${user.imageGenerationBalance}
+  `;
+};

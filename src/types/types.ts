@@ -34,6 +34,8 @@ export enum AiModelsLabels {
   GPT_4O_MINI = 'GPT-4o-mini',
 }
 
+export type AiModel = keyof typeof AiModels;
+
 export enum ImageGenerationQuality {
   STANDARD = 'standard',
   HD = 'hd',

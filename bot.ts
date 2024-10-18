@@ -20,6 +20,8 @@ import Chat from './db/Chat';
 import Message from './db/Message';
 import { answerWithChatGPT } from './src/utils/gpt';
 import {
+  getBalanceMessage,
+  getNoBalanceMessage,
   HELP_MESSAGE,
   MAX_HISTORY_LENGTH,
   START_MESSAGE,
@@ -163,17 +165,9 @@ bot.callbackQuery(/^topup (100|500|1000)$/, async (ctx) => {
     await ctx.callbackQuery.message?.editText(
       `Баланс пополнен на ${amountInt} запросов ✅`,
     );
-    await ctx.reply(
-      `
-      Ваш текущий баланс:
-      \\- *Базовые запросы* \\(GPT\\-3\\.5, GPT\\-4o\\-mini\\): ${user.basicRequestsBalance}
-      \\- *ПРО запросы* \\(GPT\\-4o\\): ${user.proRequestsBalance}
-      \\- *Генерация изображений*: ${user.imageGenerationBalance}
-    `,
-      {
-        parse_mode: 'MarkdownV2',
-      },
-    );
+    await ctx.reply(getBalanceMessage(user), {
+      parse_mode: 'MarkdownV2',
+    });
   } catch (error) {
     await ctx.reply(
       'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
@@ -281,14 +275,7 @@ bot.command('balance', async (ctx) => {
       return;
     }
 
-    const balanceMessage = `
-      Ваш текущий баланс:
-      \\- *Базовые запросы* \\(GPT\\-3\\.5, GPT\\-4o\\-mini\\): ${user.basicRequestsBalance}
-      \\- *ПРО запросы* \\(GPT\\-4o\\): ${user.proRequestsBalance}
-      \\- *Генерация изображений*: ${user.imageGenerationBalance}
-    `;
-
-    await ctx.reply(balanceMessage, {
+    await ctx.reply(getBalanceMessage(user), {
       parse_mode: 'MarkdownV2',
       reply_markup: startTopupKeyboard,
     });
@@ -324,17 +311,13 @@ bot.on('message:text', async (ctx) => {
 
     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
       if (user.proRequestsBalance === 0) {
-        await responseMessage.editText(
-          'У вас нет доступных запросов. Используйте команду /topup для пополнения баланса.',
-        );
+        await responseMessage.editText(getNoBalanceMessage(user.selectedModel));
         return;
       }
       user.proRequestsBalance -= 1;
     } else {
       if (user.basicRequestsBalance === 0) {
-        await responseMessage.editText(
-          'У вас нет доступных запросов. Используйте команду /topup для пополнения баланса.',
-        );
+        await responseMessage.editText(getNoBalanceMessage(user.selectedModel));
         return;
       }
       user.basicRequestsBalance -= 1;
