@@ -30,6 +30,7 @@ import { getAnalytics, changeModel, topup } from './src/commands';
 import { imageConversation } from './src/conversations/imageConversation';
 import { logError } from './src/utils/alert';
 import { startTopupKeyboard } from './src/commands/topup';
+import { PACKAGES } from './src/bot-packages';
 
 if (!process.env.BOT_API_KEY) {
   throw new Error('BOT_API_KEY is not defined');
@@ -79,6 +80,56 @@ void bot.api.setMyCommands([
     description: 'Общая информация',
   },
 ]);
+
+bot.on('pre_checkout_query', async (ctx) => {
+  await ctx.answerPreCheckoutQuery(true);
+});
+bot.on(':successful_payment', async (ctx) => {
+  // const { id } = ctx.from as TelegramUser;
+  console.log('ctx.from', ctx.from);
+
+  console.log(
+    'ctx.message?.successful_payment',
+    ctx.message?.successful_payment,
+  );
+
+  try {
+    const user = await User.findOne({ telegramId: id });
+    if (!user) {
+      await ctx.reply('Пожалуйста, начните с команды /start.');
+      return;
+    }
+
+    switch (amountInt) {
+      case 100:
+        user.basicRequestsBalance += 100;
+        break;
+      case 500:
+        user.basicRequestsBalance += 500;
+        break;
+      case 1000:
+        user.basicRequestsBalance += 950;
+        user.proRequestsBalance += 50;
+        break;
+      default:
+        break;
+    }
+
+    await user.save();
+
+    await ctx.callbackQuery.message?.editText(
+      `Баланс пополнен на ${amountInt} запросов ✅`,
+    );
+    await ctx.reply(getBalanceMessage(user), {
+      parse_mode: 'MarkdownV2',
+    });
+  } catch (error) {
+    await ctx.reply(
+      'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+    );
+    logError('Error in topup callbackQuery:', error);
+  }
+});
 
 // Callback queries
 bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
@@ -132,42 +183,38 @@ bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
 
   await ctx.conversation.enter('imageConversation');
 });
-bot.callbackQuery(/^topup (100|500|1000)$/, async (ctx) => {
+bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
   await ctx.answerCallbackQuery();
-  const amount = ctx.callbackQuery.data.split(' ')[1];
-  const amountInt = parseInt(amount, 10);
-  const { id } = ctx.from;
+  const packageKey = ctx.callbackQuery.data as keyof typeof PACKAGES;
 
   try {
-    const user = await User.findOne({ telegramId: id });
-    if (!user) {
-      await ctx.reply('Пожалуйста, начните с команды /start.');
-      return;
+    const chatId = ctx.chat?.id;
+    if (!chatId) {
+      throw new Error(`${ctx.callbackQuery.data} | Chat ID is not defined`);
     }
-
-    switch (amountInt) {
-      case 100:
-        user.basicRequestsBalance += 100;
-        break;
-      case 500:
-        user.basicRequestsBalance += 500;
-        break;
-      case 1000:
-        user.basicRequestsBalance += 950;
-        user.proRequestsBalance += 50;
-        break;
-      default:
-        break;
+    if (!PACKAGES[packageKey]) {
+      throw new Error(
+        `${ctx.callbackQuery.data} | ${packageKey} is not in PACKAGES`,
+      );
     }
+    const { title, price, description } = PACKAGES[packageKey];
 
-    await user.save();
-
-    await ctx.callbackQuery.message?.editText(
-      `Баланс пополнен на ${amountInt} запросов ✅`,
+    await bot.api.sendInvoice(
+      chatId,
+      title,
+      description,
+      packageKey,
+      'RUB',
+      [
+        {
+          label: 'Руб',
+          amount: price * 100,
+        },
+      ],
+      {
+        provider_token: process.env.YOOKASSA_PAYMENT_PROVIDER_TOKEN,
+      },
     );
-    await ctx.reply(getBalanceMessage(user), {
-      parse_mode: 'MarkdownV2',
-    });
   } catch (error) {
     await ctx.reply(
       'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
