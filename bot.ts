@@ -93,42 +93,42 @@ bot.on(':successful_payment', async (ctx) => {
     ctx.message?.successful_payment,
   );
 
-  try {
-    const user = await User.findOne({ telegramId: id });
-    if (!user) {
-      await ctx.reply('Пожалуйста, начните с команды /start.');
-      return;
-    }
+  // try {
+  //   const user = await User.findOne({ telegramId: id });
+  //   if (!user) {
+  //     await ctx.reply('Пожалуйста, начните с команды /start.');
+  //     return;
+  //   }
 
-    switch (amountInt) {
-      case 100:
-        user.basicRequestsBalance += 100;
-        break;
-      case 500:
-        user.basicRequestsBalance += 500;
-        break;
-      case 1000:
-        user.basicRequestsBalance += 950;
-        user.proRequestsBalance += 50;
-        break;
-      default:
-        break;
-    }
+  //   switch (amountInt) {
+  //     case 100:
+  //       user.basicRequestsBalance += 100;
+  //       break;
+  //     case 500:
+  //       user.basicRequestsBalance += 500;
+  //       break;
+  //     case 1000:
+  //       user.basicRequestsBalance += 950;
+  //       user.proRequestsBalance += 50;
+  //       break;
+  //     default:
+  //       break;
+  //   }
 
-    await user.save();
+  //   await user.save();
 
-    await ctx.callbackQuery.message?.editText(
-      `Баланс пополнен на ${amountInt} запросов ✅`,
-    );
-    await ctx.reply(getBalanceMessage(user), {
-      parse_mode: 'MarkdownV2',
-    });
-  } catch (error) {
-    await ctx.reply(
-      'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
-    );
-    logError('Error in topup callbackQuery:', error);
-  }
+  //   await ctx.callbackQuery.message?.editText(
+  //     `Баланс пополнен на ${amountInt} запросов ✅`,
+  //   );
+  //   await ctx.reply(getBalanceMessage(user), {
+  //     parse_mode: 'MarkdownV2',
+  //   });
+  // } catch (error) {
+  //   await ctx.reply(
+  //     'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+  //   );
+  //   logError('Error in topup callbackQuery:', error);
+  // }
 });
 
 // Callback queries
