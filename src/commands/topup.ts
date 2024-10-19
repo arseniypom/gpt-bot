@@ -1,4 +1,4 @@
-import { InlineKeyboard } from 'grammy';
+import { CallbackQueryContext, InlineKeyboard } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import User from '../../db/User';
 import { logError } from '../utils/alert';
@@ -22,8 +22,11 @@ const topupKeyboard = new InlineKeyboard()
   .text('9', 'combo3')
   .row();
 
-export const topup = async (ctx: MyContext) => {
-  await ctx.answerCallbackQuery();
+export const topup = async (ctx: CallbackQueryContext<MyContext> | MyContext) => {
+  if (ctx.callbackQuery) {
+    await ctx.answerCallbackQuery();
+  }
+
   const { id } = ctx.from as TelegramUser;
 
   try {
