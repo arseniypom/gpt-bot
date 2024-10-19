@@ -1,14 +1,15 @@
-import { NextFunction } from "grammy";
+import { NextFunction } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import User from '../../db/User';
-import { logError } from "./alert";
-import { MyContext } from "../types/types";
+import { logError } from './alert';
+import { MyContext } from '../types/types';
+import { isMyContext } from '../types/typeguards';
 
 export const checkUserInDB = async (
-  ctx: MyContext,
+  ctx: MyContext | unknown,
   next: NextFunction,
 ): Promise<void> => {
-  if (ctx.hasCommand("start")) {
+  if (!isMyContext(ctx) || ctx.hasCommand('start')) {
     await next();
     return;
   }
