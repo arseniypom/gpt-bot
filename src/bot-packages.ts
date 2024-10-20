@@ -1,4 +1,6 @@
-export const PACKAGES = {
+import { PackageName, PackageData } from './types/types';
+
+export const PACKAGES: Record<PackageName, PackageData> = {
   req1: {
     basicRequestsBalance: 100,
     price: 99,
@@ -12,7 +14,8 @@ export const PACKAGES = {
     title: '500 запросов',
   },
   req3: {
-    basicRequestsBalance: 1000,
+    basicRequestsBalance: 950,
+    proRequestsBalance: 50,
     price: 599,
     description: '950 базовых запросов и 50 ПРО запросов к нейросети за 599₽',
     title: '1000 запросов',
