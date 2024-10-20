@@ -40,3 +40,23 @@ export enum ImageGenerationQuality {
   STANDARD = 'standard',
   HD = 'hd',
 }
+
+export type PackageName =
+  | 'req1'
+  | 'req2'
+  | 'req3'
+  | 'img1'
+  | 'img2'
+  | 'img3'
+  | 'combo1'
+  | 'combo2'
+  | 'combo3';
+
+export interface PackageData {
+  basicRequestsBalance?: number;
+  proRequestsBalance?: number;
+  imageGenerationBalance?: number;
+  price: number;
+  description: string;
+  title: string;
+}

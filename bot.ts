@@ -10,6 +10,7 @@ import {
   ImageGenerationQuality,
   SessionData,
   AiModels,
+  PackageName,
 } from './src/types/types';
 import {
   isValidAiModel,
@@ -36,6 +37,10 @@ if (!process.env.BOT_API_KEY) {
   throw new Error('BOT_API_KEY is not defined');
 }
 const bot = new Bot<MyContext>(process.env.BOT_API_KEY);
+
+bot.on('pre_checkout_query', async (ctx) => {
+  await ctx.answerPreCheckoutQuery(true);
+});
 
 bot.use(
   session({
@@ -81,54 +86,41 @@ void bot.api.setMyCommands([
   },
 ]);
 
-bot.on('pre_checkout_query', async (ctx) => {
-  await ctx.answerPreCheckoutQuery(true);
-});
 bot.on(':successful_payment', async (ctx) => {
-  // const { id } = ctx.from as TelegramUser;
-  console.log('ctx.from', ctx.from);
+  const { id } = ctx.from as TelegramUser;
 
-  console.log(
-    'ctx.message?.successful_payment',
-    ctx.message?.successful_payment,
-  );
+  try {
+    const user = await User.findOne({ telegramId: id });
+    if (!user) {
+      await ctx.reply('Пожалуйста, начните с команды /start.');
+      return;
+    }
 
-  // try {
-  //   const user = await User.findOne({ telegramId: id });
-  //   if (!user) {
-  //     await ctx.reply('Пожалуйста, начните с команды /start.');
-  //     return;
-  //   }
+    const packageKey = ctx.message?.successful_payment
+      .invoice_payload as PackageName;
+    const packageData = PACKAGES[packageKey];
+    if (packageData.basicRequestsBalance) {
+      user.basicRequestsBalance += packageData.basicRequestsBalance;
+    }
+    if (packageData.proRequestsBalance) {
+      user.proRequestsBalance += packageData.proRequestsBalance;
+    }
+    if (packageData.imageGenerationBalance) {
+      user.imageGenerationBalance += packageData.imageGenerationBalance;
+    }
 
-  //   switch (amountInt) {
-  //     case 100:
-  //       user.basicRequestsBalance += 100;
-  //       break;
-  //     case 500:
-  //       user.basicRequestsBalance += 500;
-  //       break;
-  //     case 1000:
-  //       user.basicRequestsBalance += 950;
-  //       user.proRequestsBalance += 50;
-  //       break;
-  //     default:
-  //       break;
-  //   }
+    await user.save();
 
-  //   await user.save();
-
-  //   await ctx.callbackQuery.message?.editText(
-  //     `Баланс пополнен на ${amountInt} запросов ✅`,
-  //   );
-  //   await ctx.reply(getBalanceMessage(user), {
-  //     parse_mode: 'MarkdownV2',
-  //   });
-  // } catch (error) {
-  //   await ctx.reply(
-  //     'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
-  //   );
-  //   logError('Error in topup callbackQuery:', error);
-  // }
+    await ctx.reply(`Баланс успешно пополнен ✅`);
+    await ctx.reply(getBalanceMessage(user), {
+      parse_mode: 'MarkdownV2',
+    });
+  } catch (error) {
+    await ctx.reply(
+      'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+    );
+    logError('Error in topup callbackQuery:', error);
+  }
 });
 
 // Callback queries
