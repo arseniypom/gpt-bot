@@ -119,7 +119,7 @@ bot.on(':successful_payment', async (ctx) => {
     await ctx.reply(
       'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
-    logError('Error in topup callbackQuery:', error);
+    logError('Error in successful_payment callbackQuery:', error);
   }
 });
 
@@ -348,31 +348,6 @@ bot.on('message:text', async (ctx) => {
       return;
     }
 
-    if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
-      if (user.proRequestsBalance === 0) {
-        await responseMessage.editText(
-          getNoBalanceMessage(user.selectedModel),
-          {
-            reply_markup: startTopupKeyboard,
-          },
-        );
-        return;
-      }
-      user.proRequestsBalance -= 1;
-    } else {
-      if (user.basicRequestsBalance === 0) {
-        await responseMessage.editText(
-          getNoBalanceMessage(user.selectedModel),
-          {
-            reply_markup: startTopupKeyboard,
-          },
-        );
-        return;
-      }
-      user.basicRequestsBalance -= 1;
-    }
-    await user.save();
-
     if (!chatId) {
       const latestChat = await Chat.findOne({ userId: user._id }).sort({
         createdAt: -1,
@@ -395,6 +370,28 @@ bot.on('message:text', async (ctx) => {
         'Чат не найден. Пожалуйста, начните новый чат с помощью команды /start.',
       );
       return;
+    }
+
+    if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
+      if (user.proRequestsBalance === 0) {
+        await responseMessage.editText(
+          getNoBalanceMessage(user.selectedModel),
+          {
+            reply_markup: startTopupKeyboard,
+          },
+        );
+        return;
+      }
+    } else {
+      if (user.basicRequestsBalance === 0) {
+        await responseMessage.editText(
+          getNoBalanceMessage(user.selectedModel),
+          {
+            reply_markup: startTopupKeyboard,
+          },
+        );
+        return;
+      }
     }
 
     await Message.create({
@@ -432,6 +429,13 @@ bot.on('message:text', async (ctx) => {
 
     chat.updatedAt = new Date();
     await chat.save();
+
+    if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
+      user.proRequestsBalance -= 1;
+    } else {
+      user.basicRequestsBalance -= 1;
+    }
+    await user.save();
 
     await responseMessage.editText(answer);
   } catch (error) {
