@@ -66,9 +66,13 @@ export const getNoBalanceMessage = (model: AiModel) => {
 
 export const getBalanceMessage = (user: UserDocument) => {
   return `
-  Ваш текущий баланс:
-  ⭐️ *Базовые запросы* \\(GPT\\-3\\.5, GPT\\-4o\\-mini\\): ${user.basicRequestsBalance}
-  🌟 *ПРО запросы* \\(GPT\\-4o\\): ${user.proRequestsBalance}
-  🌅 *Генерация изображений*: ${user.imageGenerationBalance}
+*Ваш текущий баланс 💰 *
+––––––
+*Базовые запросы* \\(GPT\\-3\\.5, GPT\\-4o\\-mini\\):
+⭐️ ${user.basicRequestsBalance}
+*ПРО запросы* \\(GPT\\-4o\\):
+🌟 ${user.proRequestsBalance}
+*Генерация изображений*:
+🖼️ ${user.imageGenerationBalance}
   `;
 };
