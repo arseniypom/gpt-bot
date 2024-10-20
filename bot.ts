@@ -19,6 +19,7 @@ import {
 import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
+import Transaction from './db/Transaction';
 import { answerWithChatGPT } from './src/utils/gpt';
 import {
   getBalanceMessage,
@@ -91,9 +92,20 @@ bot.on(':successful_payment', async (ctx) => {
 
   try {
     const user = await User.findOne({ telegramId: id });
+    const transaction = await Transaction.create({
+      userId: user?._id,
+      totalAmount: ctx.message?.successful_payment.total_amount,
+      packageName: ctx.message?.successful_payment.invoice_payload,
+      telegramPaymentChargeId:
+        ctx.message?.successful_payment.telegram_payment_charge_id,
+      providerPaymentChargeId:
+        ctx.message?.successful_payment.provider_payment_charge_id,
+    });
+
     if (!user) {
-      await ctx.reply('Пожалуйста, начните с команды /start.');
-      return;
+      throw new Error(
+        `User not found for telegramId: ${id}. Transaction saved: ${transaction._id}. telegram_payment_charge_id: ${ctx.message?.successful_payment.telegram_payment_charge_id}, provider_payment_charge_id: ${ctx.message?.successful_payment.provider_payment_charge_id}`,
+      );
     }
 
     const packageKey = ctx.message?.successful_payment
