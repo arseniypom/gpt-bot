@@ -370,127 +370,127 @@ bot.command('topup', topup);
 bot.command('stats', getAnalytics);
 
 // Message handler
-// bot.on('message:text', async (ctx) => {
-//   let chatId = ctx.session.chatId;
-//   let chatObj;
-//   const telegramId = ctx.from.id;
-//   const userMessageText = ctx.message.text;
+bot.on('message:text', async (ctx) => {
+  let chatId = ctx.session.chatId;
+  let chatObj;
+  const telegramId = ctx.from.id;
+  const userMessageText = ctx.message.text;
 
-//   if (userMessageText.length > 3000) {
-//     await ctx.reply(
-//       'Превышен лимит символов. Пожалуйста, сократите Ваше сообщение.',
-//     );
-//     return;
-//   }
+  if (userMessageText.length > 3000) {
+    await ctx.reply(
+      'Превышен лимит символов. Пожалуйста, сократите Ваше сообщение.',
+    );
+    return;
+  }
 
-//   const responseMessage = await ctx.reply('Загрузка...');
+  const responseMessage = await ctx.reply('Загрузка...');
 
-//   try {
-//     const user = await User.findOne({ telegramId });
-//     if (!user) {
-//       await responseMessage.editText(
-//         'Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.',
-//       );
-//       return;
-//     }
+  try {
+    const user = await User.findOne({ telegramId });
+    if (!user) {
+      await responseMessage.editText(
+        'Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.',
+      );
+      return;
+    }
 
-//     if (!chatId) {
-//       const latestChat = await Chat.findOne({ userId: user._id }).sort({
-//         createdAt: -1,
-//       });
-//       if (latestChat) {
-//         chatObj = latestChat;
-//         chatId = latestChat._id.toString();
-//         ctx.session.chatId = chatId;
-//       } else {
-//         await responseMessage.editText(
-//           'Пожалуйста, начните новый чат с помощью команды /start.',
-//         );
-//         return;
-//       }
-//     }
+    if (!chatId) {
+      const latestChat = await Chat.findOne({ userId: user._id }).sort({
+        createdAt: -1,
+      });
+      if (latestChat) {
+        chatObj = latestChat;
+        chatId = latestChat._id.toString();
+        ctx.session.chatId = chatId;
+      } else {
+        await responseMessage.editText(
+          'Пожалуйста, начните новый чат с помощью команды /start.',
+        );
+        return;
+      }
+    }
 
-//     const chat = chatObj || (await Chat.findById(chatId));
-//     if (!chat) {
-//       await ctx.reply(
-//         'Чат не найден. Пожалуйста, начните новый чат с помощью команды /start.',
-//       );
-//       return;
-//     }
+    const chat = chatObj || (await Chat.findById(chatId));
+    if (!chat) {
+      await ctx.reply(
+        'Чат не найден. Пожалуйста, начните новый чат с помощью команды /start.',
+      );
+      return;
+    }
 
-//     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
-//       if (user.proRequestsBalance === 0) {
-//         await responseMessage.editText(
-//           getNoBalanceMessage(user.selectedModel),
-//           {
-//             reply_markup: startTopupKeyboard,
-//           },
-//         );
-//         return;
-//       }
-//     } else {
-//       if (user.basicRequestsBalance === 0) {
-//         await responseMessage.editText(
-//           getNoBalanceMessage(user.selectedModel),
-//           {
-//             reply_markup: startTopupKeyboard,
-//           },
-//         );
-//         return;
-//       }
-//     }
+    if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
+      if (user.proRequestsBalance === 0) {
+        await responseMessage.editText(
+          getNoBalanceMessage(user.selectedModel),
+          {
+            reply_markup: startTopupKeyboard,
+          },
+        );
+        return;
+      }
+    } else {
+      if (user.basicRequestsBalance === 0) {
+        await responseMessage.editText(
+          getNoBalanceMessage(user.selectedModel),
+          {
+            reply_markup: startTopupKeyboard,
+          },
+        );
+        return;
+      }
+    }
 
-//     await Message.create({
-//       chatId: chat._id,
-//       userId: user._id,
-//       role: 'user',
-//       content: userMessageText,
-//     });
+    await Message.create({
+      chatId: chat._id,
+      userId: user._id,
+      role: 'user',
+      content: userMessageText,
+    });
 
-//     const messages = await Message.find({ chatId: chat._id })
-//       .sort({ createdAt: 1 })
-//       .lean();
+    const messages = await Message.find({ chatId: chat._id })
+      .sort({ createdAt: 1 })
+      .lean();
 
-//     const history = messages.slice(-MAX_HISTORY_LENGTH);
-//     const selectedModelName = user.selectedModel;
-//     const answer = await answerWithChatGPT(
-//       history,
-//       telegramId,
-//       selectedModelName,
-//     );
+    const history = messages.slice(-MAX_HISTORY_LENGTH);
+    const selectedModelName = user.selectedModel;
+    const answer = await answerWithChatGPT(
+      history,
+      telegramId,
+      selectedModelName,
+    );
 
-//     if (!answer) {
-//       await responseMessage.editText(
-//         'Произошла ошибка при генерации ответа. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
-//       );
-//       return;
-//     }
+    if (!answer) {
+      await responseMessage.editText(
+        'Произошла ошибка при генерации ответа. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+      );
+      return;
+    }
 
-//     await Message.create({
-//       chatId: chat._id,
-//       userId: user._id,
-//       role: 'assistant',
-//       content: answer,
-//     });
+    await Message.create({
+      chatId: chat._id,
+      userId: user._id,
+      role: 'assistant',
+      content: answer,
+    });
 
-//     chat.updatedAt = new Date();
-//     await chat.save();
+    chat.updatedAt = new Date();
+    await chat.save();
 
-//     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
-//       user.proRequestsBalance -= 1;
-//     } else {
-//       user.basicRequestsBalance -= 1;
-//     }
-//     await user.save();
+    if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
+      user.proRequestsBalance -= 1;
+    } else {
+      user.basicRequestsBalance -= 1;
+    }
+    await user.save();
 
-//     await responseMessage.editText(answer);
-//   } catch (error) {
-//     await responseMessage.editText(
-//       'Произошла ошибка при обработке запроса. Пожалуйста, обратитесь к администратору.',
-//     );
-//     logError('Error in message handler:', error);
-//   }
-// });
+    await responseMessage.editText(answer);
+  } catch (error) {
+    await responseMessage.editText(
+      'Произошла ошибка при обработке запроса. Пожалуйста, обратитесь к администратору.',
+    );
+    logError('Error in message handler:', error);
+  }
+});
 
 // Updated catch handler
 bot.catch(async (err) => {
