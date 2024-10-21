@@ -61,7 +61,6 @@ export const topup = async (
     await ctx.reply('Выберите пакет для пополнения:', {
       reply_markup: topupKeyboard,
     });
-    await ctx.reply('Если у Вас возникли вопросы, напишите в поддержку: /support');
   } catch (error) {
     await ctx.reply(
       'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
