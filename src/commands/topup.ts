@@ -1,4 +1,4 @@
-import { CallbackQueryContext, InlineKeyboard } from 'grammy';
+import { CallbackQueryContext, InlineKeyboard, InputFile } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import User from '../../db/User';
 import { logError } from '../utils/alert';
@@ -22,7 +22,9 @@ const topupKeyboard = new InlineKeyboard()
   .text('9', 'combo3')
   .row();
 
-export const topup = async (ctx: CallbackQueryContext<MyContext> | MyContext) => {
+export const topup = async (
+  ctx: CallbackQueryContext<MyContext> | MyContext,
+) => {
   if (ctx.callbackQuery) {
     await ctx.answerCallbackQuery();
   }
@@ -55,10 +57,11 @@ export const topup = async (ctx: CallbackQueryContext<MyContext> | MyContext) =>
     \\[9\\] 1000 запросов \\(950 базовые \\+ 50 про\\) \\+ 50 изображений 899₽
   `;
 
-    await ctx.reply(topupMessage, {
+    await ctx.replyWithPhoto(new InputFile('src/images/packages-img.jpg'));
+    await ctx.reply('Выберите пакет для пополнения:', {
       reply_markup: topupKeyboard,
-      parse_mode: 'MarkdownV2',
     });
+    await ctx.reply('Если у Вас возникли вопросы, напишите в поддержку: /support');
   } catch (error) {
     await ctx.reply(
       'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
