@@ -4,6 +4,7 @@ import { Bot, GrammyError, HttpError, InlineKeyboard, session } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import { hydrate } from '@grammyjs/hydrate';
 import { conversations, createConversation } from '@grammyjs/conversations';
+import { limit } from '@grammyjs/ratelimiter';
 import {
   MyContext,
   AiModelsLabels,
@@ -52,6 +53,17 @@ bot.use(
 );
 bot.use(hydrate());
 bot.use(conversations());
+bot.use(
+  limit({
+    timeFrame: 2000,
+    limit: 3,
+    onLimitExceeded: async (ctx) => {
+      await ctx.reply(
+        'Пожалуйста, не отправляйте запросы слишком часто. Подождите 5 секунд и попробуйте снова.',
+      );
+    },
+  }),
+);
 
 // Conversations
 bot.use(createConversation(imageConversation));
