@@ -26,7 +26,6 @@
     "@grammyjs/ratelimiter": "^1.2.0",
     "dotenv": "^16.4.5",
     "grammy": "^1.27.0",
-    "grammy-middlewares": "^1.0.11",
     "mongoose": "^8.6.3",
     "nodemon": "^3.1.5",
     "openai": "^4.62.0",
