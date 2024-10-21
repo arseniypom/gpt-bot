@@ -358,6 +358,13 @@ bot.on('message:text', async (ctx) => {
   const telegramId = ctx.from.id;
   const userMessageText = ctx.message.text;
 
+  if (userMessageText.length > 3000) {
+    await ctx.reply(
+      'Превышен лимит символов. Пожалуйста, сократите Ваше сообщение.',
+    );
+    return;
+  }
+
   const responseMessage = await ctx.reply('Загрузка...');
 
   try {

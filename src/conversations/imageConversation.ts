@@ -14,13 +14,18 @@ export async function imageConversation(
   conversation: MyConversation,
   ctx: MyContext,
 ) {
+  const { id } = ctx.from as TelegramUser;
   await ctx.reply('Опишите, что должно быть на изображении?', {
     reply_markup: cancelKeyboard,
   });
 
   const { message } = await conversation.waitFor('message:text');
-  const { id } = ctx.from as TelegramUser;
-
+  if (message.text.length > 1500) {
+    await ctx.reply(
+      'Превышен лимит символов. Пожалуйста, сократите Ваше сообщение и начните генерацию заново командой /image.',
+    );
+    return;
+  }
   const user = await User.findOne({ telegramId: id });
   if (!user) {
     await ctx.reply(
