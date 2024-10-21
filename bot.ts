@@ -5,6 +5,7 @@ import { User as TelegramUser } from '@grammyjs/types';
 import { hydrate } from '@grammyjs/hydrate';
 import { conversations, createConversation } from '@grammyjs/conversations';
 import { limit } from '@grammyjs/ratelimiter';
+import { ignoreOld } from 'grammy-middlewares';
 import {
   MyContext,
   AiModelsLabels,
@@ -64,6 +65,7 @@ bot.use(
     },
   }),
 );
+bot.use(ignoreOld());
 
 // Conversations
 bot.use(createConversation(imageConversation));
