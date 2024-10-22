@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "main": "bot.js",
   "scripts": {
-    "start": "nodemon --exec ts-node bot.ts",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "build": "tsc",
-    "start:prod": "node dist/bot.js"
+    "start:local": "nodemon --exec ts-node bot.ts",
+    "start:dev": "NODE_ENV=development node dist/bot.js",
+    "start:prod": "NODE_ENV=production node dist/bot.js"
   },
   "author": "",
   "license": "ISC",
@@ -23,6 +24,7 @@
   "dependencies": {
     "@grammyjs/conversations": "^1.2.0",
     "@grammyjs/hydrate": "^1.4.1",
+    "@grammyjs/ratelimiter": "^1.2.0",
     "dotenv": "^16.4.5",
     "grammy": "^1.27.0",
     "mongoose": "^8.6.3",

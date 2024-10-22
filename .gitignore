@@ -4,7 +4,8 @@
 node_modules
 history
 
-combined.log
+info.log
+warnings.log
 error.log
 
 dist

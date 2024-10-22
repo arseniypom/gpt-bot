@@ -1,13 +1,44 @@
-import mongoose from 'mongoose';
+// Импорт необходимых модулей и типов
+import mongoose, { Document, Schema, Model } from 'mongoose';
 import { DEFAULT_AI_MODEL } from '../src/utils/consts';
+import { AiModel, AiModels } from '../src/types/types';
 
-const userSchema = new mongoose.Schema({
-  telegramId: { type: Number, unique: true },
-  firstName: String,
-  userName: String,
+export interface UserDocument extends Document {
+  telegramId: number;
+  firstName?: string;
+  userName?: string;
+  basicRequestsBalance: number;
+  proRequestsBalance: number;
+  imageGenerationBalance: number;
+  selectedModel: AiModel;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const userSchema: Schema<UserDocument> = new mongoose.Schema({
+  telegramId: { type: Number, unique: true, required: true },
+  firstName: { type: String },
+  userName: { type: String },
+  basicRequestsBalance: {
+    type: Number,
+    default: 20,
+    required: true,
+  },
+  proRequestsBalance: {
+    type: Number,
+    default: 5,
+    required: true,
+  },
+  imageGenerationBalance: {
+    type: Number,
+    default: 3,
+    required: true,
+  },
   selectedModel: {
     type: String,
+    enum: Object.keys(AiModels),
     default: DEFAULT_AI_MODEL,
+    required: true,
   },
   createdAt: {
     type: Date,
@@ -20,4 +51,6 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model('User', userSchema);
+const UserModel: Model<UserDocument> = mongoose.model<UserDocument>('User', userSchema);
+
+export default UserModel;

@@ -4,3 +4,6 @@ export {
 export {
   getAnalytics,
 } from './analytics';
+export {
+  topup,
+} from './topup';

@@ -3,14 +3,18 @@ import { HydrateFlavor } from '@grammyjs/hydrate';
 import {
   type Conversation,
   type ConversationFlavor,
-} from "@grammyjs/conversations";
+} from '@grammyjs/conversations';
+import { UserDocument } from '../../db/User';
 
 export interface SessionData {
   chatId?: string;
   imageQuality: ImageGenerationQuality;
+  user?: Pick<UserDocument, '_id' | 'telegramId' | 'firstName' | 'userName'>;
 }
 
-export type MyContext = HydrateFlavor<Context & SessionFlavor<SessionData> & ConversationFlavor>;
+export type MyContext = HydrateFlavor<
+  Context & SessionFlavor<SessionData> & ConversationFlavor
+>;
 export type MyConversation = Conversation<MyContext>;
 
 export interface ChatMessage {
@@ -30,8 +34,29 @@ export enum AiModelsLabels {
   GPT_4O_MINI = 'GPT-4o-mini',
 }
 
+export type AiModel = keyof typeof AiModels;
+
 export enum ImageGenerationQuality {
   STANDARD = 'standard',
   HD = 'hd',
 }
 
+export type PackageName =
+  | 'req1'
+  | 'req2'
+  | 'req3'
+  | 'img1'
+  | 'img2'
+  | 'img3'
+  | 'combo1'
+  | 'combo2'
+  | 'combo3';
+
+export interface PackageData {
+  basicRequestsBalance?: number;
+  proRequestsBalance?: number;
+  imageGenerationBalance?: number;
+  price: number;
+  description: string;
+  title: string;
+}

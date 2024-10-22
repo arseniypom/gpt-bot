@@ -1,21 +1,24 @@
 import OpenAI from 'openai';
 import 'dotenv/config';
 import { IMessage } from '../../db/Message';
-import { AiModels, ImageGenerationQuality } from '../types/types';
+import { AiModel, AiModels, ImageGenerationQuality } from '../types/types';
 import { isValidAiModel } from '../types/typeguards';
-import { DEFAULT_AI_MODEL } from './consts';
+import { DEFAULT_AI_MODEL, PROMPT_MESSAGE } from './consts';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const answerWithChatGPT = async (
   messages: IMessage[],
   telegramId: number,
-  modelName: string = DEFAULT_AI_MODEL,
+  modelName: AiModel = DEFAULT_AI_MODEL,
 ): Promise<string | null> => {
   const formattedMessages = messages.map((msg) => ({
     role: msg.role as 'system' | 'user' | 'assistant',
     content: msg.content,
   }));
+
+  //TODO: delete after debug
+  console.log('formattedMessages', formattedMessages);
 
   if (!isValidAiModel(modelName)) {
     throw new Error('Invalid model name');
@@ -25,7 +28,7 @@ export const answerWithChatGPT = async (
     const response = await openai.chat.completions.create({
       model: AiModels[modelName],
       messages: [
-        { role: 'system', content: 'Ты полезный ассистент, отвечай кратко' },
+        { role: 'system', content: PROMPT_MESSAGE },
         ...formattedMessages,
       ],
       user: telegramId.toString(),

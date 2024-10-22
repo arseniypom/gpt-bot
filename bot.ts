@@ -4,11 +4,14 @@ import { Bot, GrammyError, HttpError, InlineKeyboard, session } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import { hydrate } from '@grammyjs/hydrate';
 import { conversations, createConversation } from '@grammyjs/conversations';
+import { limit } from '@grammyjs/ratelimiter';
 import {
   MyContext,
   AiModelsLabels,
   ImageGenerationQuality,
   SessionData,
+  AiModels,
+  PackageName,
 } from './src/types/types';
 import {
   isValidAiModel,
@@ -17,20 +20,34 @@ import {
 import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
+import Transaction from './db/Transaction';
 import { answerWithChatGPT } from './src/utils/gpt';
 import {
+  getBalanceMessage,
+  getNoBalanceMessage,
   HELP_MESSAGE,
   MAX_HISTORY_LENGTH,
   START_MESSAGE,
 } from './src/utils/consts';
-import { getAnalytics, changeModel } from './src/commands';
+import { getAnalytics, changeModel, topup } from './src/commands';
 import { imageConversation } from './src/conversations/imageConversation';
+import { supportConversation } from './src/conversations/supportConversation';
 import { logError } from './src/utils/alert';
+import { startTopupKeyboard, topupText } from './src/commands/topup';
+import { PACKAGES } from './src/bot-packages';
+import { checkUserInDB, ignoreOld } from './src/utils/middleware';
+import { getBotApiKey, getMongoDbUri, getYookassaPaymentProviderToken } from './src/utils/getApiKeys';
 
-if (!process.env.BOT_API_KEY) {
+const BOT_API_KEY = getBotApiKey();
+
+if (!BOT_API_KEY) {
   throw new Error('BOT_API_KEY is not defined');
 }
-const bot = new Bot<MyContext>(process.env.BOT_API_KEY);
+const bot = new Bot<MyContext>(BOT_API_KEY);
+
+bot.on('pre_checkout_query', async (ctx) => {
+  await ctx.answerPreCheckoutQuery(true);
+});
 
 bot.use(
   session({
@@ -42,17 +59,34 @@ bot.use(
 bot.use(hydrate());
 bot.use(conversations());
 
+bot.use(ignoreOld);
+
+bot.use(
+  limit({
+    timeFrame: 2000,
+    limit: 3,
+    onLimitExceeded: async (ctx) => {
+      await ctx.reply(
+        'Пожалуйста, не отправляйте запросы слишком часто. Подождите 5 секунд и попробуйте снова.',
+      );
+    },
+  }),
+);
+
+bot.use(checkUserInDB);
+
 // Conversations
 bot.use(createConversation(imageConversation));
+bot.use(createConversation(supportConversation));
 
 void bot.api.setMyCommands([
   {
-    command: 'start',
-    description: 'Начать диалог',
+    command: 'balance',
+    description: 'Узнать текущий баланс запросов',
   },
   {
-    command: 'help',
-    description: 'Общая информация',
+    command: 'topup',
+    description: 'Пополнить баланс',
   },
   {
     command: 'newchat',
@@ -66,7 +100,63 @@ void bot.api.setMyCommands([
     command: 'models',
     description: 'Выбрать AI-модель',
   },
+  {
+    command: 'help',
+    description: 'Общая информация',
+  },
+  {
+    command: 'support',
+    description: 'Обратиться в поддержку',
+  },
 ]);
+
+bot.on(':successful_payment', async (ctx) => {
+  const { id } = ctx.from as TelegramUser;
+
+  try {
+    const user = await User.findOne({ telegramId: id });
+    const transaction = await Transaction.create({
+      userId: user?._id,
+      totalAmount: ctx.message?.successful_payment.total_amount,
+      packageName: ctx.message?.successful_payment.invoice_payload,
+      telegramPaymentChargeId:
+        ctx.message?.successful_payment.telegram_payment_charge_id,
+      providerPaymentChargeId:
+        ctx.message?.successful_payment.provider_payment_charge_id,
+    });
+
+    if (!user) {
+      throw new Error(
+        `User not found for telegramId: ${id}. Transaction saved: ${transaction._id}. telegram_payment_charge_id: ${ctx.message?.successful_payment.telegram_payment_charge_id}, provider_payment_charge_id: ${ctx.message?.successful_payment.provider_payment_charge_id}`,
+      );
+    }
+
+    const packageKey = ctx.message?.successful_payment
+      .invoice_payload as PackageName;
+    const packageData = PACKAGES[packageKey];
+    if (packageData.basicRequestsBalance) {
+      user.basicRequestsBalance += packageData.basicRequestsBalance;
+    }
+    if (packageData.proRequestsBalance) {
+      user.proRequestsBalance += packageData.proRequestsBalance;
+    }
+    if (packageData.imageGenerationBalance) {
+      user.imageGenerationBalance += packageData.imageGenerationBalance;
+    }
+
+    await user.save();
+
+    await ctx.reply(`Баланс успешно пополнен ✅`);
+    await ctx.reply(getBalanceMessage(user), {
+      parse_mode: 'MarkdownV2',
+    });
+  } catch (error) {
+    await ctx.reply(
+      'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+    );
+    logError('Error in successful_payment callbackQuery:', error);
+  }
+});
 
 // Callback queries
 bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
@@ -106,6 +196,11 @@ bot.callbackQuery('cancelImageGeneration', async (ctx) => {
   await ctx.conversation.exit('imageConversation');
   await ctx.callbackQuery.message?.editText('Генерация изображения отменена');
 });
+bot.callbackQuery('cancelSupport', async (ctx) => {
+  await ctx.answerCallbackQuery('Отменено ✅');
+  await ctx.conversation.exit('supportConversation');
+  await ctx.callbackQuery.message?.editText('Запрос в поддержку отменен');
+});
 bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
   await ctx.answerCallbackQuery();
   const quality = ctx.callbackQuery.data;
@@ -120,6 +215,55 @@ bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
 
   await ctx.conversation.enter('imageConversation');
 });
+bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
+  await ctx.answerCallbackQuery();
+  const packageKey = ctx.callbackQuery.data as keyof typeof PACKAGES;
+
+  try {
+    const chatId = ctx.chat?.id;
+    if (!chatId) {
+      throw new Error(`${ctx.callbackQuery.data} | Chat ID is not defined`);
+    }
+    if (!PACKAGES[packageKey]) {
+      throw new Error(
+        `${ctx.callbackQuery.data} | ${packageKey} is not in PACKAGES`,
+      );
+    }
+    const { title, price, description } = PACKAGES[packageKey];
+
+    await ctx.reply(
+      '*💳 Для оплаты нажмите кнопку "оплатить" ниже*\n\n_🔐 Платеж будет безопасно проведен через платежную систему [Юкасса](https://yookassa.ru)\n__бот не имеет доступа к Вашим платежным данным и нигде не сохраняет их___',
+      {
+        parse_mode: 'MarkdownV2',
+        link_preview_options: {
+          is_disabled: true,
+        },
+      },
+    );
+    await bot.api.sendInvoice(
+      chatId,
+      title,
+      description,
+      packageKey,
+      'RUB',
+      [
+        {
+          label: 'Руб',
+          amount: price * 100,
+        },
+      ],
+      {
+        provider_token: getYookassaPaymentProviderToken(),
+      },
+    );
+  } catch (error) {
+    await ctx.reply(
+      'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+    );
+    logError('Error in topup callbackQuery:', error);
+  }
+});
+bot.callbackQuery('topup', topup);
 
 // User commands
 bot.command('start', async (ctx) => {
@@ -144,7 +288,7 @@ bot.command('start', async (ctx) => {
         'Ваш персональный чат-бот создан. Пожалуйста, введите запрос',
       );
     } else {
-      await ctx.reply('Пожалуйста, введите запрос');
+      await ctx.reply('Напишите мне запрос, и я помогу Вам с ним!');
     }
 
     const chat = await Chat.create({
@@ -209,6 +353,32 @@ bot.command('image', async (ctx) => {
   );
 });
 bot.command('models', changeModel);
+bot.command('balance', async (ctx) => {
+  const { id } = ctx.from as TelegramUser;
+
+  try {
+    const user = await User.findOne({ telegramId: id });
+    if (!user) {
+      await ctx.reply('Пожалуйста, начните с команды /start.');
+      return;
+    }
+
+    await ctx.reply(getBalanceMessage(user), {
+      parse_mode: 'MarkdownV2',
+      reply_markup: startTopupKeyboard,
+    });
+  } catch (error) {
+    await ctx.reply(
+      'Произошла ошибка при получении балансов. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+    );
+    logError('Error in /balance command:', error);
+  }
+});
+bot.command('topup', topup);
+bot.command('topupText', topupText);
+bot.command('support', async (ctx) => {
+  await ctx.conversation.enter('supportConversation');
+});
 
 // Admin commands
 bot.command('stats', getAnalytics);
@@ -219,6 +389,13 @@ bot.on('message:text', async (ctx) => {
   let chatObj;
   const telegramId = ctx.from.id;
   const userMessageText = ctx.message.text;
+
+  if (userMessageText.length > 3000) {
+    await ctx.reply(
+      'Превышен лимит символов. Пожалуйста, сократите Ваше сообщение.',
+    );
+    return;
+  }
 
   const responseMessage = await ctx.reply('Загрузка...');
 
@@ -253,6 +430,28 @@ bot.on('message:text', async (ctx) => {
         'Чат не найден. Пожалуйста, начните новый чат с помощью команды /start.',
       );
       return;
+    }
+
+    if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
+      if (user.proRequestsBalance === 0) {
+        await responseMessage.editText(
+          getNoBalanceMessage(user.selectedModel),
+          {
+            reply_markup: startTopupKeyboard,
+          },
+        );
+        return;
+      }
+    } else {
+      if (user.basicRequestsBalance === 0) {
+        await responseMessage.editText(
+          getNoBalanceMessage(user.selectedModel),
+          {
+            reply_markup: startTopupKeyboard,
+          },
+        );
+        return;
+      }
     }
 
     await Message.create({
@@ -291,6 +490,13 @@ bot.on('message:text', async (ctx) => {
     chat.updatedAt = new Date();
     await chat.save();
 
+    if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
+      user.proRequestsBalance -= 1;
+    } else {
+      user.basicRequestsBalance -= 1;
+    }
+    await user.save();
+
     await responseMessage.editText(answer);
   } catch (error) {
     await responseMessage.editText(
@@ -323,10 +529,11 @@ bot.catch(async (err) => {
 
 async function startBot() {
   try {
-    if (!process.env.MONGO_DB_URI) {
+    const mongoDbUri = getMongoDbUri();
+    if (!mongoDbUri) {
       throw new Error('MONGO_DB_URI is not defined');
     }
-    const mongooseResponse = await mongoose.connect(process.env.MONGO_DB_URI);
+    const mongooseResponse = await mongoose.connect(mongoDbUri);
     if (!mongooseResponse.connection.readyState) {
       throw new Error('Mongoose connection error');
     }
@@ -338,7 +545,6 @@ async function startBot() {
     logError('Error in startBot:', err);
   }
 }
-
 
 void startBot();
 
