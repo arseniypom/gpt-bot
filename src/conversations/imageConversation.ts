@@ -14,29 +14,29 @@ export async function imageConversation(
   conversation: MyConversation,
   ctx: MyContext,
 ) {
-  const { id } = ctx.from as TelegramUser;
-  await ctx.reply('Опишите, что должно быть на изображении?', {
-    reply_markup: cancelKeyboard,
-  });
-
-  const { message } = await conversation.waitFor('message:text');
-  if (message.text.length > 1500) {
-    await ctx.reply(
-      'Превышен лимит символов. Пожалуйста, сократите Ваше сообщение и начните генерацию заново командой /image.',
-    );
-    return;
-  }
-  const user = await User.findOne({ telegramId: id });
-  if (!user) {
-    await ctx.reply(
-      'Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.',
-    );
-    return;
-  }
-
-  const responseMessage = await ctx.reply('Генерация изображения...');
-
   try {
+    const { id } = ctx.from as TelegramUser;
+    await ctx.reply('Опишите, что должно быть на изображении?', {
+      reply_markup: cancelKeyboard,
+    });
+
+    const { message } = await conversation.waitFor('message:text');
+    if (message.text.length > 1500) {
+      await ctx.reply(
+        'Превышен лимит символов. Пожалуйста, сократите Ваше сообщение и начните генерацию заново командой /image.',
+      );
+      return;
+    }
+    const user = await User.findOne({ telegramId: id });
+    if (!user) {
+      await ctx.reply(
+        'Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.',
+      );
+      return;
+    }
+
+    const responseMessage = await ctx.reply('Генерация изображения...');
+
     const imageUrl = await generateImage(
       message.text,
       ctx.session.imageQuality,
@@ -53,7 +53,7 @@ export async function imageConversation(
     await ctx.reply(
       'Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
-    logError('Error in /image command:', error);
+    logError('Error in image conversation:', error);
   }
 
   return;
