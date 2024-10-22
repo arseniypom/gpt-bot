@@ -36,11 +36,14 @@ import { logError } from './src/utils/alert';
 import { startTopupKeyboard, topupText } from './src/commands/topup';
 import { PACKAGES } from './src/bot-packages';
 import { checkUserInDB, ignoreOld } from './src/utils/middleware';
+import { getBotApiKey, getMongoDbUri, getYookassaPaymentProviderToken } from './src/utils/getApiKeys';
 
-if (!process.env.BOT_API_KEY) {
+const BOT_API_KEY = getBotApiKey();
+
+if (!BOT_API_KEY) {
   throw new Error('BOT_API_KEY is not defined');
 }
-const bot = new Bot<MyContext>(process.env.BOT_API_KEY);
+const bot = new Bot<MyContext>(BOT_API_KEY);
 
 bot.on('pre_checkout_query', async (ctx) => {
   await ctx.answerPreCheckoutQuery(true);
@@ -250,7 +253,7 @@ bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
         },
       ],
       {
-        provider_token: process.env.YOOKASSA_PAYMENT_PROVIDER_TOKEN,
+        provider_token: getYookassaPaymentProviderToken(),
       },
     );
   } catch (error) {
@@ -526,10 +529,11 @@ bot.catch(async (err) => {
 
 async function startBot() {
   try {
-    if (!process.env.MONGO_DB_URI) {
+    const mongoDbUri = getMongoDbUri();
+    if (!mongoDbUri) {
       throw new Error('MONGO_DB_URI is not defined');
     }
-    const mongooseResponse = await mongoose.connect(process.env.MONGO_DB_URI);
+    const mongooseResponse = await mongoose.connect(mongoDbUri);
     if (!mongooseResponse.connection.readyState) {
       throw new Error('Mongoose connection error');
     }
