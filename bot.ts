@@ -31,6 +31,7 @@ import {
 } from './src/utils/consts';
 import { getAnalytics, changeModel, topup } from './src/commands';
 import { imageConversation } from './src/conversations/imageConversation';
+import { supportConversation } from './src/conversations/supportConversation';
 import { logError } from './src/utils/alert';
 import { startTopupKeyboard } from './src/commands/topup';
 import { PACKAGES } from './src/bot-packages';
@@ -73,6 +74,7 @@ bot.use(checkUserInDB);
 
 // Conversations
 bot.use(createConversation(imageConversation));
+bot.use(createConversation(supportConversation));
 
 void bot.api.setMyCommands([
   {
@@ -102,6 +104,10 @@ void bot.api.setMyCommands([
   {
     command: 'help',
     description: 'Общая информация',
+  },
+  {
+    command: 'support',
+    description: 'Обратиться в поддержку',
   },
 ]);
 
@@ -190,6 +196,11 @@ bot.callbackQuery('cancelImageGeneration', async (ctx) => {
   await ctx.answerCallbackQuery('Отменено ✅');
   await ctx.conversation.exit('imageConversation');
   await ctx.callbackQuery.message?.editText('Генерация изображения отменена');
+});
+bot.callbackQuery('cancelSupport', async (ctx) => {
+  await ctx.answerCallbackQuery('Отменено ✅');
+  await ctx.conversation.exit('supportConversation');
+  await ctx.callbackQuery.message?.editText('Запрос в поддержку отменен');
 });
 bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
   await ctx.answerCallbackQuery();
@@ -365,6 +376,9 @@ bot.command('balance', async (ctx) => {
   }
 });
 bot.command('topup', topup);
+bot.command('support', async (ctx) => {
+  await ctx.conversation.enter('supportConversation');
+});
 
 // Admin commands
 bot.command('stats', getAnalytics);
