@@ -4,7 +4,8 @@
 node_modules
 history
 
-skippedOldMessages.log
+info.log
+warnings.log
 error.log
 
 dist
