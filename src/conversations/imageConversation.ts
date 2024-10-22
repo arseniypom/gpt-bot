@@ -27,7 +27,9 @@ export async function imageConversation(
       );
       return;
     }
-    const user = await User.findOne({ telegramId: id });
+    const user = await conversation.external(() =>
+      User.findOne({ telegramId: id }),
+    );
     if (!user) {
       await ctx.reply(
         'Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.',
@@ -48,7 +50,7 @@ export async function imageConversation(
     await responseMessage.editText('Готово!');
 
     user.imageGenerationBalance -= 1;
-    await user.save();
+    await conversation.external(() => user.save());
   } catch (error) {
     await ctx.reply(
       'Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
