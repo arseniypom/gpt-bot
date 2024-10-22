@@ -33,7 +33,7 @@ import { getAnalytics, changeModel, topup } from './src/commands';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
 import { logError } from './src/utils/alert';
-import { startTopupKeyboard } from './src/commands/topup';
+import { startTopupKeyboard, topupText } from './src/commands/topup';
 import { PACKAGES } from './src/bot-packages';
 import { checkUserInDB, ignoreOld } from './src/utils/middleware';
 
@@ -77,10 +77,6 @@ bot.use(createConversation(imageConversation));
 bot.use(createConversation(supportConversation));
 
 void bot.api.setMyCommands([
-  {
-    command: 'start',
-    description: 'Начать диалог',
-  },
   {
     command: 'balance',
     description: 'Узнать текущий баланс запросов',
@@ -376,6 +372,7 @@ bot.command('balance', async (ctx) => {
   }
 });
 bot.command('topup', topup);
+bot.command('topupText', topupText);
 bot.command('support', async (ctx) => {
   await ctx.conversation.enter('supportConversation');
 });
