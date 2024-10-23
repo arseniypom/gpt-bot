@@ -4,7 +4,7 @@ import User from '../../db/User';
 import Chat from '../../db/Chat';
 import Message from '../../db/Message';
 import logger from '../utils/logger';
-import { logError } from '../utils/alert';
+import { logError } from '../utils/utilFunctions';
 
 const ADMIN_TELEGRAM_ID = process.env.ADMIN_TELEGRAM_ID;
 

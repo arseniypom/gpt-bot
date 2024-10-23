@@ -32,15 +32,15 @@ import {
 import { getStats, changeModel, topup } from './src/commands';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
-import { logError } from './src/utils/alert';
 import { startTopupKeyboard, topupText } from './src/commands/topup';
 import { PACKAGES } from './src/bot-packages';
 import { checkUserInDB, ignoreOld } from './src/utils/middleware';
 import {
+  logError,
   getBotApiKey,
   getMongoDbUri,
   getYookassaPaymentProviderToken,
-} from './src/utils/getApiKeys';
+} from './src/utils/utilFunctions';
 
 const BOT_API_KEY = getBotApiKey();
 
