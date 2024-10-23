@@ -1,7 +1,7 @@
 import { InlineKeyboard } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import { generateImage } from '../utils/gpt';
-import { logError } from '../utils/alert';
+import { logError } from '../utils/utilFunctions';
 import { type MyConversation, type MyContext } from '../types/types';
 import User from '../../db/User';
 

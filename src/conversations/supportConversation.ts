@@ -1,7 +1,6 @@
 import { InlineKeyboard } from 'grammy';
 import { type MyConversation, type MyContext } from '../types/types';
-import { sendMessageToAdmin } from '../utils/sendMessageToAdmin';
-import { logError } from '../utils/alert';
+import { logError, sendMessageToAdmin } from '../utils/utilFunctions';
 
 const cancelKeyboard = new InlineKeyboard().text(
   'Отменить ❌',

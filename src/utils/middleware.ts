@@ -1,7 +1,7 @@
 import { NextFunction } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import User from '../../db/User';
-import { logError } from './alert';
+import { logError } from './utilFunctions';
 import { MyContext } from '../types/types';
 import { isMyContext } from '../types/typeguards';
 import logger from './logger';

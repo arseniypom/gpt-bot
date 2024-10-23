@@ -1,7 +1,7 @@
 import { CallbackQueryContext, InlineKeyboard, InputFile } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import User from '../../db/User';
-import { logError } from '../utils/alert';
+import { logError } from '../utils/utilFunctions';
 import { MyContext } from '../types/types';
 
 export const startTopupKeyboard = new InlineKeyboard().text(
