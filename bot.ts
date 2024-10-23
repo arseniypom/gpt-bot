@@ -244,6 +244,23 @@ bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
         },
       },
     );
+
+    const providerInvoiceData = {
+      receipt: {
+        items: [
+          {
+            description,
+            quantity: 1,
+            amount: {
+              value: `${price}.00`,
+              currency: 'RUB',
+            },
+            vat_code: 1,
+          },
+        ],
+      },
+    };
+
     await bot.api.sendInvoice(
       chatId,
       title,
@@ -258,6 +275,9 @@ bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
       ],
       {
         provider_token: getYookassaPaymentProviderToken(),
+        need_email: true,
+        send_email_to_provider: true,
+        provider_data: JSON.stringify(providerInvoiceData),
       },
     );
   } catch (error) {
