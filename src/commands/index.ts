@@ -1,9 +1,3 @@
-export {
-  changeModel,
-} from './changeModel';
-export {
-  getAnalytics,
-} from './analytics';
-export {
-  topup,
-} from './topup';
+export { changeModel } from './changeModel';
+export { getStats } from './stats';
+export { topup } from './topup';

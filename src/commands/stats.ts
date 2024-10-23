@@ -8,7 +8,7 @@ import { logError } from '../utils/alert';
 
 const ADMIN_TELEGRAM_ID = process.env.ADMIN_TELEGRAM_ID;
 
-export const getAnalytics = async (ctx: MyContext) => {
+export const getStats = async (ctx: MyContext) => {
   if (!ADMIN_TELEGRAM_ID) {
     logError('ADMIN_TELEGRAM_ID is not set in the environment variables.');
     return;
@@ -38,7 +38,7 @@ export const getAnalytics = async (ctx: MyContext) => {
         messageCount += count;
       }
 
-      message += `👤 : ${username}\n`;
+      message += `👤 : @${username}\n`;
       message += `✉️ : ${messageCount}\n\n`;
     }
 

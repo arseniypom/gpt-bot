@@ -29,14 +29,18 @@ import {
   MAX_HISTORY_LENGTH,
   START_MESSAGE,
 } from './src/utils/consts';
-import { getAnalytics, changeModel, topup } from './src/commands';
+import { getStats, changeModel, topup } from './src/commands';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
 import { logError } from './src/utils/alert';
 import { startTopupKeyboard, topupText } from './src/commands/topup';
 import { PACKAGES } from './src/bot-packages';
 import { checkUserInDB, ignoreOld } from './src/utils/middleware';
-import { getBotApiKey, getMongoDbUri, getYookassaPaymentProviderToken } from './src/utils/getApiKeys';
+import {
+  getBotApiKey,
+  getMongoDbUri,
+  getYookassaPaymentProviderToken,
+} from './src/utils/getApiKeys';
 
 const BOT_API_KEY = getBotApiKey();
 
@@ -240,6 +244,23 @@ bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
         },
       },
     );
+
+    const providerInvoiceData = {
+      receipt: {
+        items: [
+          {
+            description,
+            quantity: 1,
+            amount: {
+              value: `${price}.00`,
+              currency: 'RUB',
+            },
+            vat_code: 1,
+          },
+        ],
+      },
+    };
+
     await bot.api.sendInvoice(
       chatId,
       title,
@@ -254,6 +275,9 @@ bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
       ],
       {
         provider_token: getYookassaPaymentProviderToken(),
+        need_email: true,
+        send_email_to_provider: true,
+        provider_data: JSON.stringify(providerInvoiceData),
       },
     );
   } catch (error) {
@@ -381,7 +405,7 @@ bot.command('support', async (ctx) => {
 });
 
 // Admin commands
-bot.command('stats', getAnalytics);
+bot.command('stats', getStats);
 
 // Message handler
 bot.on('message:text', async (ctx) => {
