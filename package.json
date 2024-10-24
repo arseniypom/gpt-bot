@@ -34,5 +34,8 @@
     "ts-node": "^10.9.2",
     "uuid": "^10.0.0",
     "winston": "^3.14.2"
+  },
+  "overrides": {
+    "@a2seven/yoo-checkout/uuid": "^10.0.0"
   }
 }
