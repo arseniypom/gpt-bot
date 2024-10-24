@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 import { DEFAULT_AI_MODEL } from '../src/utils/consts';
 import { AiModel, AiModels } from '../src/types/types';
 
-export interface UserDocument extends Document {
+export interface IUser {
   telegramId: number;
   firstName?: string;
   userName?: string;
@@ -15,7 +15,7 @@ export interface UserDocument extends Document {
   updatedAt: Date;
 }
 
-const userSchema: Schema<UserDocument> = new mongoose.Schema({
+const userSchema: Schema<IUser> = new mongoose.Schema({
   telegramId: { type: Number, unique: true, required: true },
   firstName: { type: String },
   userName: { type: String },
@@ -51,4 +51,4 @@ const userSchema: Schema<UserDocument> = new mongoose.Schema({
   },
 });
 
-export default mongoose.model<UserDocument>('User', userSchema);
+export default mongoose.model<IUser>('User', userSchema);

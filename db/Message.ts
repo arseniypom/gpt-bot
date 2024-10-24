@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface MessageDocument extends Document {
+export interface IMessage {
   chatId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   role: 'system' | 'user' | 'assistant';
@@ -8,7 +8,7 @@ export interface MessageDocument extends Document {
   createdAt: Date;
 }
 
-const messageSchema = new Schema<MessageDocument>({
+const messageSchema = new Schema<IMessage>({
   chatId: { type: Schema.Types.ObjectId, ref: 'Chat', required: true },
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   role: { type: String, required: true },
@@ -19,4 +19,4 @@ const messageSchema = new Schema<MessageDocument>({
   },
 });
 
-export default mongoose.model<MessageDocument>('Message', messageSchema);
+export default mongoose.model<IMessage>('Message', messageSchema);

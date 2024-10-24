@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import 'dotenv/config';
-import { MessageDocument } from '../../db/Message';
+import { IMessage } from '../../db/Message';
 import { AiModel, AiModels, ImageGenerationQuality } from '../types/types';
 import { isValidAiModel } from '../types/typeguards';
 import { DEFAULT_AI_MODEL, PROMPT_MESSAGE } from './consts';
@@ -8,7 +8,7 @@ import { DEFAULT_AI_MODEL, PROMPT_MESSAGE } from './consts';
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const answerWithChatGPT = async (
-  messages: MessageDocument[],
+  messages: IMessage[],
   telegramId: number,
   modelName: AiModel = DEFAULT_AI_MODEL,
 ): Promise<string | null> => {
@@ -38,13 +38,16 @@ export const answerWithChatGPT = async (
   }
 };
 
-export const generateImage = async (prompt: string, quality: ImageGenerationQuality = ImageGenerationQuality.STANDARD): Promise<string | undefined> => {
+export const generateImage = async (
+  prompt: string,
+  quality: ImageGenerationQuality = ImageGenerationQuality.STANDARD,
+): Promise<string | undefined> => {
   const response = await openai.images.generate({
-    model: "dall-e-3",
+    model: 'dall-e-3',
     quality: quality,
     prompt,
     n: 1,
-    size: "1024x1024",
+    size: '1024x1024',
   });
 
   return response.data[0].url;
