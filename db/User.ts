@@ -1,5 +1,5 @@
 // Импорт необходимых модулей и типов
-import mongoose, { Document, Schema, Model } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 import { DEFAULT_AI_MODEL } from '../src/utils/consts';
 import { AiModel, AiModels } from '../src/types/types';
 
