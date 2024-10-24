@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 export interface IMessage {
   chatId: mongoose.Types.ObjectId;

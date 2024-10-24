@@ -23,7 +23,7 @@ export const checkUserInDB = async (
   }
 
   try {
-    const user = await User.findOne({ telegramId: id });
+    const user = await User.findOne({ telegramId: id }).lean();
     if (!user) {
       await ctx.reply('Пожалуйста, начните с команды /start');
       return;

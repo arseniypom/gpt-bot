@@ -4,12 +4,12 @@ import {
   type Conversation,
   type ConversationFlavor,
 } from '@grammyjs/conversations';
-import { UserDocument } from '../../db/User';
+import { IUser } from '../../db/User';
 
 export interface SessionData {
   chatId?: string;
   imageQuality: ImageGenerationQuality;
-  user?: Pick<UserDocument, '_id' | 'telegramId' | 'firstName' | 'userName'>;
+  user?: Pick<IUser, 'telegramId' | 'firstName' | 'userName'>;
 }
 
 export type MyContext = HydrateFlavor<

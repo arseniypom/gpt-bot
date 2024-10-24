@@ -1,4 +1,4 @@
-import { UserDocument } from '../../db/User';
+import { IUser } from '../../db/User';
 import { AiModel, AiModelsLabels } from '../types/types';
 
 export const MAX_HISTORY_LENGTH = 5;
@@ -61,7 +61,7 @@ export const getNoBalanceMessage = (model: AiModel) => {
   return `У вас нет доступных запросов для обращения к ${AiModelsLabels[model]}. Используйте команду /topup для пополнения баланса.`;
 };
 
-export const getBalanceMessage = (user: UserDocument) => {
+export const getBalanceMessage = (user: IUser) => {
   return `
 *Ваш текущий баланс 💰 *
 ––––––
