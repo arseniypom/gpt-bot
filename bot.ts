@@ -12,7 +12,6 @@ import {
   ImageGenerationQuality,
   SessionData,
   AiModels,
-  PackageName,
 } from './src/types/types';
 import {
   isValidAiModel,
@@ -21,7 +20,6 @@ import {
 import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
-import TelegramTransaction from './db/TelegramTransaction';
 import { answerWithChatGPT } from './src/utils/gpt';
 import {
   getBalanceMessage,
@@ -43,7 +41,10 @@ import {
   getYookassaShopId,
   getYookassaApiKey,
 } from './src/utils/utilFunctions';
-import { createPaymentLink, telegramSuccessfulPaymentHandler } from './src/utils/payments';
+import {
+  createPaymentLink,
+  telegramSuccessfulPaymentHandler,
+} from './src/utils/payments';
 
 const BOT_API_KEY = getBotApiKey();
 const YOOKASSA_SHOP_ID = getYookassaShopId();
