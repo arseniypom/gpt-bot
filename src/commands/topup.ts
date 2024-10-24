@@ -35,7 +35,7 @@ export const topup = async (
       parse_mode: 'MarkdownV2',
       reply_markup: topupKeyboard,
     });
-    await ctx.reply('Посмотреть текстовую версию: /topupText');
+    await ctx.reply('Если картинка не отображается, то посмотрите текстовую версию: /topupText');
   } catch (error) {
     await ctx.reply(
       'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',

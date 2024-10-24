@@ -5,6 +5,7 @@ import { User as TelegramUser } from '@grammyjs/types';
 import { hydrate } from '@grammyjs/hydrate';
 import { conversations, createConversation } from '@grammyjs/conversations';
 import { limit } from '@grammyjs/ratelimiter';
+import { YooCheckout } from '@a2seven/yoo-checkout';
 import {
   MyContext,
   AiModelsLabels,
@@ -20,7 +21,7 @@ import {
 import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
-import Transaction from './db/Transaction';
+import TelegramTransaction from './db/TelegramTransaction';
 import { answerWithChatGPT } from './src/utils/gpt';
 import {
   getBalanceMessage,
@@ -39,15 +40,28 @@ import {
   logError,
   getBotApiKey,
   getMongoDbUri,
-  getYookassaPaymentProviderToken,
+  getYookassaShopId,
+  getYookassaApiKey,
 } from './src/utils/utilFunctions';
+import { createPaymentLink, telegramSuccessfulPaymentHandler } from './src/utils/payments';
 
 const BOT_API_KEY = getBotApiKey();
+const YOOKASSA_SHOP_ID = getYookassaShopId();
+const YOOKASSA_API_KEY = getYookassaApiKey();
 
 if (!BOT_API_KEY) {
   throw new Error('BOT_API_KEY is not defined');
 }
+if (!YOOKASSA_SHOP_ID || !YOOKASSA_API_KEY) {
+  throw new Error('YOOKASSA_SHOP_ID or YOOKASSA_PROD_API_KEY is not defined');
+}
+
 const bot = new Bot<MyContext>(BOT_API_KEY);
+
+export const checkout = new YooCheckout({
+  shopId: YOOKASSA_SHOP_ID,
+  secretKey: YOOKASSA_API_KEY,
+});
 
 bot.on('pre_checkout_query', async (ctx) => {
   await ctx.answerPreCheckoutQuery(true);
@@ -114,53 +128,7 @@ void bot.api.setMyCommands([
   },
 ]);
 
-bot.on(':successful_payment', async (ctx) => {
-  const { id } = ctx.from as TelegramUser;
-
-  try {
-    const user = await User.findOne({ telegramId: id });
-    const transaction = await Transaction.create({
-      userId: user?._id,
-      totalAmount: ctx.message?.successful_payment.total_amount,
-      packageName: ctx.message?.successful_payment.invoice_payload,
-      telegramPaymentChargeId:
-        ctx.message?.successful_payment.telegram_payment_charge_id,
-      providerPaymentChargeId:
-        ctx.message?.successful_payment.provider_payment_charge_id,
-    });
-
-    if (!user) {
-      throw new Error(
-        `User not found for telegramId: ${id}. Transaction saved: ${transaction._id}. telegram_payment_charge_id: ${ctx.message?.successful_payment.telegram_payment_charge_id}, provider_payment_charge_id: ${ctx.message?.successful_payment.provider_payment_charge_id}`,
-      );
-    }
-
-    const packageKey = ctx.message?.successful_payment
-      .invoice_payload as PackageName;
-    const packageData = PACKAGES[packageKey];
-    if (packageData.basicRequestsBalance) {
-      user.basicRequestsBalance += packageData.basicRequestsBalance;
-    }
-    if (packageData.proRequestsBalance) {
-      user.proRequestsBalance += packageData.proRequestsBalance;
-    }
-    if (packageData.imageGenerationBalance) {
-      user.imageGenerationBalance += packageData.imageGenerationBalance;
-    }
-
-    await user.save();
-
-    await ctx.reply(`Баланс успешно пополнен ✅`);
-    await ctx.reply(getBalanceMessage(user), {
-      parse_mode: 'MarkdownV2',
-    });
-  } catch (error) {
-    await ctx.reply(
-      'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
-    );
-    logError('Error in successful_payment callbackQuery:', error);
-  }
-});
+bot.on(':successful_payment', telegramSuccessfulPaymentHandler);
 
 // Callback queries
 bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
@@ -219,74 +187,8 @@ bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
 
   await ctx.conversation.enter('imageConversation');
 });
-bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
-  await ctx.answerCallbackQuery();
-  const packageKey = ctx.callbackQuery.data as keyof typeof PACKAGES;
-
-  try {
-    const chatId = ctx.chat?.id;
-    if (!chatId) {
-      throw new Error(`${ctx.callbackQuery.data} | Chat ID is not defined`);
-    }
-    if (!PACKAGES[packageKey]) {
-      throw new Error(
-        `${ctx.callbackQuery.data} | ${packageKey} is not in PACKAGES`,
-      );
-    }
-    const { title, price, description } = PACKAGES[packageKey];
-
-    await ctx.reply(
-      '*💳 Для оплаты нажмите кнопку "оплатить" ниже*\n\n_🔐 Платеж будет безопасно проведен через платежную систему [Юкасса](https://yookassa.ru)\n__бот не имеет доступа к Вашим платежным данным и нигде не сохраняет их___',
-      {
-        parse_mode: 'MarkdownV2',
-        link_preview_options: {
-          is_disabled: true,
-        },
-      },
-    );
-
-    const providerInvoiceData = {
-      receipt: {
-        items: [
-          {
-            description,
-            quantity: 1,
-            amount: {
-              value: `${price}.00`,
-              currency: 'RUB',
-            },
-            vat_code: 1,
-          },
-        ],
-      },
-    };
-
-    await bot.api.sendInvoice(
-      chatId,
-      title,
-      description,
-      packageKey,
-      'RUB',
-      [
-        {
-          label: 'Руб',
-          amount: price * 100,
-        },
-      ],
-      {
-        provider_token: getYookassaPaymentProviderToken(),
-        need_email: true,
-        send_email_to_provider: true,
-        provider_data: JSON.stringify(providerInvoiceData),
-      },
-    );
-  } catch (error) {
-    await ctx.reply(
-      'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
-    );
-    logError('Error in topup callbackQuery:', error);
-  }
-});
+// Here you can pass either createInvoice or createPaymentLink
+bot.callbackQuery(Object.keys(PACKAGES), createPaymentLink);
 bot.callbackQuery('topup', topup);
 
 // User commands

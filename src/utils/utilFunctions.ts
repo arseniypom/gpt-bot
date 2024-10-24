@@ -38,6 +38,24 @@ export const getYookassaPaymentProviderToken = () => {
   }
 };
 
+export const getYookassaShopId = () => {
+  switch (process.env.NODE_ENV) {
+    case 'production':
+      return process.env.YOOKASSA_SHOP_ID_PROD;
+    default:
+      return process.env.YOOKASSA_SHOP_ID_DEV;
+  }
+};
+
+export const getYookassaApiKey = () => {
+  switch (process.env.NODE_ENV) {
+    case 'production':
+      return process.env.YOOKASSA_API_KEY_PROD;
+    default:
+      return process.env.YOOKASSA_API_KEY_DEV;
+  }
+};
+
 export const getMongoDbUri = () => {
   switch (process.env.NODE_ENV) {
     case 'production':
@@ -48,14 +66,15 @@ export const getMongoDbUri = () => {
 };
 
 export function logError(message: string, error?: unknown) {
-  logger.error(message, error);
-
   let errorMessage: string;
   if (error instanceof Error) {
     errorMessage = `${message}: ${error.stack || error.message}`;
+  } else if (typeof error === 'object' && error !== null) {
+    errorMessage = `${message}: ${JSON.stringify(error)}`;
   } else {
     errorMessage = `${message}: ${String(error)}`;
   }
 
+  logger.error(errorMessage, error);
   sendMessageToAdmin(`Unknown error: ${errorMessage}`);
 }
