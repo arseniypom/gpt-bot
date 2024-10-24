@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
-const transactionSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+const telegramTransactionSchema = new mongoose.Schema({
+  telegramId: { type: Number, required: true },
   totalAmount: { type: Number, required: true },
   packageName: { type: String, required: true },
   telegramPaymentChargeId: { type: String, required: true },
@@ -12,4 +12,4 @@ const transactionSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model('Transaction', transactionSchema);
+export default mongoose.model('TelegramTransaction', telegramTransactionSchema);

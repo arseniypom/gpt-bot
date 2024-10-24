@@ -1,5 +1,5 @@
 // Импорт необходимых модулей и типов
-import mongoose, { Document, Schema, Model } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 import { DEFAULT_AI_MODEL } from '../src/utils/consts';
 import { AiModel, AiModels } from '../src/types/types';
 
@@ -51,6 +51,4 @@ const userSchema: Schema<UserDocument> = new mongoose.Schema({
   },
 });
 
-const UserModel: Model<UserDocument> = mongoose.model<UserDocument>('User', userSchema);
-
-export default UserModel;
+export default mongoose.model<UserDocument>('User', userSchema);
