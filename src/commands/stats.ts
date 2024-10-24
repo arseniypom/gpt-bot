@@ -27,7 +27,7 @@ export const getStats = async (ctx: MyContext) => {
     message += `👥 Всего пользователей: ${totalUsers}\n\n`;
 
     for (const user of users) {
-      const username = user.userName || user.firstName || 'Без имени';
+      const username = `@${user.userName}` || user.firstName || user.id;
 
       const chats = await Chat.find({ userId: user._id });
 
@@ -38,7 +38,7 @@ export const getStats = async (ctx: MyContext) => {
         messageCount += count;
       }
 
-      message += `👤 : @${username}\n`;
+      message += `👤 : ${username}\n`;
       message += `✉️ : ${messageCount}\n\n`;
     }
 
