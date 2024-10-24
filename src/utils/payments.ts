@@ -1,5 +1,4 @@
 import { CallbackQueryContext, InlineKeyboard } from 'grammy';
-import { User as TelegramUser } from '@grammyjs/types';
 import { ICreatePayment } from '@a2seven/yoo-checkout';
 import { v4 as uuidv4 } from 'uuid';
 import bot, { checkout } from '../../bot';
