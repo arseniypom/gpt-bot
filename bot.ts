@@ -247,7 +247,7 @@ bot.command('newchat', async (ctx) => {
   }
 });
 bot.command('image', async (ctx) => {
-  if (!process.env.IMAGE_QUALITY_CHANGE_AVAILABLE) {
+  if (process.env.IMAGE_QUALITY_CHANGE_AVAILABLE === 'false') {
     await ctx.conversation.enter('imageConversation');
     return;
   }
