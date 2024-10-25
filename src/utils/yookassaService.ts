@@ -57,7 +57,15 @@ export const createPayment = async (
     });
     return response.data;
   } catch (error) {
-    logError('Error creating Yookassa payment:', error);
+    if (axios.isAxiosError(error) && error.response) {
+      logError('Error creating Yookassa payment:', {
+        message: error.message,
+        status: error.response.status,
+        data: error.response.data,
+      });
+    } else {
+      logError('Error creating Yookassa payment:', error);
+    }
     throw error;
   }
 };
