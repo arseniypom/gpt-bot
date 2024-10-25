@@ -5,7 +5,6 @@ import { User as TelegramUser } from '@grammyjs/types';
 import { hydrate } from '@grammyjs/hydrate';
 import { conversations, createConversation } from '@grammyjs/conversations';
 import { limit } from '@grammyjs/ratelimiter';
-import { YooCheckout } from '@a2seven/yoo-checkout';
 import {
   MyContext,
   AiModelsLabels,
@@ -38,8 +37,6 @@ import {
   logError,
   getBotApiKey,
   getMongoDbUri,
-  getYookassaShopId,
-  getYookassaApiKey,
 } from './src/utils/utilFunctions';
 import {
   createPaymentLink,
@@ -47,22 +44,12 @@ import {
 } from './src/utils/payments';
 
 const BOT_API_KEY = getBotApiKey();
-const YOOKASSA_SHOP_ID = getYookassaShopId();
-const YOOKASSA_API_KEY = getYookassaApiKey();
 
 if (!BOT_API_KEY) {
   throw new Error('BOT_API_KEY is not defined');
 }
-if (!YOOKASSA_SHOP_ID || !YOOKASSA_API_KEY) {
-  throw new Error('YOOKASSA_SHOP_ID or YOOKASSA_PROD_API_KEY is not defined');
-}
 
 const bot = new Bot<MyContext>(BOT_API_KEY);
-
-export const checkout = new YooCheckout({
-  shopId: YOOKASSA_SHOP_ID,
-  secretKey: YOOKASSA_API_KEY,
-});
 
 bot.on('pre_checkout_query', async (ctx) => {
   await ctx.answerPreCheckoutQuery(true);

@@ -1,7 +1,8 @@
 import { CallbackQueryContext, InlineKeyboard } from 'grammy';
-import { ICreatePayment } from '@a2seven/yoo-checkout';
 import { v4 as uuidv4 } from 'uuid';
-import bot, { checkout } from '../../bot';
+import bot from '../../bot';
+import { ICreatePayment } from '../types/yookassaTypes';
+import yookassaService from './yookassaService';
 import { PACKAGES } from '../bot-packages';
 import {
   getYookassaPaymentProviderToken,
@@ -166,7 +167,7 @@ export const createPaymentLink = async (
       },
     };
 
-    const paymentObj = await checkout.createPayment(
+    const paymentObj = await yookassaService.createPayment(
       createPayload,
       idempotenceKey,
     );
