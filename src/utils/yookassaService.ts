@@ -36,6 +36,20 @@ export const createPayment = async (
   idempotenceKey: string,
 ) => {
   try {
+    console.log('Sending payment request:', {
+      url: `${YOOKASSA_API_URL}/payments`,
+      method: 'POST',
+      auth: {
+        username: SHOP_ID,
+        password: SECRET_KEY,
+      },
+      headers: {
+        'Idempotence-Key': idempotenceKey,
+        'Content-Type': 'application/json',
+      },
+      data: payload,
+    });
+
     const response = await axiosInstance.post('/payments', payload, {
       headers: {
         'Idempotence-Key': idempotenceKey,
