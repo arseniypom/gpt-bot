@@ -11,6 +11,7 @@ import {
   ImageGenerationQuality,
   SessionData,
   AiModels,
+  PackageName,
 } from './src/types/types';
 import {
   isValidAiModel,
@@ -30,6 +31,7 @@ import {
 import { getStats, changeModel, topup } from './src/commands';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
+import { createPaymentConversation } from './src/conversations/createPaymentConversation';
 import { startTopupKeyboard, topupText } from './src/commands/topup';
 import { PACKAGES } from './src/bot-packages';
 import { checkUserInDB, ignoreOld } from './src/utils/middleware';
@@ -38,10 +40,7 @@ import {
   getBotApiKey,
   getMongoDbUri,
 } from './src/utils/utilFunctions';
-import {
-  createPaymentLink,
-  telegramSuccessfulPaymentHandler,
-} from './src/utils/payments';
+import { telegramSuccessfulPaymentHandler } from './src/utils/payments';
 
 const BOT_API_KEY = getBotApiKey();
 
@@ -84,6 +83,7 @@ bot.use(checkUserInDB);
 // Conversations
 bot.use(createConversation(imageConversation));
 bot.use(createConversation(supportConversation));
+bot.use(createConversation(createPaymentConversation));
 
 void bot.api.setMyCommands([
   {
@@ -161,6 +161,11 @@ bot.callbackQuery('cancelSupport', async (ctx) => {
   await ctx.conversation.exit('supportConversation');
   await ctx.callbackQuery.message?.editText('Запрос в поддержку отменен');
 });
+bot.callbackQuery('cancelPayment', async (ctx) => {
+  await ctx.answerCallbackQuery('Отменено ✅');
+  await ctx.conversation.exit('createPaymentConversation');
+  await ctx.callbackQuery.message?.editText('Оплата отменена');
+});
 bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
   await ctx.answerCallbackQuery();
   const quality = ctx.callbackQuery.data;
@@ -175,8 +180,12 @@ bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
 
   await ctx.conversation.enter('imageConversation');
 });
-// Here you can pass either createInvoice or createPaymentLink
-bot.callbackQuery(Object.keys(PACKAGES), createPaymentLink);
+// Here you can enter createPaymentConversation or pass createInvoice function
+bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
+  await ctx.answerCallbackQuery();
+  ctx.session.packageName = ctx.callbackQuery.data as PackageName;
+  await ctx.conversation.enter('createPaymentConversation');
+});
 bot.callbackQuery('topup', topup);
 
 // User commands

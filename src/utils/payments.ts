@@ -130,6 +130,7 @@ export const telegramSuccessfulPaymentHandler = async (ctx: any) => {
   }
 };
 
+// Deprecated: This function is no longer in use and may be removed in future versions.
 export const createPaymentLink = async (
   ctx: CallbackQueryContext<MyContext>,
 ) => {
@@ -147,17 +148,32 @@ export const createPaymentLink = async (
 
     const idempotenceKey = uuidv4();
 
+    const amountObj = {
+      value: `${packageData.price}.00`,
+      currency: 'RUB',
+    };
+
     const createPayload: ICreatePayment = {
-      amount: {
-        value: `${packageData.price}.00`,
-        currency: 'RUB',
-      },
+      amount: amountObj,
       confirmation: {
         type: 'redirect',
         return_url: 'https://gpt-bot-frontend.vercel.app/',
       },
       capture: true,
       description: packageData.description,
+      receipt: {
+        customer: {
+          phone: '??????',
+        },
+        items: [
+          {
+            description: packageData.description,
+            quantity: 1,
+            amount: amountObj,
+            vat_code: 1,
+          },
+        ],
+      },
       metadata: {
         telegramId: id,
         packageName: packageKey,

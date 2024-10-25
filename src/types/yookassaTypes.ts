@@ -50,7 +50,7 @@ type IAgentType =
 
 interface IItem {
   description: string;
-  quantity: string;
+  quantity: number;
   amount: IAmount;
   vat_code: number;
   payment_subject?: IPaymentSubject;

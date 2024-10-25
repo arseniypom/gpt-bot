@@ -9,6 +9,7 @@ import { IUser } from '../../db/User';
 export interface SessionData {
   chatId?: string;
   imageQuality: ImageGenerationQuality;
+  packageName?: PackageName;
   user?: Pick<IUser, 'telegramId' | 'firstName' | 'userName'>;
 }
 
