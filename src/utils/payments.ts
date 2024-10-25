@@ -161,9 +161,9 @@ export const createPaymentLink = async (
       metadata: {
         telegramId: id,
         packageName: packageKey,
-        basicRequestsBalance: packageData.basicRequestsBalance,
-        proRequestsBalance: packageData.proRequestsBalance,
-        imageGenerationBalance: packageData.imageGenerationBalance,
+        basicRequestsBalance: packageData.basicRequestsBalance || null,
+        proRequestsBalance: packageData.proRequestsBalance || null,
+        imageGenerationBalance: packageData.imageGenerationBalance || null,
       },
     };
 
