@@ -141,8 +141,11 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
     user.selectedModel = selectedModel;
     await user.save();
 
+    const messagePostfix =
+      AiModels[selectedModel] === AiModels.GPT_4O ? '' : ' (базовые запросы) ';
+
     await ctx.callbackQuery.message?.editText(
-      `Вы переключились на модель ${AiModelsLabels[selectedModel]}  ✅`,
+      `Вы переключились на модель\n${AiModelsLabels[selectedModel]}${messagePostfix}✅`,
     );
   } catch (error) {
     await ctx.reply(
