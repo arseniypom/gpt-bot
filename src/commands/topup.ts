@@ -1,38 +1,39 @@
 import { CallbackQueryContext, InlineKeyboard, InputFile } from 'grammy';
 import { logError } from '../utils/utilFunctions';
 import { MyContext } from '../types/types';
+import { PACKAGES } from '../bot-packages';
 
 export const startTopupKeyboard = new InlineKeyboard().text(
   'Пополнить баланс',
   'topup',
 );
 const topupKeyboardForImg = new InlineKeyboard()
-  .text('1️⃣', 'req1')
-  .text('2️⃣', 'req2')
-  .text('3️⃣', 'req3')
+  .text(PACKAGES.req1.numberIcon, 'req1')
+  .text(PACKAGES.req2.numberIcon, 'req2')
+  .text(PACKAGES.req3.numberIcon, 'req3')
   .row()
-  .text('4️⃣', 'img1')
-  .text('5️⃣', 'img2')
-  .text('6️⃣', 'img3')
+  .text(PACKAGES.img1.numberIcon, 'img1')
+  .text(PACKAGES.img2.numberIcon, 'img2')
+  .text(PACKAGES.img3.numberIcon, 'img3')
   .row()
-  .text('7️⃣', 'combo1')
-  .text('8️⃣', 'combo2')
-  .text('9️⃣', 'combo3')
+  .text(PACKAGES.combo1.numberIcon, 'combo1')
+  .text(PACKAGES.combo2.numberIcon, 'combo2')
+  .text(PACKAGES.combo3.numberIcon, 'combo3')
   .row()
   .text('Текстовое описание пакетов', 'topupText');
 
 const topupKeyboardForText = new InlineKeyboard()
-  .text('1️⃣', 'req1')
-  .text('2️⃣', 'req2')
-  .text('3️⃣', 'req3')
+  .text(PACKAGES.req1.numberIcon, 'req1')
+  .text(PACKAGES.req2.numberIcon, 'req2')
+  .text(PACKAGES.req3.numberIcon, 'req3')
   .row()
-  .text('4️⃣', 'img1')
-  .text('5️⃣', 'img2')
-  .text('6️⃣', 'img3')
+  .text(PACKAGES.img1.numberIcon, 'img1')
+  .text(PACKAGES.img2.numberIcon, 'img2')
+  .text(PACKAGES.img3.numberIcon, 'img3')
   .row()
-  .text('7️⃣', 'combo1')
-  .text('8️⃣', 'combo2')
-  .text('9️⃣', 'combo3')
+  .text(PACKAGES.combo1.numberIcon, 'combo1')
+  .text(PACKAGES.combo2.numberIcon, 'combo2')
+  .text(PACKAGES.combo3.numberIcon, 'combo3')
   .row();
 
 export const topupImg = async (

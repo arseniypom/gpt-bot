@@ -60,4 +60,5 @@ export interface PackageData {
   price: number;
   description: string;
   title: string;
+  numberIcon: string;
 }

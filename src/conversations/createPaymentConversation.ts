@@ -31,7 +31,8 @@ export async function createPaymentConversation(
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   let isFirstAttempt = true;
-  const messagePrefix = `*Выбран пакет:*\n${PACKAGES[packageKey].description}`;
+  const { numberIcon, description } = PACKAGES[packageKey];
+  const messagePrefix = `*Выбран пакет:*\n${numberIcon} ${description}`;
 
   do {
     const requestText = isFirstAttempt

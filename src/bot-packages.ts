@@ -6,12 +6,14 @@ export const PACKAGES: Record<PackageName, PackageData> = {
     price: 99,
     description: '100 базовых запросов к нейросети за 99₽',
     title: '100 запросов',
+    numberIcon: '1️⃣',
   },
   req2: {
     basicRequestsBalance: 500,
     price: 299,
     description: '500 базовых запросов к нейросети за 299₽',
     title: '500 запросов',
+    numberIcon: '2️⃣',
   },
   req3: {
     basicRequestsBalance: 950,
@@ -19,24 +21,28 @@ export const PACKAGES: Record<PackageName, PackageData> = {
     price: 599,
     description: '950 базовых запросов и 50 ПРО запросов к нейросети за 599₽',
     title: '1000 запросов',
+    numberIcon: '3️⃣',
   },
   img1: {
     imageGenerationBalance: 10,
     price: 119,
     description: 'Генерация 10 изображений за 119₽',
     title: '10 изображений',
+    numberIcon: '4️⃣',
   },
   img2: {
     imageGenerationBalance: 25,
     price: 259,
     description: 'Генерация 25 изображений за 259₽',
     title: '25 изображений',
+    numberIcon: '5️⃣',
   },
   img3: {
     imageGenerationBalance: 50,
     price: 449,
     description: 'Генерация 50 изображений за 449₽',
     title: '50 изображений',
+    numberIcon: '6️⃣',
   },
   combo1: {
     basicRequestsBalance: 100,
@@ -45,6 +51,7 @@ export const PACKAGES: Record<PackageName, PackageData> = {
     description:
       '100 базовых запросов к нейросети и генерация 10 изображений за 179₽',
     title: '100 запросов + 10 изображений',
+    numberIcon: '7️⃣',
   },
   combo2: {
     basicRequestsBalance: 500,
@@ -53,6 +60,7 @@ export const PACKAGES: Record<PackageName, PackageData> = {
     description:
       '500 базовых запросов к нейросети и генерация 25 изображений за 499₽',
     title: '500 запросов + 25 изображений',
+    numberIcon: '8️⃣',
   },
   combo3: {
     basicRequestsBalance: 950,
@@ -62,5 +70,6 @@ export const PACKAGES: Record<PackageName, PackageData> = {
     description:
       '950 базовых запросов, 50 ПРО запросов к нейросети и генерация 50 изображений за 899₽',
     title: '1000 запросов + 50 изображений',
+    numberIcon: '9️⃣',
   },
 };
