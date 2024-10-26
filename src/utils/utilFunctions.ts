@@ -7,7 +7,9 @@ const ADMIN_TELEGRAM_ID = process.env.ADMIN_TELEGRAM_ID;
 export const sendMessageToAdmin = async (message: string) => {
   try {
     if (ADMIN_TELEGRAM_ID) {
-      await bot.api.sendMessage(ADMIN_TELEGRAM_ID, message);
+      await bot.api.sendMessage(ADMIN_TELEGRAM_ID, message, {
+        parse_mode: 'MarkdownV2',
+      });
     } else {
       throw new Error(
         'ADMIN_TELEGRAM_ID is not set in the environment variables',
@@ -65,7 +67,17 @@ export const getMongoDbUri = () => {
   }
 };
 
-export function logError(message: string, error?: unknown) {
+export function logError({
+  message,
+  username,
+  telegramId,
+  error,
+}: {
+  message: string;
+  username?: string;
+  telegramId?: number;
+  error?: unknown;
+}) {
   let errorMessage: string;
   if (error instanceof Error) {
     errorMessage = `${message}: ${error.stack || error.message}`;
@@ -75,6 +87,12 @@ export function logError(message: string, error?: unknown) {
     errorMessage = `${message}: ${String(error)}`;
   }
 
-  logger.error(errorMessage, error);
-  sendMessageToAdmin(`Unknown error: ${errorMessage}`);
+  logger.error(`tgId: ${telegramId} | ${errorMessage}`, error);
+  sendMessageToAdmin(`
+    ❗❗ ERROR ❗❗
+    
+    Username: @${username}
+    tgId: ${telegramId}
+    Message: "${errorMessage}"
+        `);
 }

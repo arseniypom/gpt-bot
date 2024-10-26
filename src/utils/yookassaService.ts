@@ -44,19 +44,25 @@ export const createPayment = async (
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
-      logError('Error creating Yookassa payment:', {
-        message: error.message,
-        status: error.response.status,
-        data: error.response.data,
+      logError({
+        message: 'Error creating Yookassa payment',
+        error: {
+          message: error.message,
+          status: error.response.status,
+          data: error.response.data,
+        },
       });
     } else {
-      logError('Error creating Yookassa payment:', error);
+      logError({
+        message: 'Error creating Yookassa payment',
+        error,
+      });
     }
     throw error;
   }
 };
 
-// Add other necessary Yookassa API methods here (e.g., refunds, captures)
+// TODO: Add other necessary Yookassa API methods here (e.g., refunds, captures)
 
 export default {
   createPayment,

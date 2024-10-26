@@ -40,7 +40,12 @@ export const topup = async (
     await ctx.reply(
       'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
-    logError('Error in /topup command:', error);
+    logError({
+      message: 'Error in /topup command',
+      error,
+      telegramId: ctx.from?.id,
+      username: ctx.from?.username,
+    });
   }
 };
 
@@ -69,6 +74,11 @@ export const topupText = async (ctx: MyContext) => {
       reply_markup: topupKeyboard,
     });
   } catch (error) {
-    logError('Error in /topupText command:', error);
+    logError({
+      message: 'Error in /topupText command',
+      error,
+      telegramId: ctx.from?.id,
+      username: ctx.from?.username,
+    });
   }
 };

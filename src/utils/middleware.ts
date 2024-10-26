@@ -32,7 +32,12 @@ export const checkUserInDB = async (
     ctx.session.user = user;
     await next();
   } catch (error) {
-    logError('Error checking user existence:', error);
+    logError({
+      message: 'Error checking user existence middleware',
+      error,
+      telegramId: ctx.from?.id,
+      username: ctx.from?.username,
+    });
     await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
   }
 };

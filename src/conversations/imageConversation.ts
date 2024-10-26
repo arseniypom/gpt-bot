@@ -55,7 +55,12 @@ export async function imageConversation(
     await ctx.reply(
       'Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
-    logError('Error in image conversation:', error);
+    logError({
+      message: 'Error in image conversation',
+      error,
+      telegramId: ctx.from?.id,
+      username: ctx.from?.username,
+    });
   }
 
   return;

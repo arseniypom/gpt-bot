@@ -78,7 +78,12 @@ export const createInvoice = async (ctx: CallbackQueryContext<MyContext>) => {
     await ctx.reply(
       'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
-    logError('Error in topup callbackQuery:', error);
+    logError({
+      message: 'Error in topup callbackQuery',
+      error,
+      telegramId: ctx.from?.id,
+      username: ctx.from?.username,
+    });
   }
 };
 
@@ -126,7 +131,12 @@ export const telegramSuccessfulPaymentHandler = async (ctx: any) => {
     await ctx.reply(
       'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
-    logError('Error in successful_payment callbackQuery:', error);
+    logError({
+      message: 'Error in successful_payment callbackQuery',
+      error,
+      telegramId: ctx.from?.id,
+      username: ctx.from?.username,
+    });
   }
 };
 
@@ -208,6 +218,11 @@ export const createPaymentLink = async (
     await ctx.reply(
       'Произошла ошибка при создании ссылки для оплаты. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
-    logError('Error in createPaymentLink callbackQuery:', error);
+    logError({
+      message: 'Error in createPaymentLink callbackQuery',
+      error,
+      telegramId: ctx.from?.id,
+      username: ctx.from?.username,
+    });
   }
 };

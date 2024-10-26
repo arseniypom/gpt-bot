@@ -10,7 +10,9 @@ const ADMIN_TELEGRAM_ID = process.env.ADMIN_TELEGRAM_ID;
 
 export const getStats = async (ctx: MyContext) => {
   if (!ADMIN_TELEGRAM_ID) {
-    logError('ADMIN_TELEGRAM_ID is not set in the environment variables.');
+    logError({
+      message: 'ADMIN_TELEGRAM_ID is not set in the environment variables',
+    });
     return;
   }
 

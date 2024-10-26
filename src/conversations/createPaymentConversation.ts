@@ -115,7 +115,12 @@ export async function createPaymentConversation(
     await ctx.reply(
       'Произошла ошибка при создании ссылки для оплаты. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
     );
-    logError('Error in createPaymentConversation:', error);
+    logError({
+      message: 'Error in createPaymentConversation',
+      error,
+      telegramId: ctx.from?.id,
+      username: ctx.from?.username,
+    });
   }
 }
 

@@ -34,6 +34,11 @@ Message: "${message.text}"
     await ctx.reply(
       'Произошла ошибка при отправке сообщения в поддержку. Извините за доставленные неудобства, мы уже разбираемся.',
     );
-    logError('Error in support conversation:', error);
+    logError({
+      message: 'Error in support conversation',
+      error,
+      telegramId: ctx.from?.id,
+      username: ctx.from?.username,
+    });
   }
 }
