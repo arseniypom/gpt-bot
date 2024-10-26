@@ -64,10 +64,10 @@ export const getNoBalanceMessage = (model: AiModel) => {
 export const getBalanceMessage = (user: IUser) => {
   return `
 *Ваш текущий баланс 💰 *
-––––––
-*Базовые запросы* \\(GPT\\-3\\.5, GPT\\-4o\\-mini\\):
+
+*Базовые запросы* _\\(GPT\\-3\\.5, GPT\\-4o\\-mini\\)_:
 ⭐️ ${user.basicRequestsBalance}
-*PRO запросы* \\(GPT\\-4o\\):
+*PRO запросы* _\\(GPT\\-4o\\)_:
 🌟 ${user.proRequestsBalance}
 *Генерация изображений*:
 🖼️ ${user.imageGenerationBalance}
