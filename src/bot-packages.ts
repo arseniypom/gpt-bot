@@ -19,7 +19,7 @@ export const PACKAGES: Record<PackageName, PackageData> = {
     basicRequestsBalance: 950,
     proRequestsBalance: 50,
     price: 599,
-    description: '950 базовых запросов и 50 ПРО запросов к нейросети за 599₽',
+    description: '950 базовых запросов и 50 PRO запросов к нейросети за 599₽',
     title: '1000 запросов',
     numberIcon: '3️⃣',
   },
@@ -68,7 +68,7 @@ export const PACKAGES: Record<PackageName, PackageData> = {
     imageGenerationBalance: 50,
     price: 899,
     description:
-      '950 базовых запросов, 50 ПРО запросов к нейросети и генерация 50 изображений за 899₽',
+      '950 базовых запросов, 50 PRO запросов к нейросети и генерация 50 изображений за 899₽',
     title: '1000 запросов + 50 изображений',
     numberIcon: '9️⃣',
   },

@@ -67,7 +67,7 @@ export const getBalanceMessage = (user: IUser) => {
 ––––––
 *Базовые запросы* \\(GPT\\-3\\.5, GPT\\-4o\\-mini\\):
 ⭐️ ${user.basicRequestsBalance}
-*ПРО запросы* \\(GPT\\-4o\\):
+*PRO запросы* \\(GPT\\-4o\\):
 🌟 ${user.proRequestsBalance}
 *Генерация изображений*:
 🖼️ ${user.imageGenerationBalance}
