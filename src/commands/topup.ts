@@ -1,6 +1,4 @@
 import { CallbackQueryContext, InlineKeyboard, InputFile } from 'grammy';
-import { User as TelegramUser } from '@grammyjs/types';
-import User from '../../db/User';
 import { logError } from '../utils/utilFunctions';
 import { MyContext } from '../types/types';
 
@@ -8,7 +6,22 @@ export const startTopupKeyboard = new InlineKeyboard().text(
   'Пополнить баланс',
   'topup',
 );
-const topupKeyboard = new InlineKeyboard()
+const topupKeyboardForImg = new InlineKeyboard()
+  .text('1️⃣', 'req1')
+  .text('2️⃣', 'req2')
+  .text('3️⃣', 'req3')
+  .row()
+  .text('4️⃣', 'img1')
+  .text('5️⃣', 'img2')
+  .text('6️⃣', 'img3')
+  .row()
+  .text('7️⃣', 'combo1')
+  .text('8️⃣', 'combo2')
+  .text('9️⃣', 'combo3')
+  .row()
+  .text('Текстовое описание пакетов', 'topupText');
+
+const topupKeyboardForText = new InlineKeyboard()
   .text('1️⃣', 'req1')
   .text('2️⃣', 'req2')
   .text('3️⃣', 'req3')
@@ -22,7 +35,7 @@ const topupKeyboard = new InlineKeyboard()
   .text('9️⃣', 'combo3')
   .row();
 
-export const topup = async (
+export const topupImg = async (
   ctx: CallbackQueryContext<MyContext> | MyContext,
 ) => {
   if (ctx.callbackQuery) {
@@ -31,11 +44,10 @@ export const topup = async (
 
   try {
     await ctx.replyWithPhoto(new InputFile('src/images/packages-img.jpeg'), {
-      caption: '*Информация о пакетах 👆*\n\nВыберите пакет для пополнения\\:',
+      caption: '*Информация о пакетах 👆*\n\nВыберите пакет для пополнения',
       parse_mode: 'MarkdownV2',
-      reply_markup: topupKeyboard,
+      reply_markup: topupKeyboardForImg,
     });
-    await ctx.reply('Если картинка не отображается, посмотрите текстовую версию: /topupText');
   } catch (error) {
     await ctx.reply(
       'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
@@ -49,7 +61,9 @@ export const topup = async (
   }
 };
 
-export const topupText = async (ctx: MyContext) => {
+export const topupText = async (ctx: CallbackQueryContext<MyContext>) => {
+  await ctx.answerCallbackQuery();
+
   try {
     const topupMessage = `
 *Выберите набор запросов\nдля пополнения*
@@ -69,13 +83,14 @@ export const topupText = async (ctx: MyContext) => {
 8️⃣ 500 запросов \\+ 25 изображений 499₽
 9️⃣ 1000 запросов \\(950 базовые \\+ 50 про\\)\n\\+ 50 изображений 899₽
     `;
+    await ctx.callbackQuery.message?.delete();
     await ctx.reply(topupMessage, {
       parse_mode: 'MarkdownV2',
-      reply_markup: topupKeyboard,
+      reply_markup: topupKeyboardForText,
     });
   } catch (error) {
     logError({
-      message: 'Error in /topupText command',
+      message: 'Error in topupText callbackQuery',
       error,
       telegramId: ctx.from?.id,
       username: ctx.from?.username,

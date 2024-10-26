@@ -28,11 +28,11 @@ import {
   MAX_HISTORY_LENGTH,
   START_MESSAGE,
 } from './src/utils/consts';
-import { getStats, changeModel, topup } from './src/commands';
+import { getStats, changeModel, topupImg, topupText } from './src/commands';
+import { startTopupKeyboard } from './src/commands/topup';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
 import { createPaymentConversation } from './src/conversations/createPaymentConversation';
-import { startTopupKeyboard, topupText } from './src/commands/topup';
 import { PACKAGES } from './src/bot-packages';
 import { checkUserInDB, ignoreOld } from './src/utils/middleware';
 import {
@@ -188,10 +188,12 @@ bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
 // Here you can enter createPaymentConversation or pass createInvoice function
 bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
   await ctx.answerCallbackQuery();
+  await ctx.callbackQuery.message?.editReplyMarkup(undefined);
   ctx.session.packageName = ctx.callbackQuery.data as PackageName;
   await ctx.conversation.enter('createPaymentConversation');
 });
-bot.callbackQuery('topup', topup);
+bot.callbackQuery('topupText', topupText);
+bot.callbackQuery('topup', topupImg);
 
 // User commands
 bot.command('start', async (ctx) => {
@@ -317,8 +319,7 @@ bot.command('balance', async (ctx) => {
     });
   }
 });
-bot.command('topup', topup);
-bot.command('topupText', topupText);
+bot.command('topup', topupImg);
 bot.command('support', async (ctx) => {
   await ctx.conversation.enter('supportConversation');
 });

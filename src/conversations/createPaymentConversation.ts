@@ -19,7 +19,7 @@ export async function createPaymentConversation(
   const packageKey = ctx.session.packageName;
 
   if (!packageKey) {
-    ctx.reply('Пожалуйста, выберите пакет с помощью команды /topup');
+    ctx.reply('Пожалуйста, выберите пакет повторно с помощью команды /topup');
     return;
   }
 
@@ -31,12 +31,14 @@ export async function createPaymentConversation(
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   let isFirstAttempt = true;
+  const messagePrefix = `*Выбран пакет:*\n${PACKAGES[packageKey].description}`;
 
   do {
     const requestText = isFirstAttempt
-      ? 'Пожалуйста, введите Ваш email (нужен только для отправки чека):'
-      : 'Кажется, Вы ввели некорректный email. Попробуйте ещё раз:';
+      ? `${messagePrefix}\n\nПожалуйста, введите Ваш email \\(нужен только для отправки чека\\):`
+      : 'Кажется, Вы ввели некорректный email\\. Попробуйте ещё раз:';
     await ctx.reply(requestText, {
+      parse_mode: 'MarkdownV2',
       reply_markup: cancelKeyboard,
     });
     const { message } = await conversation.waitFor('message:text');
@@ -123,4 +125,3 @@ export async function createPaymentConversation(
     });
   }
 }
-
