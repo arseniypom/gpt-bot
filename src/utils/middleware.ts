@@ -48,7 +48,11 @@ export const ignoreOld = async (
 ): Promise<void> => {
   // 5 mins threshold
   const threshold = 5 * 60;
-  if (ctx.msg?.date && new Date().getTime() / 1000 - ctx.msg.date > threshold) {
+  if (
+    !ctx.callbackQuery &&
+    ctx.msg?.date &&
+    new Date().getTime() / 1000 - ctx.msg.date > threshold
+  ) {
     logger.info(
       `Ignoring message | TEXT: '${ctx.msg.text}' | USER ID: '${
         ctx.from?.id
