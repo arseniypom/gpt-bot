@@ -29,7 +29,14 @@ export const getStats = async (ctx: MyContext) => {
     message += `👥 Всего пользователей: ${totalUsers}\n\n`;
 
     for (const user of users) {
-      const username = `@${user.userName}` || user.firstName || user.id;
+      let username;
+      if (user.userName) {
+        username = `@${user.userName}`;
+      } else if (user.firstName) {
+        username = user.firstName;
+      } else {
+        username = user.id;
+      }
 
       const chats = await Chat.find({ userId: user._id });
 
