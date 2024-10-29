@@ -1,4 +1,4 @@
-import { InlineKeyboard } from 'grammy';
+import { CallbackQueryContext, InlineKeyboard } from 'grammy';
 import { AiModels, AiModelsLabels, MyContext } from '../types/types';
 import User from '../../db/User';
 
@@ -14,7 +14,13 @@ export const getModelsKeyboard = (activeModel: AiModelsLabels) => {
   return InlineKeyboard.from(buttonRows);
 };
 
-export const changeModel = async (ctx: MyContext) => {
+export const changeModel = async (
+  ctx: CallbackQueryContext<MyContext> | MyContext,
+) => {
+  if (ctx.callbackQuery) {
+    await ctx.answerCallbackQuery();
+  }
+
   const user = await User.findOne({ telegramId: ctx.from?.id });
   if (!user) {
     await ctx.reply('Пожалуйста, начните с команды /start.');

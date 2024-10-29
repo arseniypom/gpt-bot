@@ -29,7 +29,7 @@ import {
   START_MESSAGE,
 } from './src/utils/consts';
 import { getStats, changeModel, topupImg, topupText } from './src/commands';
-import { startTopupKeyboard } from './src/commands/topup';
+import { topupAndChangeModelKeyboard, initiateTopupKeyboard } from './src/commands/topup';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
 import { createPaymentConversation } from './src/conversations/createPaymentConversation';
@@ -140,6 +140,7 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
     }
 
     user.selectedModel = selectedModel;
+    user.updatedAt = new Date();
     await user.save();
 
     const messagePostfix =
@@ -201,6 +202,7 @@ bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
 });
 bot.callbackQuery('topupText', topupText);
 bot.callbackQuery('topup', topupImg);
+bot.callbackQuery('changeModel', changeModel);
 
 // User commands
 bot.command('start', async (ctx) => {
@@ -317,7 +319,7 @@ bot.command('balance', async (ctx) => {
 
     await ctx.reply(getBalanceMessage(user), {
       parse_mode: 'MarkdownV2',
-      reply_markup: startTopupKeyboard,
+      reply_markup: initiateTopupKeyboard,
     });
   } catch (error) {
     await ctx.reply(
@@ -393,7 +395,7 @@ bot.on('message:text', async (ctx) => {
         await responseMessage.editText(
           getNoBalanceMessage(user.selectedModel),
           {
-            reply_markup: startTopupKeyboard,
+            reply_markup: topupAndChangeModelKeyboard,
           },
         );
         return;
@@ -403,7 +405,7 @@ bot.on('message:text', async (ctx) => {
         await responseMessage.editText(
           getNoBalanceMessage(user.selectedModel),
           {
-            reply_markup: startTopupKeyboard,
+            reply_markup: topupAndChangeModelKeyboard,
           },
         );
         return;
@@ -443,7 +445,6 @@ bot.on('message:text', async (ctx) => {
       content: answer,
     });
 
-    chat.updatedAt = new Date();
     await chat.save();
 
     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
@@ -451,6 +452,7 @@ bot.on('message:text', async (ctx) => {
     } else {
       user.basicRequestsBalance -= 1;
     }
+    user.updatedAt = new Date();
     await user.save();
 
     await responseMessage.editText(answer);

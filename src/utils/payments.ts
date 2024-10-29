@@ -120,7 +120,7 @@ export const telegramSuccessfulPaymentHandler = async (ctx: any) => {
     if (packageData.imageGenerationBalance) {
       user.imageGenerationBalance += packageData.imageGenerationBalance;
     }
-
+    user.updatedAt = new Date();
     await user.save();
 
     await ctx.reply(`Баланс успешно пополнен ✅`);

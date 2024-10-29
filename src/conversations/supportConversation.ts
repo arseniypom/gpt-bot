@@ -12,7 +12,7 @@ export async function supportConversation(
   ctx: MyContext,
 ) {
   try {
-    await ctx.reply('Пожалуйста, опишите Вашу проблему как можно подробнее:', {
+    await ctx.reply('Пожалуйста, опишите проблему как можно подробнее:', {
       reply_markup: cancelKeyboard,
     });
 

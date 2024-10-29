@@ -3,10 +3,14 @@ import { logError } from '../utils/utilFunctions';
 import { MyContext } from '../types/types';
 import { PACKAGES } from '../bot-packages';
 
-export const startTopupKeyboard = new InlineKeyboard().text(
+export const initiateTopupKeyboard = new InlineKeyboard().text(
   'Пополнить баланс',
   'topup',
 );
+export const topupAndChangeModelKeyboard = new InlineKeyboard()
+  .text('Пополнить баланс', 'topup')
+  .row()
+  .text('Сменить модель', 'changeModel');
 const topupKeyboardForImg = new InlineKeyboard()
   .text(PACKAGES.req1.numberIcon, 'req1')
   .text(PACKAGES.req2.numberIcon, 'req2')

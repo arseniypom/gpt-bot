@@ -50,6 +50,7 @@ export async function imageConversation(
     await responseMessage.editText('Готово!');
 
     user.imageGenerationBalance -= 1;
+    user.updatedAt = new Date();
     await conversation.external(() => user.save());
   } catch (error) {
     await ctx.reply(
