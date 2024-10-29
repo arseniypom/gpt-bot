@@ -204,6 +204,9 @@ bot.command('start', async (ctx) => {
 
   await ctx.reply(START_MESSAGE, {
     parse_mode: 'MarkdownV2',
+    link_preview_options: {
+      is_disabled: true,
+    },
   });
 
   try {
