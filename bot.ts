@@ -88,31 +88,31 @@ bot.use(createConversation(createPaymentConversation));
 void bot.api.setMyCommands([
   {
     command: 'balance',
-    description: 'Узнать текущий баланс запросов',
+    description: '🏦 Текущий баланс запросов',
   },
   {
     command: 'topup',
-    description: 'Пополнить баланс',
+    description: '💰 Пополнить баланс',
   },
   {
     command: 'newchat',
-    description: 'Начать новый чат',
+    description: '💬 Начать новый чат',
   },
   {
     command: 'image',
-    description: 'Сгенерировать изображение',
+    description: '🖼️ Сгенерировать изображение',
   },
   {
     command: 'models',
-    description: 'Выбрать AI-модель',
+    description: '🤖 Выбрать AI-модель',
   },
   {
     command: 'help',
-    description: 'Общая информация',
+    description: 'ℹ️ Общая информация',
   },
   {
     command: 'support',
-    description: 'Обратиться в поддержку',
+    description: '🆘 Обратиться в поддержку',
   },
 ]);
 
