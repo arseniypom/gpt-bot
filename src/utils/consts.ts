@@ -65,10 +65,10 @@ export const getBalanceMessage = (user: IUser) => {
   return `
 *Ваш текущий баланс 💰 *
 
-⭐️ Базовые запросы\\*: ${user.basicRequestsBalance}
-🌟 PRO запросы\\*: ${user.proRequestsBalance}
+⭐️ Базовые запросы: ${user.basicRequestsBalance}
+🌟 PRO запросы: ${user.proRequestsBalance}
 🖼️ Генерация изображений: ${user.imageGenerationBalance}
 
-\\* Подробнее: /help
+_\\*Про виды запросов: /help_
   `;
 };
