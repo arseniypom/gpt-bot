@@ -24,13 +24,11 @@ export interface ChatMessage {
 }
 
 export enum AiModels {
-  GPT_3_5_TURBO = 'gpt-3.5-turbo-0125',
   GPT_4O_MINI = 'gpt-4o-mini-2024-07-18',
   GPT_4O = 'gpt-4o-2024-08-06',
 }
 
 export enum AiModelsLabels {
-  GPT_3_5_TURBO = 'GPT-3.5 Turbo',
   GPT_4O_MINI = 'GPT-4o-mini',
   GPT_4O = 'GPT-4o (PRO запросы)',
 }
