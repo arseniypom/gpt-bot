@@ -1,15 +1,18 @@
 import { InlineKeyboard } from 'grammy';
-import { AiModelsLabels, MyContext } from '../types/types';
+import { AiModels, AiModelsLabels, MyContext } from '../types/types';
 import User from '../../db/User';
 
-const labelDataPairs = Object.entries(AiModelsLabels).map(([name, label]) => [
-  label,
-  name,
-]);
-const buttonRows = labelDataPairs.map(([label, data]) => [
-  InlineKeyboard.text(label, data),
-]);
-const keyboard = InlineKeyboard.from(buttonRows);
+export const getModelsKeyboard = (activeModel: AiModelsLabels) => {
+  const labelDataPairs = Object.entries(AiModelsLabels).map(([name, label]) => {
+    const isActive = activeModel === label;
+    const labelText = isActive ? `${label} ✅` : label;
+    return [labelText, name];
+  });
+  const buttonRows = labelDataPairs.map(([label, data]) => [
+    InlineKeyboard.text(label, data),
+  ]);
+  return InlineKeyboard.from(buttonRows);
+};
 
 export const changeModel = async (ctx: MyContext) => {
   const user = await User.findOne({ telegramId: ctx.from?.id });
@@ -17,11 +20,12 @@ export const changeModel = async (ctx: MyContext) => {
     await ctx.reply('Пожалуйста, начните с команды /start.');
     return;
   }
+  const activeModel = AiModelsLabels[user.selectedModel];
 
   await ctx.reply(
-    `Текущая модель: ${AiModelsLabels[user.selectedModel]}\nВыберите модель, на которую хотите переключиться:`,
+    `Текущая модель: ${activeModel}\nВыберите модель, на которую хотите переключиться:`,
     {
-      reply_markup: keyboard,
+      reply_markup: getModelsKeyboard(activeModel),
     },
   );
 };

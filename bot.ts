@@ -41,6 +41,7 @@ import {
   getMongoDbUri,
 } from './src/utils/utilFunctions';
 import { telegramSuccessfulPaymentHandler } from './src/utils/payments';
+import { getModelsKeyboard } from './src/commands/changeModel';
 
 const BOT_API_KEY = getBotApiKey();
 
@@ -145,7 +146,10 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
       AiModels[selectedModel] === AiModels.GPT_4O ? '' : ' (базовые запросы) ';
 
     await ctx.callbackQuery.message?.editText(
-      `Вы переключились на модель\n${AiModelsLabels[selectedModel]}${messagePostfix}✅`,
+      `Вы переключились на модель\n${AiModelsLabels[selectedModel]}${messagePostfix} ✅`,
+      {
+        reply_markup: getModelsKeyboard(AiModelsLabels[selectedModel]),
+      },
     );
   } catch (error) {
     await ctx.reply(
