@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { User as TelegramUser } from '@grammyjs/types';
 import { logError } from '../utils/utilFunctions';
-import { START_MESSAGE, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
+import { START_MESSAGE_V2, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 import { MyContext } from '../types/types';
 import User from '../../db/User';
 import Chat from '../../db/Chat';
@@ -73,7 +73,7 @@ export const checkSubscriptionAndRegisterUser = async (
 export const registerUser = async (ctx: CallbackQueryContext<MyContext>) => {
   const { id, first_name, username } = ctx.from as TelegramUser;
 
-  await ctx.reply(START_MESSAGE, {
+  await ctx.reply(START_MESSAGE_V2, {
     parse_mode: 'MarkdownV2',
     link_preview_options: {
       is_disabled: true,

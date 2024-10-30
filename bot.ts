@@ -26,6 +26,7 @@ import {
   getNoBalanceMessage,
   HELP_MESSAGE,
   MAX_HISTORY_LENGTH,
+  MAX_USER_MESSAGE_LENGTH,
   SUPPORT_MESSAGE_POSTFIX,
 } from './src/utils/consts';
 import {
@@ -289,7 +290,7 @@ bot.on('message:text', async (ctx) => {
   const telegramId = ctx.from.id;
   const userMessageText = ctx.message.text;
 
-  if (userMessageText.length > 3000) {
+  if (userMessageText.length > MAX_USER_MESSAGE_LENGTH) {
     await ctx.reply(
       'Превышен лимит символов. Пожалуйста, сократите Ваше сообщение.',
     );
