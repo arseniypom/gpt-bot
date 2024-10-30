@@ -2,6 +2,7 @@ import { CallbackQueryContext, InlineKeyboard, InputFile } from 'grammy';
 import { logError } from '../utils/utilFunctions';
 import { MyContext } from '../types/types';
 import { PACKAGES } from '../bot-packages';
+import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 
 export const initiateTopupKeyboard = new InlineKeyboard().text(
   'Пополнить баланс',
@@ -55,7 +56,7 @@ export const topupImg = async (
     });
   } catch (error) {
     await ctx.reply(
-      'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+      `Произошла ошибка при пополнении баланса. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
       message: 'Error in /topup command',

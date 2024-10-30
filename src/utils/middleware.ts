@@ -5,6 +5,7 @@ import { logError } from './utilFunctions';
 import { MyContext } from '../types/types';
 import { isMyContext } from '../types/typeguards';
 import logger from './logger';
+import { SUPPORT_MESSAGE_POSTFIX } from './consts';
 
 export const checkUserInDB = async (
   ctx: MyContext | { chat: { type: 'private' | 'channel' } },
@@ -47,7 +48,9 @@ export const checkUserInDB = async (
       telegramId: ctx.from?.id,
       username: ctx.from?.username,
     });
-    await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
+    await ctx.reply(
+      `Произошла ошибка. ${SUPPORT_MESSAGE_POSTFIX}`,
+    );
   }
 };
 

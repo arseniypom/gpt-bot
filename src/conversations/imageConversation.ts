@@ -4,6 +4,7 @@ import { generateImage } from '../utils/gpt';
 import { logError } from '../utils/utilFunctions';
 import { type MyConversation, type MyContext } from '../types/types';
 import User from '../../db/User';
+import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 
 const cancelKeyboard = new InlineKeyboard().text(
   'Отменить ❌',
@@ -54,7 +55,7 @@ export async function imageConversation(
     await conversation.external(() => user.save());
   } catch (error) {
     await ctx.reply(
-      'Произошла ошибка при генерации изображения. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+      `Произошла ошибка при генерации изображения. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
       message: 'Error in image conversation',

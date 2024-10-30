@@ -6,6 +6,7 @@ import { logError } from '../utils/utilFunctions';
 import { PACKAGES } from '../bot-packages';
 import { ICreatePayment } from '../types/yookassaTypes';
 import yookassaService from '../utils/yookassaService';
+import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 
 const cancelKeyboard = new InlineKeyboard().text(
   'Отменить ❌',
@@ -116,7 +117,7 @@ export async function createPaymentConversation(
     );
   } catch (error) {
     await ctx.reply(
-      'Произошла ошибка при создании ссылки для оплаты. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+      `Произошла ошибка при создании ссылки для оплаты. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
       message: 'Error in createPaymentConversation',

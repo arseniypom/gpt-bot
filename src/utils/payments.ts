@@ -11,7 +11,7 @@ import {
 import { MyContext, PackageName } from '../types/types';
 import User from '../../db/User';
 import TelegramTransaction from '../../db/TelegramTransaction';
-import { getBalanceMessage } from './consts';
+import { getBalanceMessage, SUPPORT_MESSAGE_POSTFIX } from './consts';
 
 export const createInvoice = async (ctx: CallbackQueryContext<MyContext>) => {
   await ctx.answerCallbackQuery();
@@ -76,7 +76,7 @@ export const createInvoice = async (ctx: CallbackQueryContext<MyContext>) => {
     );
   } catch (error) {
     await ctx.reply(
-      'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+      `Произошла ошибка при пополнении баланса. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
       message: 'Error in topup callbackQuery',
@@ -129,7 +129,7 @@ export const telegramSuccessfulPaymentHandler = async (ctx: any) => {
     });
   } catch (error) {
     await ctx.reply(
-      'Произошла ошибка при пополнении баланса. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+      `Произошла ошибка при пополнении баланса. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
       message: 'Error in successful_payment callbackQuery',
@@ -216,7 +216,7 @@ export const createPaymentLink = async (
     );
   } catch (error) {
     await ctx.reply(
-      'Произошла ошибка при создании ссылки для оплаты. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+      `Произошла ошибка при создании ссылки для оплаты. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
       message: 'Error in createPaymentLink callbackQuery',

@@ -26,6 +26,7 @@ import {
   getNoBalanceMessage,
   HELP_MESSAGE,
   MAX_HISTORY_LENGTH,
+  SUPPORT_MESSAGE_POSTFIX,
 } from './src/utils/consts';
 import {
   start,
@@ -168,7 +169,7 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
     );
   } catch (error) {
     await ctx.reply(
-      'Произошла ошибка при сохранении модели. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+      `Произошла ошибка при сохранении модели. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
       message: 'Error in callbackQuery handler',
@@ -198,7 +199,7 @@ bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
   const quality = ctx.callbackQuery.data;
   if (!isValidImageGenerationQuality(quality)) {
     await ctx.callbackQuery.message?.editText(
-      'Что-то пошло не так. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+      `Что-то пошло не так. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     return;
   }
@@ -263,7 +264,7 @@ bot.command('balance', async (ctx) => {
     });
   } catch (error) {
     await ctx.reply(
-      'Произошла ошибка при получении балансов. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+      `Произошла ошибка при получении балансов. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
       message: 'Error in /balance command',
@@ -373,7 +374,7 @@ bot.on('message:text', async (ctx) => {
 
     if (!answer) {
       await responseMessage.editText(
-        'Произошла ошибка при генерации ответа. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+        `Произошла ошибка при генерации ответа. ${SUPPORT_MESSAGE_POSTFIX}`,
       );
       return;
     }

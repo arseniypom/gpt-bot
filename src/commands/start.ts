@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { User as TelegramUser } from '@grammyjs/types';
 import { logError } from '../utils/utilFunctions';
-import { START_MESSAGE } from '../utils/consts';
+import { START_MESSAGE, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 import { MyContext } from '../types/types';
 import User from '../../db/User';
 import Chat from '../../db/Chat';
@@ -59,7 +59,7 @@ export const checkSubscriptionAndRegisterUser = async (
     }
   } catch (error) {
     await ctx.reply(
-      'Произошла ошибка при проверке подпски на канал. Пожалуйста, попробуйте позже или обратитесь в поддержку /support',
+      `Произошла ошибка при проверке подписки на канал. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
       message: 'Error in checkSubscriptionAndRegisterUser callbackQuery',
@@ -107,7 +107,7 @@ export const registerUser = async (ctx: CallbackQueryContext<MyContext>) => {
     }
   } catch (error) {
     await ctx.reply(
-      'Произошла ошибка при создании персонального чат-бота. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+      `Произошла ошибка при создании персонального чат-бота. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
       message: 'Error in /start command',
