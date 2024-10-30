@@ -14,7 +14,7 @@ export const getModelsKeyboard = (activeModel: AiModelsLabels) => {
   return InlineKeyboard.from(buttonRows);
 };
 
-export const changeModel = async (
+export const initiateAiModelChange = async (
   ctx: CallbackQueryContext<MyContext> | MyContext,
 ) => {
   if (ctx.callbackQuery) {

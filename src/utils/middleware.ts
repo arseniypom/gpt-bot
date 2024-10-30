@@ -10,7 +10,12 @@ export const checkUserInDB = async (
   ctx: MyContext | unknown,
   next: NextFunction,
 ): Promise<void> => {
-  if (!isMyContext(ctx) || ctx.hasCommand('start')) {
+  if (
+    !isMyContext(ctx) ||
+    ctx.hasCommand('start') ||
+    ctx.hasCommand('support') ||
+    ctx.callbackQuery?.data === 'checkSubscriptionAndRegisterUser'
+  ) {
     await next();
     return;
   }

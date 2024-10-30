@@ -26,10 +26,21 @@ import {
   getNoBalanceMessage,
   HELP_MESSAGE,
   MAX_HISTORY_LENGTH,
-  START_MESSAGE,
 } from './src/utils/consts';
-import { getStats, changeModel, topupImg, topupText } from './src/commands';
-import { topupAndChangeModelKeyboard, initiateTopupKeyboard } from './src/commands/topup';
+import {
+  start,
+  getStats,
+  initiateAiModelChange,
+  topupImg,
+  topupText,
+  createNewChat,
+  checkSubscriptionAndRegisterUser,
+} from './src/commands';
+import {
+  topupAndChangeModelKeyboard,
+  initiateTopupKeyboard,
+} from './src/commands/topup';
+import { getModelsKeyboard } from './src/commands/changeAiModel';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
 import { createPaymentConversation } from './src/conversations/createPaymentConversation';
@@ -41,7 +52,6 @@ import {
   getMongoDbUri,
 } from './src/utils/utilFunctions';
 import { telegramSuccessfulPaymentHandler } from './src/utils/payments';
-import { getModelsKeyboard } from './src/commands/changeModel';
 
 const BOT_API_KEY = getBotApiKey();
 
@@ -120,6 +130,10 @@ void bot.api.setMyCommands([
 bot.on(':successful_payment', telegramSuccessfulPaymentHandler);
 
 // Callback queries
+bot.callbackQuery(
+  'checkSubscriptionAndRegisterUser',
+  checkSubscriptionAndRegisterUser,
+);
 bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
   await ctx.answerCallbackQuery();
   const selectedModel = ctx.callbackQuery.data;
@@ -202,90 +216,16 @@ bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
 });
 bot.callbackQuery('topupText', topupText);
 bot.callbackQuery('topup', topupImg);
-bot.callbackQuery('changeModel', changeModel);
+bot.callbackQuery('initiateAiModelChange', initiateAiModelChange);
 
 // User commands
-bot.command('start', async (ctx) => {
-  const { id, first_name, username } = ctx.from as TelegramUser;
-
-  await ctx.reply(START_MESSAGE, {
-    parse_mode: 'MarkdownV2',
-    link_preview_options: {
-      is_disabled: true,
-    },
-  });
-
-  try {
-    let user = await User.findOne({ telegramId: id });
-    if (!user) {
-      const responseMsg = await ctx.reply(
-        'Создаю Ваш персональный чат-бот, одну секунду...',
-      );
-      user = await User.create({
-        telegramId: id,
-        firstName: first_name,
-        userName: username,
-      });
-      await responseMsg.editText(
-        'Ваш персональный чат-бот создан. Пожалуйста, введите запрос',
-      );
-    } else {
-      await ctx.reply(
-        'Посмотрите свой баланс /balance или напишите запрос, и я помогу Вам с ним!',
-      );
-    }
-
-    const chat = await Chat.create({
-      userId: user._id,
-    });
-
-    ctx.session.chatId = chat._id.toString();
-  } catch (error) {
-    await ctx.reply(
-      'Произошла ошибка при создании персонального чат-бота. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
-    );
-    logError({
-      message: 'Error in /start command',
-      error,
-      telegramId: id,
-      username,
-    });
-  }
-});
+bot.command('start', start);
 bot.command('help', async (ctx) => {
   await ctx.reply(HELP_MESSAGE, {
     parse_mode: 'MarkdownV2',
   });
 });
-bot.command('newchat', async (ctx) => {
-  const { id } = ctx.from as TelegramUser;
-
-  try {
-    const user = await User.findOne({ telegramId: id });
-    if (!user) {
-      await ctx.reply('Пожалуйста, начните с команды /start.');
-      return;
-    }
-
-    const chat = await Chat.create({
-      userId: user._id,
-    });
-
-    ctx.session.chatId = chat._id.toString();
-
-    await ctx.reply('Новый чат создан. Пожалуйста, введите запрос.');
-  } catch (error) {
-    await ctx.reply(
-      'Произошла ошибка при создании нового чата. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
-    );
-    logError({
-      message: 'Error in /newchat command',
-      error,
-      telegramId: ctx.from?.id,
-      username: ctx.from?.username,
-    });
-  }
-});
+bot.command('newchat', createNewChat);
 bot.command('image', async (ctx) => {
   if (process.env.IMAGE_QUALITY_CHANGE_AVAILABLE === 'false') {
     await ctx.conversation.enter('imageConversation');
@@ -306,7 +246,7 @@ bot.command('image', async (ctx) => {
     },
   );
 });
-bot.command('models', changeModel);
+bot.command('models', initiateAiModelChange);
 bot.command('balance', async (ctx) => {
   const { id } = ctx.from as TelegramUser;
 

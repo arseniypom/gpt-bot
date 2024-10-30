@@ -10,7 +10,7 @@ export const initiateTopupKeyboard = new InlineKeyboard().text(
 export const topupAndChangeModelKeyboard = new InlineKeyboard()
   .text('Пополнить баланс', 'topup')
   .row()
-  .text('Сменить модель', 'changeModel');
+  .text('Сменить модель', 'initiateAiModelChange');
 const topupKeyboardForImg = new InlineKeyboard()
   .text(PACKAGES.req1.numberIcon, 'req1')
   .text(PACKAGES.req2.numberIcon, 'req2')
