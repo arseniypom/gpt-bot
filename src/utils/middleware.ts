@@ -7,9 +7,13 @@ import { isMyContext } from '../types/typeguards';
 import logger from './logger';
 
 export const checkUserInDB = async (
-  ctx: MyContext | unknown,
+  ctx: MyContext | { chat: { type: 'private' | 'channel' } },
   next: NextFunction,
 ): Promise<void> => {
+  if (ctx.chat?.type === 'channel') {
+    return;
+  }
+
   if (
     !isMyContext(ctx) ||
     ctx.hasCommand('start') ||

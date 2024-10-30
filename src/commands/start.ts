@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { User as TelegramUser } from '@grammyjs/types';
 import { logError } from '../utils/utilFunctions';
 import { START_MESSAGE } from '../utils/consts';
@@ -6,9 +7,16 @@ import User from '../../db/User';
 import Chat from '../../db/Chat';
 import { CallbackQueryContext, InlineKeyboard } from 'grammy';
 import bot from '../../bot';
+import { getChannelTelegramName } from '../utils/utilFunctions';
+
+const channelTelegramName = getChannelTelegramName();
+
+if (!channelTelegramName) {
+  throw new Error('Env var CHANNEL_TELEGRAM_NAME_* is not defined');
+}
 
 const startKeyboard = new InlineKeyboard()
-  .url('Ссылка на канал', 'https://t.me/ai_kitchenx')
+  .url('Ссылка на канал', `https://t.me/${channelTelegramName}`)
   .row()
   .text('Проверить подписку', 'checkSubscriptionAndRegisterUser');
 
@@ -28,13 +36,13 @@ export const checkSubscriptionAndRegisterUser = async (
   await ctx.answerCallbackQuery();
   const { id, username } = ctx.from as TelegramUser;
   try {
-    const member = await bot.api.getChatMember('@ai_kitchenx', id);
+    const member = await bot.api.getChatMember(`@${channelTelegramName}`, id);
     switch (member.status) {
       case 'creator':
       case 'administrator':
       case 'member':
         await ctx.callbackQuery.message?.editText(
-          'Подписка оформлена ✅\nТеперь Вы можете пользоваться ботом.',
+          'Подписка оформлена ✅\nВы можете пользоваться ботом.',
         );
         await registerUser(ctx);
         break;

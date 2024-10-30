@@ -65,6 +65,15 @@ export const getMongoDbUri = () => {
   }
 };
 
+export const getChannelTelegramName = () => {
+  switch (process.env.NODE_ENV) {
+    case 'production':
+      return process.env.CHANNEL_TELEGRAM_NAME_PROD;
+    default:
+      return process.env.CHANNEL_TELEGRAM_NAME_DEV;
+  }
+};
+
 export function logError({
   message,
   username,
