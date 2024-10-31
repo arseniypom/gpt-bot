@@ -19,6 +19,7 @@ export const checkUserInDB = async (
     !isMyContext(ctx) ||
     ctx.hasCommand('start') ||
     ctx.hasCommand('support') ||
+    (await ctx.conversation.active())?.supportConversation ||
     ctx.callbackQuery?.data === 'checkSubscriptionAndRegisterUser'
   ) {
     await next();
@@ -48,9 +49,7 @@ export const checkUserInDB = async (
       telegramId: ctx.from?.id,
       username: ctx.from?.username,
     });
-    await ctx.reply(
-      `Произошла ошибка. ${SUPPORT_MESSAGE_POSTFIX}`,
-    );
+    await ctx.reply(`Произошла ошибка. ${SUPPORT_MESSAGE_POSTFIX}`);
   }
 };
 
