@@ -112,12 +112,12 @@ void bot.api.setMyCommands([
     description: '💬 Начать новый чат',
   },
   {
-    command: 'image',
-    description: '🖼️ Сгенерировать изображение',
-  },
-  {
     command: 'models',
     description: '🤖 Выбрать AI-модель',
+  },
+  {
+    command: 'image',
+    description: '🖼️ Сгенерировать изображение',
   },
   {
     command: 'help',
@@ -163,7 +163,7 @@ bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
       AiModels[selectedModel] === AiModels.GPT_4O ? '' : ' (базовые запросы) ';
 
     await ctx.callbackQuery.message?.editText(
-      `Вы переключились на модель\n${AiModelsLabels[selectedModel]}${messagePostfix} ✅`,
+      `Вы переключились на модель\n${AiModelsLabels[selectedModel]}${messagePostfix}`,
       {
         reply_markup: getModelsKeyboard(AiModelsLabels[selectedModel]),
       },
