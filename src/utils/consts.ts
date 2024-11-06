@@ -1,4 +1,6 @@
+import dayjs from 'dayjs';
 import { IUser } from '../../db/User';
+import { SUBSCRIPTIONS } from '../bot-subscriptions';
 import { AiModel, AiModelsLabels } from '../types/types';
 
 export const MAX_HISTORY_LENGTH = 5;
@@ -44,8 +46,7 @@ _P\\.S\\. Доступные модели: GPT\\-4o\\-mini и GPT\\-4o для т
 _Оферта\\: [telegra\\.ph/Oferta\\-10\\-29](https://telegra.ph/Oferta-10-29)_
 `;
 
-export const START_MESSAGE_V2 =
-  `
+export const START_MESSAGE_V2 = `
   👋 Здравствуйте\\!  
 Я \\- Ваш универсальный ИИ\\-ассистент ✔️
 
@@ -65,7 +66,7 @@ export const START_MESSAGE_V2 =
 _P\\.S\\. Доступные модели: GPT\\-4o\\-mini и GPT\\-4o для текстовых ответов и DALL\\-E 3 🆕 для генерации изображений /models\\._
 
 _Оферта\\: [telegra\\.ph/Oferta\\-10\\-29](https://telegra.ph/Oferta-10-29)_
-`
+`;
 
 export const HELP_MESSAGE = `
 *Команды:*
@@ -88,6 +89,9 @@ export const HELP_MESSAGE = `
 export const SUPPORT_MESSAGE_POSTFIX =
   'Пожалуйста, попробуйте позже или обратитесь в поддержку /support';
 
+export const YOOKASSA_PAYMENT_MESSAGE =
+  '*💳 Для оплаты нажмите кнопку "Оплатить" ниже*\n\n_🔐 Вы будете перенаправлены на страницу платежной системы Юкасса\n__Платеж будет безопасно проведен на стороне Юкасса, бот не имеет доступа к Вашим платежным данным и нигде их не сохраняет___';
+
 export const getNoBalanceMessage = (model: AiModel) => {
   return `У вас нет доступных запросов для обращения к ${AiModelsLabels[model]}`;
 };
@@ -98,6 +102,30 @@ export const getBalanceMessage = (user: IUser) => {
 
 ⭐️ Базовые запросы: ${user.basicRequestsBalance}
 🌟 PRO запросы: ${user.proRequestsBalance}
+🖼️ Генерация изображений: ${user.imageGenerationBalance}
+
+_\\*Про виды запросов: /help_
+  `;
+};
+
+export const getProfileMessage = (user: IUser) => {
+  const expirationDate = dayjs(user.subscriptionExpiry)
+    .format('DD.MM.YYYY')
+    .replace(/\./g, '\\.');
+  return `
+*Ваш уровень подписки: ${SUBSCRIPTIONS[user.subscriptionLevel].icon} ${
+    SUBSCRIPTIONS[user.subscriptionLevel].title
+  }*
+${user.subscriptionExpiry ? `_Действует до ${expirationDate}_` : ''}
+
+*Остаток запросов по подписке на сегодня*
+⭐️ Базовые: ${user.basicRequestsBalanceLeftToday}
+🌟 PRO: ${user.proRequestsBalanceLeftToday}
+🖼️ Генерация изображений: ${user.imageGenerationBalanceLeftToday}
+
+*Дополнительные запросы*
+⭐️ Базовые: ${user.basicRequestsBalance}
+🌟 PRO: ${user.proRequestsBalance}
 🖼️ Генерация изображений: ${user.imageGenerationBalance}
 
 _\\*Про виды запросов: /help_

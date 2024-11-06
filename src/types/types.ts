@@ -10,6 +10,7 @@ export interface SessionData {
   chatId?: string;
   imageQuality: ImageGenerationQuality;
   packageName?: PackageName;
+  subscriptionLevel?: SubscriptionLevel;
   user?: Pick<IUser, 'telegramId' | 'firstName' | 'userName'>;
 }
 
@@ -59,4 +60,33 @@ export interface PackageData {
   description: string;
   title: string;
   numberIcon: string;
+}
+
+export enum SubscriptionLevels {
+  FREE = 'FREE',
+  BASIC = 'BASIC',
+  PRO = 'PRO',
+  ULTIMATE = 'ULTIMATE',
+}
+
+export type SubscriptionLevel = keyof typeof SubscriptionLevels;
+
+export interface SubscriptionData {
+  basicRequestsPerDay: number;
+  proRequestsPerDay?: number;
+  imageGenerationPerDay?: number;
+  price: number;
+  description: string;
+  title: string;
+  icon: string;
+}
+
+export interface SubscriptionDuration {
+  days?: number;
+  months?: number;
+}
+
+export interface CancellationDetails {
+  party?: string;
+  reason?: string;
 }

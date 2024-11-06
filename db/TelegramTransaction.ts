@@ -12,4 +12,4 @@ const telegramTransactionSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model('TelegramTransaction', telegramTransactionSchema);
+export default mongoose.model('telegram_transaction', telegramTransactionSchema);

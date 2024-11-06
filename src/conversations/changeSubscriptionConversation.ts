@@ -3,7 +3,7 @@ import { InlineKeyboard } from 'grammy';
 import { v4 as uuidv4 } from 'uuid';
 import { type MyConversation, type MyContext } from '../types/types';
 import { logError } from '../utils/utilFunctions';
-import { PACKAGES } from '../bot-packages';
+import { SUBSCRIPTIONS } from '../bot-subscriptions';
 import { ICreatePayment } from '../types/yookassaTypes';
 import yookassaService from '../utils/yookassaService';
 import {
@@ -13,17 +13,19 @@ import {
 
 const cancelKeyboard = new InlineKeyboard().text(
   'Отменить ❌',
-  'cancelPayment',
+  'cancelSubscription',
 );
 
-export async function createPaymentConversation(
+export async function changeSubscriptionConversation(
   conversation: MyConversation,
   ctx: MyContext,
 ) {
-  const packageKey = ctx.session.packageName;
+  const subscriptionLevel = ctx.session.subscriptionLevel;
 
-  if (!packageKey) {
-    ctx.reply('Пожалуйста, выберите пакет повторно с помощью команды /topup');
+  if (!subscriptionLevel) {
+    ctx.reply(
+      'Пожалуйста, выберите тариф подписки повторно с помощью команды /subscription',
+    );
     return;
   }
 
@@ -35,8 +37,8 @@ export async function createPaymentConversation(
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   let isFirstAttempt = true;
-  const { numberIcon, description } = PACKAGES[packageKey];
-  const messagePrefix = `*Выбран пакет:*\n${numberIcon} ${description}`;
+  const { icon, description, title } = SUBSCRIPTIONS[subscriptionLevel];
+  const messagePrefix = `*Выбран тариф: ${icon} ${title}*\nОписание: ${description}`;
 
   do {
     const requestText = isFirstAttempt
@@ -58,12 +60,12 @@ export async function createPaymentConversation(
 
   // Creating payment
   try {
-    const packageData = PACKAGES[packageKey];
+    const subscriptionData = SUBSCRIPTIONS[subscriptionLevel];
 
     const idempotenceKey = uuidv4();
 
     const amountObj = {
-      value: `${packageData.price}.00`,
+      value: `${subscriptionData.price}.00`,
       currency: 'RUB',
     };
 
@@ -74,14 +76,14 @@ export async function createPaymentConversation(
         return_url: 'https://gpt-bot-frontend.vercel.app/',
       },
       capture: true,
-      description: packageData.description,
+      description: subscriptionData.description,
       receipt: {
         customer: {
           email,
         },
         items: [
           {
-            description: packageData.description,
+            description: subscriptionData.description,
             quantity: 1,
             amount: amountObj,
             vat_code: 1,
@@ -90,11 +92,15 @@ export async function createPaymentConversation(
       },
       metadata: {
         telegramId: id,
-        packageName: packageKey,
-        basicRequestsBalance: packageData.basicRequestsBalance || null,
-        proRequestsBalance: packageData.proRequestsBalance || null,
-        imageGenerationBalance: packageData.imageGenerationBalance || null,
+        subscriptionLevel,
+        basicRequestsPerDay: subscriptionData.basicRequestsPerDay,
+        proRequestsPerDay: subscriptionData.proRequestsPerDay,
+        imageGenerationPerDay: subscriptionData.imageGenerationPerDay,
+        subscriptionDuration: JSON.stringify({
+          days: 1,
+        }),
       },
+      save_payment_method: true,
     };
 
     const paymentObj = await yookassaService.createPayment(

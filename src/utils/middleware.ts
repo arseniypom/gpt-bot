@@ -20,7 +20,7 @@ export const checkUserInDB = async (
     ctx.hasCommand('start') ||
     ctx.hasCommand('support') ||
     (await ctx.conversation.active())?.supportConversation ||
-    ctx.callbackQuery?.data === 'checkSubscriptionAndRegisterUser'
+    ctx.callbackQuery?.data === 'checkChannelJoinAndRegisterUser'
   ) {
     await next();
     return;

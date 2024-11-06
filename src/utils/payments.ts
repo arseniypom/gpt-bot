@@ -11,7 +11,11 @@ import {
 import { MyContext, PackageName } from '../types/types';
 import User from '../../db/User';
 import TelegramTransaction from '../../db/TelegramTransaction';
-import { getBalanceMessage, SUPPORT_MESSAGE_POSTFIX } from './consts';
+import {
+  getBalanceMessage,
+  SUPPORT_MESSAGE_POSTFIX,
+  YOOKASSA_PAYMENT_MESSAGE,
+} from './consts';
 
 export const createInvoice = async (ctx: CallbackQueryContext<MyContext>) => {
   await ctx.answerCallbackQuery();
@@ -29,15 +33,12 @@ export const createInvoice = async (ctx: CallbackQueryContext<MyContext>) => {
     }
     const { title, price, description } = PACKAGES[packageKey];
 
-    await ctx.reply(
-      '*💳 Для оплаты нажмите кнопку "оплатить" ниже*\n\n_🔐 Платеж будет безопасно проведен через платежную систему [Юкасса](https://yookassa.ru)\n__бот не имеет доступа к Вашим платежным данным и нигде не сохраняет их___',
-      {
-        parse_mode: 'MarkdownV2',
-        link_preview_options: {
-          is_disabled: true,
-        },
+    await ctx.reply(YOOKASSA_PAYMENT_MESSAGE, {
+      parse_mode: 'MarkdownV2',
+      link_preview_options: {
+        is_disabled: true,
       },
-    );
+    });
 
     const providerInvoiceData = {
       receipt: {
@@ -207,13 +208,10 @@ export const createPaymentLink = async (
 
     const paymentKeyboard = new InlineKeyboard().url('Оплатить', paymentUrl);
 
-    await ctx.reply(
-      '*💳 Для оплаты нажмите кнопку "Оплатить" ниже*\n\n_🔐 Вы будете перенаправлены на страницу платежной системы Юкасса\n__Платеж будет безопасно проведен на стороне Юкасса, бот не имеет доступа к Вашим платежным данным и нигде их не сохраняет___',
-      {
-        parse_mode: 'MarkdownV2',
-        reply_markup: paymentKeyboard,
-      },
-    );
+    await ctx.reply(YOOKASSA_PAYMENT_MESSAGE, {
+      parse_mode: 'MarkdownV2',
+      reply_markup: paymentKeyboard,
+    });
   } catch (error) {
     await ctx.reply(
       `Произошла ошибка при создании ссылки для оплаты. ${SUPPORT_MESSAGE_POSTFIX}`,

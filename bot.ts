@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import './src/cron/subscriptionRenew';
+import './src/cron/refreshRequests';
 import mongoose from 'mongoose';
 import { Bot, GrammyError, HttpError, InlineKeyboard, session } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
@@ -12,6 +14,7 @@ import {
   SessionData,
   AiModels,
   PackageName,
+  SubscriptionLevel,
 } from './src/types/types';
 import {
   isValidAiModel,
@@ -22,7 +25,6 @@ import Chat from './db/Chat';
 import Message from './db/Message';
 import { answerWithChatGPT } from './src/utils/gpt';
 import {
-  getBalanceMessage,
   getNoBalanceMessage,
   HELP_MESSAGE,
   MAX_HISTORY_LENGTH,
@@ -36,7 +38,13 @@ import {
   topupImg,
   topupText,
   createNewChat,
-  checkSubscriptionAndRegisterUser,
+  checkChannelJoinAndRegisterUser,
+  subscription,
+  generateImage,
+  myProfile,
+  balance,
+  support,
+  help,
 } from './src/commands';
 import {
   topupAndChangeModelKeyboard,
@@ -46,7 +54,9 @@ import { getModelsKeyboard } from './src/commands/changeAiModel';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
 import { createPaymentConversation } from './src/conversations/createPaymentConversation';
+import { changeSubscriptionConversation } from './src/conversations/changeSubscriptionConversation';
 import { PACKAGES } from './src/bot-packages';
+import { SUBSCRIPTIONS } from './src/bot-subscriptions';
 import { checkUserInDB, ignoreOld } from './src/utils/middleware';
 import {
   logError,
@@ -97,6 +107,7 @@ bot.use(checkUserInDB);
 bot.use(createConversation(imageConversation));
 bot.use(createConversation(supportConversation));
 bot.use(createConversation(createPaymentConversation));
+bot.use(createConversation(changeSubscriptionConversation));
 
 void bot.api.setMyCommands([
   {
@@ -133,8 +144,8 @@ bot.on(':successful_payment', telegramSuccessfulPaymentHandler);
 
 // Callback queries
 bot.callbackQuery(
-  'checkSubscriptionAndRegisterUser',
-  checkSubscriptionAndRegisterUser,
+  'checkChannelJoinAndRegisterUser',
+  checkChannelJoinAndRegisterUser,
 );
 bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
   await ctx.answerCallbackQuery();
@@ -195,6 +206,11 @@ bot.callbackQuery('cancelPayment', async (ctx) => {
   await ctx.conversation.exit('createPaymentConversation');
   await ctx.callbackQuery.message?.editText('Оплата отменена');
 });
+bot.callbackQuery('cancelSubscription', async (ctx) => {
+  await ctx.answerCallbackQuery('Отменено ✅');
+  await ctx.conversation.exit('changeSubscriptionConversation');
+  await ctx.callbackQuery.message?.editText('Оплата отменена');
+});
 bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
   await ctx.answerCallbackQuery();
   const quality = ctx.callbackQuery.data;
@@ -216,72 +232,40 @@ bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
   ctx.session.packageName = ctx.callbackQuery.data as PackageName;
   await ctx.conversation.enter('createPaymentConversation');
 });
+bot.callbackQuery(Object.keys(SUBSCRIPTIONS), async (ctx) => {
+  await ctx.answerCallbackQuery();
+  await ctx.callbackQuery.message?.editReplyMarkup(undefined);
+  ctx.session.subscriptionLevel = ctx.callbackQuery.data as SubscriptionLevel;
+  await ctx.conversation.enter('changeSubscriptionConversation');
+});
 bot.callbackQuery('topupText', topupText);
 bot.callbackQuery('topup', topupImg);
+bot.callbackQuery('subscription', subscription);
 bot.callbackQuery('initiateAiModelChange', initiateAiModelChange);
 
 // User commands
 bot.command('start', start);
-bot.command('help', async (ctx) => {
-  await ctx.reply(HELP_MESSAGE, {
-    parse_mode: 'MarkdownV2',
-  });
-});
+bot.command('help', help);
 bot.command('newchat', createNewChat);
-bot.command('image', async (ctx) => {
-  if (process.env.IMAGE_QUALITY_CHANGE_AVAILABLE !== 'true') {
-    await ctx.conversation.enter('imageConversation');
-    return;
-  }
-  const qualityKeyboard = new InlineKeyboard()
-    .text('Standard', ImageGenerationQuality.STANDARD)
-    .text('HD', ImageGenerationQuality.HD)
-    .row()
-    .text('Отменить ❌', 'cancelImageGeneration');
-
-  await ctx.reply(
-    `Выберите качество изображения:
-    standard — стандартное
-    hd — повышенная детализация`,
-    {
-      reply_markup: qualityKeyboard,
-    },
-  );
-});
+bot.command('image', generateImage);
 bot.command('models', initiateAiModelChange);
-bot.command('balance', async (ctx) => {
-  const { id } = ctx.from as TelegramUser;
-
-  try {
-    const user = await User.findOne({ telegramId: id });
-    if (!user) {
-      await ctx.reply('Пожалуйста, начните с команды /start.');
-      return;
-    }
-
-    await ctx.reply(getBalanceMessage(user), {
-      parse_mode: 'MarkdownV2',
-      reply_markup: initiateTopupKeyboard,
-    });
-  } catch (error) {
-    await ctx.reply(
-      `Произошла ошибка при получении балансов. ${SUPPORT_MESSAGE_POSTFIX}`,
-    );
-    logError({
-      message: 'Error in /balance command',
-      error,
-      telegramId: ctx.from?.id,
-      username: ctx.from?.username,
-    });
-  }
-});
+bot.command('balance', balance);
 bot.command('topup', topupImg);
-bot.command('support', async (ctx) => {
-  await ctx.conversation.enter('supportConversation');
-});
+bot.command('subscription', subscription);
+bot.command('profile', myProfile);
+bot.command('support', support);
 
 // Admin commands
 bot.command('stats', getStats);
+
+// Keyboard handlers
+bot.hears('🎉 Оформить подписку', subscription);
+bot.hears('🪪 Мой профиль', myProfile);
+bot.hears('💬 Начать новый чат', createNewChat);
+bot.hears('🖼️ Сгенерировать изображение', generateImage);
+bot.hears('🤖 Выбрать AI-модель', initiateAiModelChange);
+bot.hears('ℹ️ Информация', help);
+bot.hears('🆘 Поддержка', support);
 
 // Message handler
 bot.on('message:text', async (ctx) => {

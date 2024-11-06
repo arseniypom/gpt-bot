@@ -5,7 +5,7 @@ import { START_MESSAGE_V2, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 import { MyContext } from '../types/types';
 import User from '../../db/User';
 import Chat from '../../db/Chat';
-import { CallbackQueryContext, InlineKeyboard } from 'grammy';
+import { CallbackQueryContext, InlineKeyboard, Keyboard } from 'grammy';
 import bot from '../../bot';
 import { getChannelTelegramName } from '../utils/utilFunctions';
 
@@ -20,7 +20,7 @@ if (!channelTelegramName) {
 const startKeyboard = new InlineKeyboard()
   .url('Ссылка на канал', `https://t.me/${channelTelegramName}`)
   .row()
-  .text('Проверить подписку', 'checkSubscriptionAndRegisterUser');
+  .text('Проверить подписку', 'checkChannelJoinAndRegisterUser');
 
 export const start = async (ctx: MyContext) => {
   if (!isRegistrationEnabled) {
@@ -38,7 +38,7 @@ export const start = async (ctx: MyContext) => {
   );
 };
 
-export const checkSubscriptionAndRegisterUser = async (
+export const checkChannelJoinAndRegisterUser = async (
   ctx: CallbackQueryContext<MyContext>,
 ) => {
   await ctx.answerCallbackQuery();
@@ -70,7 +70,7 @@ export const checkSubscriptionAndRegisterUser = async (
       `Произошла ошибка при проверке подписки на канал. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
-      message: 'Error in checkSubscriptionAndRegisterUser callbackQuery',
+      message: 'Error in checkChannelJoinAndRegisterUser callbackQuery',
       error,
       telegramId: id,
       username,
@@ -78,11 +78,27 @@ export const checkSubscriptionAndRegisterUser = async (
   }
 };
 
+const mainKeyboard = new Keyboard()
+  .text('🎉 Оформить подписку')
+  .row()
+  .text('🪪 Мой профиль')
+  .row()
+  .text('💬 Начать новый чат')
+  .row()
+  .text('🖼️ Сгенерировать изображение')
+  .text('🤖 Выбрать AI-модель')
+  .row()
+  .text('ℹ️ Информация')
+  .text('🆘 Поддержка')
+  .resized()
+  .persistent();
+
 export const registerUser = async (ctx: CallbackQueryContext<MyContext>) => {
   const { id, first_name, username } = ctx.from as TelegramUser;
 
   await ctx.reply(START_MESSAGE_V2, {
     parse_mode: 'MarkdownV2',
+    reply_markup: mainKeyboard,
     link_preview_options: {
       is_disabled: true,
     },
