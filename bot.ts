@@ -229,7 +229,7 @@ bot.command('help', async (ctx) => {
 });
 bot.command('newchat', createNewChat);
 bot.command('image', async (ctx) => {
-  if (process.env.IMAGE_QUALITY_CHANGE_AVAILABLE === 'false') {
+  if (process.env.IMAGE_QUALITY_CHANGE_AVAILABLE !== 'true') {
     await ctx.conversation.enter('imageConversation');
     return;
   }

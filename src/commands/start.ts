@@ -10,6 +10,8 @@ import bot from '../../bot';
 import { getChannelTelegramName } from '../utils/utilFunctions';
 
 const channelTelegramName = getChannelTelegramName();
+const isRegistrationEnabled =
+  process.env.NEW_USERS_REGISTRATION_AVAILABLE === 'true';
 
 if (!channelTelegramName) {
   throw new Error('Env var CHANNEL_TELEGRAM_NAME_* is not defined');
@@ -21,6 +23,12 @@ const startKeyboard = new InlineKeyboard()
   .text('Проверить подписку', 'checkSubscriptionAndRegisterUser');
 
 export const start = async (ctx: MyContext) => {
+  if (!isRegistrationEnabled) {
+    await ctx.reply(
+      'К сожалению, регистрация новых пользователей временно приостановлена',
+    );
+    return;
+  }
   await ctx.reply(
     'Чтобы пользоваться ботом, Вам необходимо подписаться на наш канал по ссылке ниже 👇\n\nЭто сделано для защиты от спама и вредоносных ботов\\.\nПожалуйста, подпишитесь и нажмите на кнопку "Проверить подписку"',
     {
