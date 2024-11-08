@@ -13,7 +13,7 @@ import { mainKeyboard } from '../commands/start';
 import { isValidSubscriptionDuration } from '../types/typeguards';
 
 // Schedule the task to run every day at 21:00 UTC
-cron.schedule('04 12 * * *', async () => {
+cron.schedule('00 21 * * *', async () => {
   console.log('Current time:', dayjs().format('HH:mm'));
   console.log('running subscription check cron job');
 
@@ -29,11 +29,10 @@ cron.schedule('04 12 * * *', async () => {
     });
 
     for (const user of users) {
-      const subscriptionDuration =
-        user.subscriptionDuration && JSON.parse(user.subscriptionDuration);
+      const { subscriptionDuration } = user;
       if (!isValidSubscriptionDuration(subscriptionDuration)) {
         throw new Error(
-          `telegramId: ${user.telegramId} userName: @${user.userName} subscriptionDuration is invalid or not set: ${user.subscriptionDuration}`,
+          `telegramId: ${user.telegramId} userName: @${user.userName} subscriptionDuration is invalid or not set: ${subscriptionDuration}`,
         );
       }
 
@@ -107,18 +106,15 @@ cron.schedule('04 12 * * *', async () => {
                 .toDate();
             }
 
-            user.basicRequestsBalanceLeftToday += Number(
-              subscriptionData.basicRequestsPerDay,
-            );
+            user.basicRequestsBalanceLeftToday =
+              subscriptionData.basicRequestsPerDay || 0;
             if (subscriptionData.proRequestsPerDay) {
-              user.proRequestsBalanceLeftToday += Number(
-                subscriptionData.proRequestsPerDay,
-              );
+              user.proRequestsBalanceLeftToday =
+                subscriptionData.proRequestsPerDay || 0;
             }
             if (subscriptionData.imageGenerationPerDay) {
-              user.imageGenerationBalanceLeftToday += Number(
-                subscriptionData.imageGenerationPerDay,
-              );
+              user.imageGenerationBalanceLeftToday =
+                subscriptionData.imageGenerationPerDay || 0;
             }
             user.newSubscriptionLevel = null;
             user.updatedAt = new Date();

@@ -76,7 +76,6 @@ export const unsubscribeFinalStep = async (
       case 'otherReason':
         user.unsubscribeReason = reason;
         user.newSubscriptionLevel = SubscriptionLevels.FREE;
-        user.subscriptionDuration = null;
         user.updatedAt = new Date();
         await user.save();
 

@@ -7,6 +7,7 @@ import { SUBSCRIPTIONS } from '../bot-subscriptions';
 const BATCH_SIZE = 100;
 const BATCH_DELAY_MS = 1000;
 
+// Schedule the task to run every day at 23:00 UTC
 cron.schedule('0 23 * * *', async () => {
   console.log('Current time:', dayjs().format('HH:mm'));
   console.log('running refresh requests cron job');
@@ -36,7 +37,7 @@ cron.schedule('0 23 * * *', async () => {
       console.log(`Processed ${processedUsers} of ${totalUsers} users`);
 
       if (processedUsers < totalUsers) {
-        await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
+        await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
       }
     }
   } catch (error) {

@@ -5,6 +5,7 @@ import { logError } from '../utils/utilFunctions';
 import { type MyConversation, type MyContext } from '../types/types';
 import User from '../../db/User';
 import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
+import { topupAndManageSubscriptionKeyboard } from '../commands/topup';
 
 const cancelKeyboard = new InlineKeyboard().text(
   '❌ Отменить',
@@ -32,8 +33,18 @@ export async function imageConversation(
       User.findOne({ telegramId: id }),
     );
     if (!user) {
+      await ctx.reply('Пожалуйста, начните новый чат с помощью команды /start');
+      return;
+    }
+    if (
+      user.imageGenerationBalanceLeftToday === 0 &&
+      user.imageGenerationBalance === 0
+    ) {
       await ctx.reply(
-        'Пожалуйста, начните новый чат с помощью команды /start',
+        'У вас закончились запросы на генерацию изображений на сегодня. Пожалуйста, подключите подписку или пополните баланс.',
+        {
+          reply_markup: topupAndManageSubscriptionKeyboard,
+        },
       );
       return;
     }

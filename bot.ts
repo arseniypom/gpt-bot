@@ -14,10 +14,12 @@ import {
   AiModels,
   PackageName,
   SubscriptionLevel,
+  SubscriptionLevels,
 } from './src/types/types';
 import {
   isValidAiModel,
   isValidImageGenerationQuality,
+  isValidSubscriptionLevel,
 } from './src/types/typeguards';
 import User from './db/User';
 import Chat from './db/Chat';
@@ -210,12 +212,22 @@ bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
   ctx.session.packageName = ctx.callbackQuery.data as PackageName;
   await ctx.conversation.enter('createPaymentConversation');
 });
-bot.callbackQuery(Object.keys(SUBSCRIPTIONS), async (ctx) => {
-  await ctx.answerCallbackQuery();
-  await ctx.callbackQuery.message?.editReplyMarkup(undefined);
-  ctx.session.subscriptionLevel = ctx.callbackQuery.data as SubscriptionLevel;
-  await ctx.conversation.enter('buySubscriptionConversation');
-});
+bot.callbackQuery(
+  [
+    SubscriptionLevels.BASIC,
+    SubscriptionLevels.PRO,
+    SubscriptionLevels.ULTIMATE,
+  ],
+  async (ctx) => {
+    await ctx.answerCallbackQuery();
+    await ctx.callbackQuery.message?.editReplyMarkup(undefined);
+    ctx.session.subscriptionLevel = ctx.callbackQuery.data as Exclude<
+      SubscriptionLevel,
+      'FREE'
+    >;
+    await ctx.conversation.enter('buySubscriptionConversation');
+  },
+);
 bot.callbackQuery('topupText', topupText);
 bot.callbackQuery('topup', topupImg);
 bot.callbackQuery('subscription', subscription);
@@ -313,7 +325,10 @@ bot.on('message:text', async (ctx) => {
     }
 
     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
-      if (user.proRequestsBalance === 0) {
+      if (
+        user.proRequestsBalanceLeftToday === 0 &&
+        user.proRequestsBalance === 0
+      ) {
         await responseMessage.editText(
           getNoBalanceMessage(user.selectedModel),
           {
@@ -323,7 +338,10 @@ bot.on('message:text', async (ctx) => {
         return;
       }
     } else {
-      if (user.basicRequestsBalance === 0) {
+      if (
+        user.basicRequestsBalanceLeftToday === 0 &&
+        user.basicRequestsBalance === 0
+      ) {
         await responseMessage.editText(
           getNoBalanceMessage(user.selectedModel),
           {
@@ -370,9 +388,17 @@ bot.on('message:text', async (ctx) => {
     await chat.save();
 
     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
-      user.proRequestsBalance -= 1;
+      if (user.proRequestsBalanceLeftToday > 0) {
+        user.proRequestsBalanceLeftToday -= 1;
+      } else {
+        user.proRequestsBalance -= 1;
+      }
     } else {
-      user.basicRequestsBalance -= 1;
+      if (user.basicRequestsBalanceLeftToday > 0) {
+        user.basicRequestsBalanceLeftToday -= 1;
+      } else {
+        user.basicRequestsBalance -= 1;
+      }
     }
     user.updatedAt = new Date();
     await user.save();

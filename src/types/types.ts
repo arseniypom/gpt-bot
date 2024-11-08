@@ -10,7 +10,7 @@ export interface SessionData {
   chatId?: string;
   imageQuality: ImageGenerationQuality;
   packageName?: PackageName;
-  subscriptionLevel?: SubscriptionLevel;
+  subscriptionLevel?: Exclude<SubscriptionLevel, 'FREE'>;
   user?: Pick<IUser, 'telegramId' | 'firstName' | 'userName'>;
 }
 
@@ -85,8 +85,6 @@ export interface SubscriptionData {
   };
 }
 
-// It's a stringified object of type { days?: number; months?: number }
-export type SubscriptionDurationStringified = string;
 export type SubscriptionDuration = { days?: number; months?: number };
 
 export interface CancellationDetails {

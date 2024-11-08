@@ -5,7 +5,7 @@ import {
   AiModels,
   SubscriptionLevel,
   SubscriptionLevels,
-  SubscriptionDurationStringified,
+  SubscriptionDuration,
 } from '../src/types/types';
 import { SUBSCRIPTIONS } from '../src/bot-subscriptions';
 
@@ -23,7 +23,7 @@ export interface IUser {
   subscriptionLevel: SubscriptionLevel;
   newSubscriptionLevel: SubscriptionLevel | null;
   subscriptionExpiry: Date | null;
-  subscriptionDuration: SubscriptionDurationStringified | null;
+  subscriptionDuration: SubscriptionDuration | null;
   unsubscribeReason: string | null;
   yookassaPaymentMethodId: string | null;
   createdAt: Date;
@@ -85,7 +85,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     default: null,
   },
   subscriptionDuration: {
-    type: String,
+    type: Object,
     default: null,
   },
   unsubscribeReason: {

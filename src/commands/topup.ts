@@ -8,8 +8,14 @@ export const initiateTopupKeyboard = new InlineKeyboard().text(
   '💰 Пополнить баланс',
   'topup',
 );
+export const topupAndManageSubscriptionKeyboard = new InlineKeyboard()
+  .text('💰 Пополнить баланс', 'topup')
+  .row()
+  .text('⚙️ Управление подпиской', 'subscriptionManage');
 export const topupAndChangeModelKeyboard = new InlineKeyboard()
   .text('💰 Пополнить баланс', 'topup')
+  .row()
+  .text('⚙️ Управление подпиской', 'subscriptionManage')
   .row()
   .text('🤖 Сменить модель', 'initiateAiModelChange');
 const topupKeyboardForImg = new InlineKeyboard()
