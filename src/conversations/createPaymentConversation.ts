@@ -12,7 +12,7 @@ import {
 } from '../utils/consts';
 
 const cancelKeyboard = new InlineKeyboard().text(
-  'Отменить ❌',
+  '❌ Отменить',
   'cancelPayment',
 );
 
@@ -126,4 +126,6 @@ export async function createPaymentConversation(
       username: ctx.from?.username,
     });
   }
+
+  return;
 }

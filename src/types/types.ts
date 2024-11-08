@@ -79,12 +79,15 @@ export interface SubscriptionData {
   description: string;
   title: string;
   icon: string;
+  duration?: {
+    days?: number;
+    months?: number;
+  };
 }
 
-export interface SubscriptionDuration {
-  days?: number;
-  months?: number;
-}
+// It's a stringified object of type { days?: number; months?: number }
+export type SubscriptionDurationStringified = string;
+export type SubscriptionDuration = { days?: number; months?: number };
 
 export interface CancellationDetails {
   party?: string;

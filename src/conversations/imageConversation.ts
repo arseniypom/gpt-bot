@@ -7,7 +7,7 @@ import User from '../../db/User';
 import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 
 const cancelKeyboard = new InlineKeyboard().text(
-  'Отменить ❌',
+  '❌ Отменить',
   'cancelImageGeneration',
 );
 
@@ -33,7 +33,7 @@ export async function imageConversation(
     );
     if (!user) {
       await ctx.reply(
-        'Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.',
+        'Пожалуйста, начните новый чат с помощью команды /start',
       );
       return;
     }

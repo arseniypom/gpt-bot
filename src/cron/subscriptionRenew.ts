@@ -9,9 +9,11 @@ import { SUBSCRIPTIONS } from '../bot-subscriptions';
 import { ICreatePayment } from '../types/yookassaTypes';
 import yookassaService from '../utils/yookassaService';
 import SubscriptionTransaction from '../../db/SubscriptionTransaction';
+import { mainKeyboard } from '../commands/start';
+import { isValidSubscriptionDuration } from '../types/typeguards';
 
 // Schedule the task to run every day at 21:00 UTC
-cron.schedule('0 22 * * *', async () => {
+cron.schedule('04 12 * * *', async () => {
   console.log('Current time:', dayjs().format('HH:mm'));
   console.log('running subscription check cron job');
 
@@ -27,30 +29,53 @@ cron.schedule('0 22 * * *', async () => {
     });
 
     for (const user of users) {
+      const subscriptionDuration =
+        user.subscriptionDuration && JSON.parse(user.subscriptionDuration);
+      if (!isValidSubscriptionDuration(subscriptionDuration)) {
+        throw new Error(
+          `telegramId: ${user.telegramId} userName: @${user.userName} subscriptionDuration is invalid or not set: ${user.subscriptionDuration}`,
+        );
+      }
+
+      const newSubscriptionLevel =
+        user.newSubscriptionLevel || user.subscriptionLevel;
+      const subscriptionData = SUBSCRIPTIONS[newSubscriptionLevel];
+
+      const { title, price, description, icon } = subscriptionData;
+      const amountObj = {
+        value: `${price}.00`,
+        currency: 'RUB',
+      };
+
+      if (newSubscriptionLevel === SubscriptionLevels.FREE) {
+        user.subscriptionLevel = SubscriptionLevels.FREE;
+        user.subscriptionExpiry = null;
+        user.basicRequestsBalanceLeftToday =
+          SUBSCRIPTIONS.FREE.basicRequestsPerDay || 0;
+        user.proRequestsBalanceLeftToday =
+          SUBSCRIPTIONS.FREE.proRequestsPerDay || 0;
+        user.imageGenerationBalanceLeftToday =
+          SUBSCRIPTIONS.FREE.imageGenerationPerDay || 0;
+        user.yookassaPaymentMethodId = null;
+
+        user.subscriptionDuration = null;
+        user.newSubscriptionLevel = null;
+        user.updatedAt = new Date();
+        await user.save();
+        continue;
+      }
+
+      if (!user.yookassaPaymentMethodId) {
+        throw new Error(
+          `yookassaPaymentMethodId is not set: ${user.yookassaPaymentMethodId}`,
+        );
+      }
+
       try {
-        const {
-          subscriptionLevel,
-          yookassaPaymentMethodId,
-          subscriptionDuration,
-        } = user;
-
-        const subscriptionData = SUBSCRIPTIONS[subscriptionLevel];
-        const { title, price, description, icon } = subscriptionData;
-        const amountObj = {
-          value: `${price}.00`,
-          currency: 'RUB',
-        };
-
-        if (!yookassaPaymentMethodId) {
-          throw new Error(
-            `yookassaPaymentMethodId is not set: ${yookassaPaymentMethodId}`,
-          );
-        }
-
         const createPayload: ICreatePayment = {
           amount: amountObj,
           capture: true,
-          payment_method_id: yookassaPaymentMethodId,
+          payment_method_id: user.yookassaPaymentMethodId,
           description,
         };
 
@@ -61,24 +86,22 @@ cron.schedule('0 22 * * *', async () => {
           idempotenceKey,
         );
 
-        console.log('paymentResponse', paymentResponse);
-
         switch (paymentResponse.status) {
           case 'succeeded':
             await SubscriptionTransaction.create({
               telegramId: user.telegramId,
               totalAmount: price,
-              subscriptionLevel: subscriptionLevel,
+              subscriptionLevel: newSubscriptionLevel,
               yookassaPaymentId: paymentResponse.id,
-              yookassaPaymentMethodId: yookassaPaymentMethodId,
+              yookassaPaymentMethodId: user.yookassaPaymentMethodId,
               status: paymentResponse.status,
             });
-            if (subscriptionDuration?.days) {
+            if (subscriptionDuration.days) {
               user.subscriptionExpiry = dayjs()
                 .add(subscriptionDuration.days, 'day')
                 .toDate();
             }
-            if (subscriptionDuration?.months) {
+            if (subscriptionDuration.months) {
               user.subscriptionExpiry = dayjs()
                 .add(subscriptionDuration.months, 'month')
                 .toDate();
@@ -97,6 +120,7 @@ cron.schedule('0 22 * * *', async () => {
                 subscriptionData.imageGenerationPerDay,
               );
             }
+            user.newSubscriptionLevel = null;
             user.updatedAt = new Date();
             await user.save();
             await bot.api.sendMessage(
@@ -111,9 +135,9 @@ cron.schedule('0 22 * * *', async () => {
             await SubscriptionTransaction.create({
               telegramId: user.telegramId,
               totalAmount: price,
-              subscriptionLevel: subscriptionLevel,
+              subscriptionLevel: newSubscriptionLevel,
               yookassaPaymentId: paymentResponse.id,
-              yookassaPaymentMethodId: yookassaPaymentMethodId,
+              yookassaPaymentMethodId: user.yookassaPaymentMethodId,
               status: paymentResponse.status,
               cancellationDetails: {
                 party: paymentResponse.cancellation_details?.party,
@@ -121,6 +145,8 @@ cron.schedule('0 22 * * *', async () => {
               },
             });
             user.subscriptionLevel = SubscriptionLevels.FREE;
+            user.newSubscriptionLevel = null;
+
             user.subscriptionExpiry = null;
             user.basicRequestsBalanceLeftToday =
               SUBSCRIPTIONS.FREE.basicRequestsPerDay || 0;
@@ -133,7 +159,7 @@ cron.schedule('0 22 * * *', async () => {
             user.updatedAt = new Date();
             await user.save();
 
-            let paymentFailedMessage = `К сожалению, ваша подписка уровня ${title} не была продлена🙁.`;
+            let paymentFailedMessage = `К сожалению, ваша подписка уровня ${title} не была продлена 🙁`;
             if (
               paymentResponse.cancellation_details?.reason ===
               'insufficient_funds'
@@ -145,12 +171,21 @@ cron.schedule('0 22 * * *', async () => {
 
             await bot.api.sendMessage(user.telegramId, paymentFailedMessage, {
               parse_mode: 'MarkdownV2',
+              reply_markup: mainKeyboard,
             });
             break;
           default:
             break;
         }
       } catch (error) {
+        await bot.api.sendMessage(
+          user.telegramId,
+          `Не смогли продлить вашу подписку 🙁\n\nПожалуйста, проверьте платежные данные ипопробуйте оформить её ещё раз /subscription или обратитесь в поддержку /support`,
+          {
+            parse_mode: 'MarkdownV2',
+            reply_markup: mainKeyboard,
+          },
+        );
         logError({
           message: 'Failed to renew subscription',
           error,

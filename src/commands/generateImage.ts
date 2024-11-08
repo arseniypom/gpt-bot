@@ -11,7 +11,7 @@ export const generateImage = async (ctx: MyContext) => {
     .text('Standard', ImageGenerationQuality.STANDARD)
     .text('HD', ImageGenerationQuality.HD)
     .row()
-    .text('Отменить ❌', 'cancelImageGeneration');
+    .text('❌ Отменить', 'cancelImageGeneration');
 
   await ctx.reply(
     `Выберите качество изображения:

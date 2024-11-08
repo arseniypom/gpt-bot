@@ -3,7 +3,7 @@ import { type MyConversation, type MyContext } from '../types/types';
 import { logError, sendMessageToAdmin } from '../utils/utilFunctions';
 
 const cancelKeyboard = new InlineKeyboard().text(
-  'Отменить ❌',
+  '❌ Отменить',
   'cancelSupport',
 );
 
@@ -41,4 +41,6 @@ Message: "${message.text}"
       username: ctx.from?.username,
     });
   }
+
+  return;
 }

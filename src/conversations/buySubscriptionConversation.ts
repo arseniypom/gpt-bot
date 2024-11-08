@@ -10,13 +10,14 @@ import {
   SUPPORT_MESSAGE_POSTFIX,
   YOOKASSA_PAYMENT_MESSAGE,
 } from '../utils/consts';
+import { isValidSubscriptionDuration } from '../types/typeguards';
 
 const cancelKeyboard = new InlineKeyboard().text(
-  'Отменить ❌',
+  '❌ Отменить',
   'cancelSubscription',
 );
 
-export async function changeSubscriptionConversation(
+export async function buySubscriptionConversation(
   conversation: MyConversation,
   ctx: MyContext,
 ) {
@@ -69,6 +70,12 @@ export async function changeSubscriptionConversation(
       currency: 'RUB',
     };
 
+    const subscriptionDuration = isValidSubscriptionDuration(
+      subscriptionData.duration,
+    )
+      ? subscriptionData.duration
+      : { months: 1 };
+
     const createPayload: ICreatePayment = {
       amount: amountObj,
       confirmation: {
@@ -96,9 +103,7 @@ export async function changeSubscriptionConversation(
         basicRequestsPerDay: subscriptionData.basicRequestsPerDay,
         proRequestsPerDay: subscriptionData.proRequestsPerDay,
         imageGenerationPerDay: subscriptionData.imageGenerationPerDay,
-        subscriptionDuration: JSON.stringify({
-          days: 1,
-        }),
+        subscriptionDuration: JSON.stringify(subscriptionDuration),
       },
       save_payment_method: true,
     };
@@ -132,4 +137,6 @@ export async function changeSubscriptionConversation(
       username: ctx.from?.username,
     });
   }
+
+  return;
 }

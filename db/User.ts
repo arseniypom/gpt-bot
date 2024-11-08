@@ -5,8 +5,9 @@ import {
   AiModels,
   SubscriptionLevel,
   SubscriptionLevels,
-  SubscriptionDuration,
+  SubscriptionDurationStringified,
 } from '../src/types/types';
+import { SUBSCRIPTIONS } from '../src/bot-subscriptions';
 
 export interface IUser {
   telegramId: number;
@@ -20,8 +21,10 @@ export interface IUser {
   proRequestsBalanceLeftToday: number;
   imageGenerationBalanceLeftToday: number;
   subscriptionLevel: SubscriptionLevel;
+  newSubscriptionLevel: SubscriptionLevel | null;
   subscriptionExpiry: Date | null;
-  subscriptionDuration?: SubscriptionDuration;
+  subscriptionDuration: SubscriptionDurationStringified | null;
+  unsubscribeReason: string | null;
   yookassaPaymentMethodId: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -54,17 +57,17 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   },
   basicRequestsBalanceLeftToday: {
     type: Number,
-    default: 15,
+    default: SUBSCRIPTIONS.FREE.basicRequestsPerDay,
     required: true,
   },
   proRequestsBalanceLeftToday: {
     type: Number,
-    default: 5,
+    default: SUBSCRIPTIONS.FREE.proRequestsPerDay,
     required: true,
   },
   imageGenerationBalanceLeftToday: {
     type: Number,
-    default: 3,
+    default: SUBSCRIPTIONS.FREE.imageGenerationPerDay,
     required: true,
   },
   subscriptionLevel: {
@@ -73,12 +76,20 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     default: SubscriptionLevels.FREE,
     required: true,
   },
+  newSubscriptionLevel: {
+    type: String,
+    enum: Object.keys(SubscriptionLevels),
+  },
   subscriptionExpiry: {
     type: Date,
     default: null,
   },
   subscriptionDuration: {
-    type: Object,
+    type: String,
+    default: null,
+  },
+  unsubscribeReason: {
+    type: String,
     default: null,
   },
   yookassaPaymentMethodId: {

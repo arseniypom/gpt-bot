@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { User as TelegramUser } from '@grammyjs/types';
 import { logError } from '../utils/utilFunctions';
 import { START_MESSAGE_V2, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
-import { MyContext } from '../types/types';
+import { MyContext, SubscriptionLevels } from '../types/types';
 import User from '../../db/User';
 import Chat from '../../db/Chat';
 import { CallbackQueryContext, InlineKeyboard, Keyboard } from 'grammy';
@@ -78,8 +78,23 @@ export const checkChannelJoinAndRegisterUser = async (
   }
 };
 
-const mainKeyboard = new Keyboard()
-  .text('🎉 Оформить подписку')
+export const mainKeyboard = new Keyboard()
+  .text('🎉 Подключить подписку')
+  .row()
+  .text('🪪 Мой профиль')
+  .row()
+  .text('💬 Начать новый чат')
+  .row()
+  .text('🖼️ Сгенерировать изображение')
+  .text('🤖 Выбрать AI-модель')
+  .row()
+  .text('ℹ️ Информация')
+  .text('🆘 Поддержка')
+  .resized()
+  .persistent();
+
+export const mainSubscribedUserKeyboard = new Keyboard()
+  .text('💰 Купить доп. запросы')
   .row()
   .text('🪪 Мой профиль')
   .row()
@@ -98,7 +113,6 @@ export const registerUser = async (ctx: CallbackQueryContext<MyContext>) => {
 
   await ctx.reply(START_MESSAGE_V2, {
     parse_mode: 'MarkdownV2',
-    reply_markup: mainKeyboard,
     link_preview_options: {
       is_disabled: true,
     },
@@ -115,8 +129,12 @@ export const registerUser = async (ctx: CallbackQueryContext<MyContext>) => {
         firstName: first_name,
         userName: username,
       });
-      await responseMsg.editText(
-        'Ваш персональный чат-бот создан. Пожалуйста, введите запрос',
+      await responseMsg.delete();
+      await ctx.reply(
+        'Ваш персональный чат-бот создан! Чем я могу Вам помочь? Напишите запрос или выберите команду из меню ниже 👇',
+        {
+          reply_markup: mainKeyboard,
+        },
       );
 
       const chat = await Chat.create({
@@ -125,8 +143,14 @@ export const registerUser = async (ctx: CallbackQueryContext<MyContext>) => {
 
       ctx.session.chatId = chat._id.toString();
     } else {
+      const isSubscribed = user.subscriptionLevel !== SubscriptionLevels.FREE;
       await ctx.reply(
-        'Посмотрите свой баланс /balance или напишите запрос, и я помогу Вам с ним!',
+        'Чем я могу Вам помочь? Напишите запрос или выберите команду из меню ниже 👇',
+        {
+          reply_markup: isSubscribed
+            ? mainSubscribedUserKeyboard
+            : mainKeyboard,
+        },
       );
     }
   } catch (error) {

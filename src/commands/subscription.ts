@@ -8,12 +8,28 @@ export const initiateSubscriptionKeyboard = new InlineKeyboard().text(
   'Управление подпиской',
   'subscription',
 );
-const subscriptionKeyboardForImg = new InlineKeyboard()
+export const subscriptionKeyboardForImg = new InlineKeyboard()
   .text(`${SUBSCRIPTIONS.BASIC.icon} ${SUBSCRIPTIONS.BASIC.title}`, 'BASIC')
   .row()
   .text(`${SUBSCRIPTIONS.PRO.icon} ${SUBSCRIPTIONS.PRO.title}`, 'PRO')
   .row()
-  .text(`${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title}`, 'ULTIMATE');
+  .text(
+    `${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title}`,
+    'ULTIMATE',
+  );
+
+export const changeSubscriptionKeyboardForImg = new InlineKeyboard()
+  .text(
+    `${SUBSCRIPTIONS.BASIC.icon} ${SUBSCRIPTIONS.BASIC.title}`,
+    'BASIC-CHANGE',
+  )
+  .row()
+  .text(`${SUBSCRIPTIONS.PRO.icon} ${SUBSCRIPTIONS.PRO.title}`, 'PRO-CHANGE')
+  .row()
+  .text(
+    `${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title}`,
+    'ULTIMATE-CHANGE',
+  );
 
 export const subscription = async (
   ctx: CallbackQueryContext<MyContext> | MyContext,
@@ -27,7 +43,7 @@ export const subscription = async (
       new InputFile('src/images/subscriptions-img.png'),
       {
         caption:
-          '*Информация о тарифах подписки 👆*\n\nВыберите тариф для подключения',
+          '*Описание уровней подписки*\n\nВыберите тариф для подключения',
         parse_mode: 'MarkdownV2',
         reply_markup: subscriptionKeyboardForImg,
       },

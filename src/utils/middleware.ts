@@ -20,6 +20,7 @@ export const checkUserInDB = async (
     ctx.hasCommand('start') ||
     ctx.hasCommand('support') ||
     (await ctx.conversation.active())?.supportConversation ||
+    ctx.message?.text === '🆘 Поддержка' ||
     ctx.callbackQuery?.data === 'checkChannelJoinAndRegisterUser'
   ) {
     await next();

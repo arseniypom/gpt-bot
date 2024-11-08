@@ -7,6 +7,37 @@ export const MAX_HISTORY_LENGTH = 5;
 export const DEFAULT_AI_MODEL = 'GPT_4O_MINI';
 export const MAX_USER_MESSAGE_LENGTH = 3000;
 
+export const COMMANDS = [
+  {
+    command: 'balance',
+    description: '🏦 Текущий баланс запросов',
+  },
+  {
+    command: 'topup',
+    description: '💰 Пополнить баланс',
+  },
+  {
+    command: 'newchat',
+    description: '💬 Начать новый чат',
+  },
+  {
+    command: 'models',
+    description: '🤖 Выбрать AI-модель',
+  },
+  {
+    command: 'image',
+    description: '🖼️ Сгенерировать изображение',
+  },
+  {
+    command: 'help',
+    description: 'ℹ️ Общая информация',
+  },
+  {
+    command: 'support',
+    description: '🆘 Обратиться в поддержку',
+  },
+];
+
 export const PROMPT_MESSAGE = `
 Ты — вежливый и поддерживающий ИИ-ассистент, созданный для помощи пользователям в решении различных задач. Ты используешь модели GPT-4o-mini, GPT-4o и DALL-E 3.
 Отвечай понятно и структурированно, используя простой язык. Старайся быть кратким, но информативным.
@@ -98,7 +129,7 @@ export const getNoBalanceMessage = (model: AiModel) => {
 
 export const getBalanceMessage = (user: IUser) => {
   return `
-*Ваш текущий баланс 💰 *
+*Текущий баланс доп\\. запросов 💰 *
 
 ⭐️ Базовые запросы: ${user.basicRequestsBalance}
 🌟 PRO запросы: ${user.proRequestsBalance}
@@ -112,11 +143,17 @@ export const getProfileMessage = (user: IUser) => {
   const expirationDate = dayjs(user.subscriptionExpiry)
     .format('DD.MM.YYYY')
     .replace(/\./g, '\\.');
+  const newSubscriptionLevel =
+    user.newSubscriptionLevel && SUBSCRIPTIONS[user.newSubscriptionLevel].title;
+
   return `
 *Ваш уровень подписки: ${SUBSCRIPTIONS[user.subscriptionLevel].icon} ${
     SUBSCRIPTIONS[user.subscriptionLevel].title
-  }*
-${user.subscriptionExpiry ? `_Действует до ${expirationDate}_` : ''}
+  }*${user.subscriptionExpiry ? `\n_Действует до ${expirationDate}_` : ''}${
+    newSubscriptionLevel
+      ? `\n_После будет переключен на ${newSubscriptionLevel}_`
+      : ''
+  }
 
 *Остаток запросов по подписке на сегодня*
 ⭐️ Базовые: ${user.basicRequestsBalanceLeftToday}
@@ -130,4 +167,34 @@ ${user.subscriptionExpiry ? `_Действует до ${expirationDate}_` : ''}
 
 _\\*Про виды запросов: /help_
   `;
+};
+
+export const getManageSubscriptionMessage = (user: IUser) => {
+  const expirationDate = dayjs(user.subscriptionExpiry)
+    .format('DD.MM.YYYY')
+    .replace(/\./g, '\\.');
+  const price = SUBSCRIPTIONS[user.subscriptionLevel].price;
+  const displayPrice = price ? `${price}₽` : 'Бесплатно';
+
+  return `
+*Ваш уровень подписки*: ${SUBSCRIPTIONS[user.subscriptionLevel].icon} ${
+    SUBSCRIPTIONS[user.subscriptionLevel].title
+  }
+*Описание*: ${SUBSCRIPTIONS[user.subscriptionLevel].description}
+*Стоимость*: ${displayPrice}
+${
+  user.subscriptionExpiry
+    ? `*Действует до*: ${expirationDate}\n\n_После окончания действия подписка будет автоматически продлена_`
+    : ''
+}
+  `;
+};
+
+export const UNSUBSCRIBE_REASONS = {
+  additionalPackages: 'Я использую доп. запросы, подписка не нужна',
+  somethingNotWorking: 'Что-то не работает',
+  notUsingBot: 'Я не пользуюсь ботом',
+  subscriptionTooExpensive: 'Подписка слишком дорогая',
+  enoughFreeTariff: 'Мне хватает бесплатного тарифа',
+  otherReason: 'Другое',
 };

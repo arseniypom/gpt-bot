@@ -2,8 +2,7 @@ import 'dotenv/config';
 import './src/cron/subscriptionRenew';
 import './src/cron/refreshRequests';
 import mongoose from 'mongoose';
-import { Bot, GrammyError, HttpError, InlineKeyboard, session } from 'grammy';
-import { User as TelegramUser } from '@grammyjs/types';
+import { Bot, GrammyError, HttpError, session } from 'grammy';
 import { hydrate } from '@grammyjs/hydrate';
 import { conversations, createConversation } from '@grammyjs/conversations';
 import { limit } from '@grammyjs/ratelimiter';
@@ -25,11 +24,12 @@ import Chat from './db/Chat';
 import Message from './db/Message';
 import { answerWithChatGPT } from './src/utils/gpt';
 import {
+  COMMANDS,
   getNoBalanceMessage,
-  HELP_MESSAGE,
   MAX_HISTORY_LENGTH,
   MAX_USER_MESSAGE_LENGTH,
   SUPPORT_MESSAGE_POSTFIX,
+  UNSUBSCRIBE_REASONS,
 } from './src/utils/consts';
 import {
   start,
@@ -45,16 +45,19 @@ import {
   balance,
   support,
   help,
+  subscriptionManage,
+  changeSubscriptionLevel,
+  unsubscribeInitiate,
+  getUnsubscribeReason,
+  unsubscribeFinalStep,
+  initiateChangeSubscriptionLevel,
 } from './src/commands';
-import {
-  topupAndChangeModelKeyboard,
-  initiateTopupKeyboard,
-} from './src/commands/topup';
+import { topupAndChangeModelKeyboard } from './src/commands/topup';
 import { getModelsKeyboard } from './src/commands/changeAiModel';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
 import { createPaymentConversation } from './src/conversations/createPaymentConversation';
-import { changeSubscriptionConversation } from './src/conversations/changeSubscriptionConversation';
+import { buySubscriptionConversation } from './src/conversations/buySubscriptionConversation';
 import { PACKAGES } from './src/bot-packages';
 import { SUBSCRIPTIONS } from './src/bot-subscriptions';
 import { checkUserInDB, ignoreOld } from './src/utils/middleware';
@@ -107,38 +110,9 @@ bot.use(checkUserInDB);
 bot.use(createConversation(imageConversation));
 bot.use(createConversation(supportConversation));
 bot.use(createConversation(createPaymentConversation));
-bot.use(createConversation(changeSubscriptionConversation));
+bot.use(createConversation(buySubscriptionConversation));
 
-void bot.api.setMyCommands([
-  {
-    command: 'balance',
-    description: '🏦 Текущий баланс запросов',
-  },
-  {
-    command: 'topup',
-    description: '💰 Пополнить баланс',
-  },
-  {
-    command: 'newchat',
-    description: '💬 Начать новый чат',
-  },
-  {
-    command: 'models',
-    description: '🤖 Выбрать AI-модель',
-  },
-  {
-    command: 'image',
-    description: '🖼️ Сгенерировать изображение',
-  },
-  {
-    command: 'help',
-    description: 'ℹ️ Общая информация',
-  },
-  {
-    command: 'support',
-    description: '🆘 Обратиться в поддержку',
-  },
-]);
+void bot.api.setMyCommands(COMMANDS);
 
 bot.on(':successful_payment', telegramSuccessfulPaymentHandler);
 
@@ -208,8 +182,12 @@ bot.callbackQuery('cancelPayment', async (ctx) => {
 });
 bot.callbackQuery('cancelSubscription', async (ctx) => {
   await ctx.answerCallbackQuery('Отменено ✅');
-  await ctx.conversation.exit('changeSubscriptionConversation');
+  await ctx.conversation.exit('buySubscriptionConversation');
   await ctx.callbackQuery.message?.editText('Оплата отменена');
+});
+bot.callbackQuery('cancelUnsubscribe', async (ctx) => {
+  await ctx.answerCallbackQuery('Отменено ✅');
+  await ctx.callbackQuery.message?.editText('Действие отменено');
 });
 bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
   await ctx.answerCallbackQuery();
@@ -236,12 +214,29 @@ bot.callbackQuery(Object.keys(SUBSCRIPTIONS), async (ctx) => {
   await ctx.answerCallbackQuery();
   await ctx.callbackQuery.message?.editReplyMarkup(undefined);
   ctx.session.subscriptionLevel = ctx.callbackQuery.data as SubscriptionLevel;
-  await ctx.conversation.enter('changeSubscriptionConversation');
+  await ctx.conversation.enter('buySubscriptionConversation');
 });
 bot.callbackQuery('topupText', topupText);
 bot.callbackQuery('topup', topupImg);
 bot.callbackQuery('subscription', subscription);
 bot.callbackQuery('initiateAiModelChange', initiateAiModelChange);
+bot.callbackQuery(
+  ['subscriptionManage', 'backToSubscriptionManage'],
+  subscriptionManage,
+);
+bot.callbackQuery('changeSubscriptionLevel', changeSubscriptionLevel);
+bot.callbackQuery('unsubscribe', unsubscribeInitiate);
+bot.callbackQuery('verifySubscriptionCancel', getUnsubscribeReason);
+bot.callbackQuery(Object.keys(UNSUBSCRIBE_REASONS), unsubscribeFinalStep);
+bot.callbackQuery(
+  'initiateChangeSubscriptionLevel',
+  initiateChangeSubscriptionLevel,
+);
+bot.callbackQuery(
+  Object.keys(SUBSCRIPTIONS).map((key) => `${key}-CHANGE`),
+  changeSubscriptionLevel,
+);
+bot.callbackQuery('backToMyProfile', myProfile);
 
 // User commands
 bot.command('start', start);
@@ -259,7 +254,8 @@ bot.command('support', support);
 bot.command('stats', getStats);
 
 // Keyboard handlers
-bot.hears('🎉 Оформить подписку', subscription);
+bot.hears('🎉 Подключить подписку', subscription);
+bot.hears('💰 Купить доп. запросы', topupImg);
 bot.hears('🪪 Мой профиль', myProfile);
 bot.hears('💬 Начать новый чат', createNewChat);
 bot.hears('🖼️ Сгенерировать изображение', generateImage);
@@ -287,7 +283,7 @@ bot.on('message:text', async (ctx) => {
     const user = await User.findOne({ telegramId });
     if (!user) {
       await responseMessage.editText(
-        'Пользователь не найден. Пожалуйста, начните новый чат с помощью команды /start.',
+        'Пожалуйста, начните новый чат с помощью команды /start',
       );
       return;
     }
@@ -302,7 +298,7 @@ bot.on('message:text', async (ctx) => {
         ctx.session.chatId = chatId;
       } else {
         await responseMessage.editText(
-          'Пожалуйста, начните новый чат с помощью команды /start.',
+          'Пожалуйста, начните новый чат с помощью команды /start',
         );
         return;
       }
@@ -311,7 +307,7 @@ bot.on('message:text', async (ctx) => {
     const chat = chatObj || (await Chat.findById(chatId));
     if (!chat) {
       await ctx.reply(
-        'Чат не найден. Пожалуйста, начните новый чат с помощью команды /start.',
+        'Чат не найден. Пожалуйста, начните новый чат с помощью команды /start',
       );
       return;
     }

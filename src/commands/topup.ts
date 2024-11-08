@@ -5,13 +5,13 @@ import { PACKAGES } from '../bot-packages';
 import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 
 export const initiateTopupKeyboard = new InlineKeyboard().text(
-  'Пополнить баланс',
+  '💰 Пополнить баланс',
   'topup',
 );
 export const topupAndChangeModelKeyboard = new InlineKeyboard()
-  .text('Пополнить баланс', 'topup')
+  .text('💰 Пополнить баланс', 'topup')
   .row()
-  .text('Сменить модель', 'initiateAiModelChange');
+  .text('🤖 Сменить модель', 'initiateAiModelChange');
 const topupKeyboardForImg = new InlineKeyboard()
   .text(PACKAGES.req1.numberIcon, 'req1')
   .text(PACKAGES.req2.numberIcon, 'req2')
@@ -50,7 +50,7 @@ export const topupImg = async (
 
   try {
     await ctx.replyWithPhoto(new InputFile('src/images/packages-img.jpeg'), {
-      caption: '*Информация о пакетах 👆*\n\nВыберите пакет для пополнения',
+      caption: '*Информация о пакетах*\n\nВыберите пакет для пополнения',
       parse_mode: 'MarkdownV2',
       reply_markup: topupKeyboardForImg,
     });
