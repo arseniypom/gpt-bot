@@ -8,7 +8,7 @@ const BATCH_SIZE = 100;
 const BATCH_DELAY_MS = 1000;
 
 // Schedule the task to run every day at 23:00 UTC
-cron.schedule('0 23 * * *', async () => {
+cron.schedule('40 04 * * *', async () => {
   console.log('Current time:', dayjs().format('HH:mm'));
   console.log('running refresh requests cron job');
 
