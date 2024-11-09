@@ -13,7 +13,7 @@ import { mainKeyboard } from '../commands/start';
 import { isValidSubscriptionDuration } from '../types/typeguards';
 
 // Schedule the task to run every day at 21:00 UTC
-cron.schedule('00 21 * * *', async () => {
+cron.schedule('0 21 * * *', async () => {
   console.log('Current time:', dayjs().format('HH:mm'));
   console.log('running subscription check cron job');
 

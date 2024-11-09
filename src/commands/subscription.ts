@@ -2,32 +2,54 @@ import { CallbackQueryContext, InlineKeyboard, InputFile } from 'grammy';
 import { logError } from '../utils/utilFunctions';
 import { MyContext } from '../types/types';
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
-import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
+import {
+  SUBSCRIPTIONS_MESSAGE,
+  SUPPORT_MESSAGE_POSTFIX,
+} from '../utils/consts';
 
 export const initiateSubscriptionKeyboard = new InlineKeyboard().text(
   'Управление подпиской',
   'subscription',
 );
 export const subscriptionKeyboardForImg = new InlineKeyboard()
-  .text(`${SUBSCRIPTIONS.BASIC.icon} ${SUBSCRIPTIONS.BASIC.title}`, 'BASIC')
-  .row()
-  .text(`${SUBSCRIPTIONS.PRO.icon} ${SUBSCRIPTIONS.PRO.title}`, 'PRO')
+  .text(
+    `${SUBSCRIPTIONS.MINI.icon} ${SUBSCRIPTIONS.MINI.title} за ${SUBSCRIPTIONS.MINI.price}₽/мес`,
+    'MINI',
+  )
   .row()
   .text(
-    `${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title}`,
+    `${SUBSCRIPTIONS.BASIC.icon} ${SUBSCRIPTIONS.BASIC.title} за ${SUBSCRIPTIONS.BASIC.price}₽/мес`,
+    'BASIC',
+  )
+  .row()
+  .text(
+    `${SUBSCRIPTIONS.PRO.icon} ${SUBSCRIPTIONS.PRO.title} за ${SUBSCRIPTIONS.BASIC.price}₽/мес`,
+    'PRO',
+  )
+  .row()
+  .text(
+    `${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title} за ${SUBSCRIPTIONS.BASIC.price}₽/мес`,
     'ULTIMATE',
   );
 
 export const changeSubscriptionKeyboardForImg = new InlineKeyboard()
   .text(
-    `${SUBSCRIPTIONS.BASIC.icon} ${SUBSCRIPTIONS.BASIC.title}`,
+    `${SUBSCRIPTIONS.MINI.icon} ${SUBSCRIPTIONS.MINI.title} за ${SUBSCRIPTIONS.MINI.price}₽/мес`,
+    'MINI-CHANGE',
+  )
+  .row()
+  .text(
+    `${SUBSCRIPTIONS.BASIC.icon} ${SUBSCRIPTIONS.BASIC.title} за ${SUBSCRIPTIONS.BASIC.price}₽/мес`,
     'BASIC-CHANGE',
   )
   .row()
-  .text(`${SUBSCRIPTIONS.PRO.icon} ${SUBSCRIPTIONS.PRO.title}`, 'PRO-CHANGE')
+  .text(
+    `${SUBSCRIPTIONS.PRO.icon} ${SUBSCRIPTIONS.PRO.title} за ${SUBSCRIPTIONS.PRO.price}₽/мес`,
+    'PRO-CHANGE',
+  )
   .row()
   .text(
-    `${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title}`,
+    `${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title} за ${SUBSCRIPTIONS.ULTIMATE.price}₽/мес`,
     'ULTIMATE-CHANGE',
   );
 
@@ -39,15 +61,10 @@ export const subscription = async (
   }
 
   try {
-    await ctx.replyWithPhoto(
-      new InputFile('src/images/subscriptions-img.png'),
-      {
-        caption:
-          '*Описание уровней подписки*\n\nВыберите тариф для подключения',
-        parse_mode: 'MarkdownV2',
-        reply_markup: subscriptionKeyboardForImg,
-      },
-    );
+    await ctx.reply(SUBSCRIPTIONS_MESSAGE.replace(/[().-]/g, '\\$&'), {
+      parse_mode: 'MarkdownV2',
+      reply_markup: subscriptionKeyboardForImg,
+    });
   } catch (error) {
     await ctx.reply(
       `Произошла ошибка при выборе тарифа подписки. ${SUPPORT_MESSAGE_POSTFIX}`,

@@ -10,29 +10,42 @@ export const SUBSCRIPTIONS: Record<SubscriptionLevel, SubscriptionData> = {
     title: 'Бесплатный',
     icon: '🆓',
   },
-  BASIC: {
-    basicRequestsPerDay: 20,
-    proRequestsPerDay: 3,
+  MINI: {
+    basicRequestsPerDay: 10,
+    proRequestsPerDay: 0,
     imageGenerationPerDay: 0,
+    price: 99,
+    description: '10 базовых запросов к нейросети в день на 1 месяц',
+    title: 'Мини',
+    icon: '🐥',
+    duration: {
+      months: 1,
+    },
+  },
+  BASIC: {
+    basicRequestsPerDay: 25,
+    proRequestsPerDay: 3,
+    imageGenerationPerDay: 1,
     price: 499,
-    description: '20 базовых и 3 PRO запросов к нейросети в день на 1 месяц',
+    description:
+      '25 базовых запросов, 3 PRO запросов и 1 генерация изображения в день на 1 месяц',
     title: 'Базовый',
     icon: '🚀',
     duration: {
-      days: 1,
+      months: 1,
     },
   },
   PRO: {
-    basicRequestsPerDay: 50,
+    basicRequestsPerDay: 60,
     proRequestsPerDay: 10,
     imageGenerationPerDay: 3,
     price: 999,
     description:
-      '50 базовых запросов, 10 PRO запросов и 3 генерации изображений в день на 1 месяц',
+      '60 базовых запросов, 10 PRO запросов и 3 генерации изображений в день на 1 месяц',
     title: 'PRO',
-    icon: '🤩',
+    icon: '🔥',
     duration: {
-      days: 1,
+      months: 1,
     },
   },
   ULTIMATE: {
@@ -45,7 +58,7 @@ export const SUBSCRIPTIONS: Record<SubscriptionLevel, SubscriptionData> = {
     title: 'ULTIMATE',
     icon: '💎',
     duration: {
-      days: 1,
+      months: 1,
     },
   },
 };

@@ -64,6 +64,7 @@ export interface PackageData {
 
 export enum SubscriptionLevels {
   FREE = 'FREE',
+  MINI = 'MINI',
   BASIC = 'BASIC',
   PRO = 'PRO',
   ULTIMATE = 'ULTIMATE',

@@ -123,6 +123,33 @@ export const SUPPORT_MESSAGE_POSTFIX =
 export const YOOKASSA_PAYMENT_MESSAGE =
   '*💳 Для оплаты нажмите кнопку "Оплатить" ниже*\n\n_🔐 Вы будете перенаправлены на страницу платежной системы Юкасса\n__Платеж будет безопасно проведен на стороне Юкасса, бот не имеет доступа к Вашим платежным данным и нигде их не сохраняет___';
 
+export const SUBSCRIPTIONS_MESSAGE = `
+*Описание уровней подписки*
+
+*${SUBSCRIPTIONS.FREE.icon} ${SUBSCRIPTIONS.FREE.title}*
+– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.FREE.basicRequestsPerDay} в день
+
+*${SUBSCRIPTIONS.MINI.icon} ${SUBSCRIPTIONS.MINI.title}*
+– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.MINI.basicRequestsPerDay} в день
+
+*${SUBSCRIPTIONS.BASIC.icon} ${SUBSCRIPTIONS.BASIC.title}*
+– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.BASIC.basicRequestsPerDay} в день
+– PRO запросы (GPT-4o) — ${SUBSCRIPTIONS.BASIC.proRequestsPerDay} в день
+– Генерация изображений (DALL-E 3) — ${SUBSCRIPTIONS.BASIC.imageGenerationPerDay} в день
+
+*${SUBSCRIPTIONS.PRO.icon} ${SUBSCRIPTIONS.PRO.title}*
+– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.PRO.basicRequestsPerDay} в день
+– PRO запросы (GPT-4o) — ${SUBSCRIPTIONS.PRO.proRequestsPerDay} в день
+– Генерация изображений (DALL-E 3) — ${SUBSCRIPTIONS.PRO.imageGenerationPerDay} в день
+
+*${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title}*
+– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.ULTIMATE.basicRequestsPerDay} в день
+– PRO запросы (GPT-4o) — ${SUBSCRIPTIONS.ULTIMATE.proRequestsPerDay} в день
+– Генерация изображений (DALL-E 3) — ${SUBSCRIPTIONS.ULTIMATE.imageGenerationPerDay} в день
+
+Нажмите на кнопку ниже, чтобы выбрать уровень 👇
+`;
+
 export const getNoBalanceMessage = (model: AiModel) => {
   return `У вас нет доступных запросов для обращения к ${AiModelsLabels[model]}`;
 };

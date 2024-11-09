@@ -4,7 +4,7 @@ import { CallbackQueryContext, InlineKeyboard } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import { MyContext, SubscriptionLevels } from '../types/types';
 import User from '../../db/User';
-import { SUPPORT_MESSAGE_POSTFIX, UNSUBSCRIBE_REASONS } from '../utils/consts';
+import { SUBSCRIPTIONS_MESSAGE, SUPPORT_MESSAGE_POSTFIX, UNSUBSCRIBE_REASONS } from '../utils/consts';
 import { logError, sendMessageToAdmin } from '../utils/utilFunctions';
 import dayjs from 'dayjs';
 import { changeSubscriptionKeyboardForImg } from './subscription';
@@ -16,9 +16,13 @@ export const initiateChangeSubscriptionLevel = async (
 ) => {
   await ctx.answerCallbackQuery();
 
-  await ctx.replyWithPhoto(new InputFile('src/images/subscriptions-img.png'), {
-    caption:
-      '*Описание уровней подписки*\n\nНа какой уровень Вы хотите перейти?',
+  // await ctx.replyWithPhoto(new InputFile('src/images/subscriptions-img.png'), {
+  //   caption:
+  //     '*Описание уровней подписки*\n\nНа какой уровень Вы хотите перейти?',
+  //   parse_mode: 'MarkdownV2',
+  //   reply_markup: changeSubscriptionKeyboardForImg,
+  // });
+  await ctx.reply(SUBSCRIPTIONS_MESSAGE.replace(/[().-]/g, '\\$&'), {
     parse_mode: 'MarkdownV2',
     reply_markup: changeSubscriptionKeyboardForImg,
   });
