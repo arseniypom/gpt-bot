@@ -23,12 +23,12 @@ export const subscriptionKeyboardForImg = new InlineKeyboard()
   )
   .row()
   .text(
-    `${SUBSCRIPTIONS.PRO.icon} ${SUBSCRIPTIONS.PRO.title} за ${SUBSCRIPTIONS.BASIC.price}₽/мес`,
+    `${SUBSCRIPTIONS.PRO.icon} ${SUBSCRIPTIONS.PRO.title} за ${SUBSCRIPTIONS.PRO.price}₽/мес`,
     'PRO',
   )
   .row()
   .text(
-    `${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title} за ${SUBSCRIPTIONS.BASIC.price}₽/мес`,
+    `${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title} за ${SUBSCRIPTIONS.ULTIMATE.price}₽/мес`,
     'ULTIMATE',
   );
 
