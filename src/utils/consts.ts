@@ -7,6 +7,7 @@ export const BASIC_REQUEST_COST = 1.5;
 export const PRO_REQUEST_COST = 3;
 export const IMAGE_GENERATION_COST = 10;
 
+export const MAX_BOT_MESSAGE_LENGTH = 4000;
 export const MAX_HISTORY_LENGTH = 5;
 export const DEFAULT_AI_MODEL = 'GPT_4O_MINI';
 export const MAX_USER_MESSAGE_LENGTH = 3000;

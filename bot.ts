@@ -29,6 +29,7 @@ import {
   BASIC_REQUEST_COST,
   COMMANDS,
   getNoBalanceMessage,
+  MAX_BOT_MESSAGE_LENGTH,
   MAX_HISTORY_LENGTH,
   MAX_USER_MESSAGE_LENGTH,
   PRO_REQUEST_COST,
@@ -434,7 +435,16 @@ bot.on('message:text', async (ctx) => {
     user.updatedAt = new Date();
     await user.save();
 
-    await responseMessage.editText(answer);
+    if (answer.length > MAX_BOT_MESSAGE_LENGTH) {
+      const chunks = answer.match(new RegExp(`[^]{1,${MAX_BOT_MESSAGE_LENGTH}}`, 'g')) || [];
+      await responseMessage.editText(chunks[0]!);
+      for (let i = 1; i < chunks.length; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        await ctx.reply(chunks[i]);
+      }
+    } else {
+      await responseMessage.editText(answer);
+    }
   } catch (error) {
     await responseMessage.editText(
       'Произошла ошибка при обработке запроса. Пожалуйста, обратитесь к администратору.',
