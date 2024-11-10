@@ -1,6 +1,10 @@
 import { CallbackQueryContext, InlineKeyboard, InputFile } from 'grammy';
 import { logError } from '../utils/utilFunctions';
-import { MyContext } from '../types/types';
+import {
+  MyContext,
+  SubscriptionLevel,
+  SubscriptionLevels,
+} from '../types/types';
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
 import {
   SUBSCRIPTIONS_MESSAGE,
@@ -11,47 +15,42 @@ export const initiateSubscriptionKeyboard = new InlineKeyboard().text(
   'Управление подпиской',
   'subscription',
 );
-export const subscriptionKeyboardForImg = new InlineKeyboard()
-  .text(
-    `${SUBSCRIPTIONS.MINI.icon} ${SUBSCRIPTIONS.MINI.title} за ${SUBSCRIPTIONS.MINI.price}₽/мес`,
-    'MINI',
-  )
-  .row()
-  .text(
-    `${SUBSCRIPTIONS.BASIC.icon} ${SUBSCRIPTIONS.BASIC.title} за ${SUBSCRIPTIONS.BASIC.price}₽/мес`,
-    'BASIC',
-  )
-  .row()
-  .text(
-    `${SUBSCRIPTIONS.PRO.icon} ${SUBSCRIPTIONS.PRO.title} за ${SUBSCRIPTIONS.PRO.price}₽/мес`,
-    'PRO',
-  )
-  .row()
-  .text(
-    `${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title} за ${SUBSCRIPTIONS.ULTIMATE.price}₽/мес`,
-    'ULTIMATE',
-  );
 
-export const changeSubscriptionKeyboardForImg = new InlineKeyboard()
-  .text(
-    `${SUBSCRIPTIONS.MINI.icon} ${SUBSCRIPTIONS.MINI.title} за ${SUBSCRIPTIONS.MINI.price}₽/мес`,
-    'MINI-CHANGE',
-  )
-  .row()
-  .text(
-    `${SUBSCRIPTIONS.BASIC.icon} ${SUBSCRIPTIONS.BASIC.title} за ${SUBSCRIPTIONS.BASIC.price}₽/мес`,
-    'BASIC-CHANGE',
-  )
-  .row()
-  .text(
-    `${SUBSCRIPTIONS.PRO.icon} ${SUBSCRIPTIONS.PRO.title} за ${SUBSCRIPTIONS.PRO.price}₽/мес`,
-    'PRO-CHANGE',
-  )
-  .row()
-  .text(
-    `${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title} за ${SUBSCRIPTIONS.ULTIMATE.price}₽/мес`,
-    'ULTIMATE-CHANGE',
-  );
+export const getSubscriptionLevelsKeyboard = () => {
+  const keyboard = new InlineKeyboard();
+
+  Object.keys(SUBSCRIPTIONS)
+    .filter((key) => key !== SubscriptionLevels.FREE)
+    .forEach((key) => {
+      const subscription = SUBSCRIPTIONS[key as SubscriptionLevel];
+      keyboard
+        .text(
+          `${subscription.icon} ${subscription.title} за ${subscription.price}₽/мес`,
+          key.toUpperCase(),
+        )
+        .row();
+    });
+
+  return keyboard;
+};
+
+export const getChangeSubscriptionLevelsKeyboard = () => {
+  const keyboard = new InlineKeyboard();
+
+  Object.keys(SUBSCRIPTIONS)
+    .filter((key) => key !== SubscriptionLevels.FREE)
+    .forEach((key) => {
+      const subscription = SUBSCRIPTIONS[key as SubscriptionLevel];
+      keyboard
+        .text(
+          `${subscription.icon} ${subscription.title} за ${subscription.price}₽/мес`,
+          `${key}-CHANGE`,
+        )
+        .row();
+    });
+
+  return keyboard;
+};
 
 export const subscription = async (
   ctx: CallbackQueryContext<MyContext> | MyContext,
@@ -63,7 +62,7 @@ export const subscription = async (
   try {
     await ctx.reply(SUBSCRIPTIONS_MESSAGE.replace(/[().-]/g, '\\$&'), {
       parse_mode: 'MarkdownV2',
-      reply_markup: subscriptionKeyboardForImg,
+      reply_markup: getSubscriptionLevelsKeyboard(),
     });
   } catch (error) {
     await ctx.reply(

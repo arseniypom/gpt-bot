@@ -1,6 +1,6 @@
 import { CallbackQueryContext, InlineKeyboard, InputFile } from 'grammy';
 import { logError } from '../utils/utilFunctions';
-import { MyContext } from '../types/types';
+import { MyContext, SubscriptionLevel } from '../types/types';
 import { PACKAGES } from '../bot-packages';
 import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 
@@ -12,12 +12,21 @@ export const topupAndManageSubscriptionKeyboard = new InlineKeyboard()
   .text('💰 Пополнить баланс', 'topup')
   .row()
   .text('⚙️ Управление подпиской', 'subscriptionManage');
-export const topupAndChangeModelKeyboard = new InlineKeyboard()
-  .text('💰 Пополнить баланс', 'topup')
-  .row()
-  .text('⚙️ Управление подпиской', 'subscriptionManage')
-  .row()
-  .text('🤖 Сменить модель', 'initiateAiModelChange');
+export const getTopupAndChangeModelKeyboard = (subscriptionLevel: SubscriptionLevel) => {
+  const keyboard = new InlineKeyboard()
+    .text('💰 Пополнить баланс', 'topup')
+    .row();
+
+  if (subscriptionLevel === 'FREE') {
+    keyboard.text('🎉 Подключить подписку', 'subscription');
+  } else {
+    keyboard.text('⚙️ Управление подпиской', 'subscriptionManage');
+  }
+
+  return keyboard
+    .row()
+    .text('🤖 Сменить модель', 'initiateAiModelChange');
+};
 const topupKeyboardForImg = new InlineKeyboard()
   .text(PACKAGES.req1.numberIcon, 'req1')
   .text(PACKAGES.req2.numberIcon, 'req2')

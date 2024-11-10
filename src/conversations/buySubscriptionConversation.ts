@@ -100,9 +100,10 @@ export async function buySubscriptionConversation(
       metadata: {
         telegramId: id,
         subscriptionLevel,
+        basicRequestsPerWeek: subscriptionData.basicRequestsPerWeek,
         basicRequestsPerDay: subscriptionData.basicRequestsPerDay,
-        proRequestsPerDay: subscriptionData.proRequestsPerDay,
-        imageGenerationPerDay: subscriptionData.imageGenerationPerDay,
+        proRequestsPerMonth: subscriptionData.proRequestsPerMonth,
+        imageGenerationPerMonth: subscriptionData.imageGenerationPerMonth,
         subscriptionDuration: JSON.stringify(subscriptionDuration),
       },
       save_payment_method: true,

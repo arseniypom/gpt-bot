@@ -37,7 +37,7 @@ export async function imageConversation(
       return;
     }
     if (
-      user.imageGenerationBalanceLeftToday === 0 &&
+      user.imageGenerationLeftThisMonths === 0 &&
       user.imageGenerationBalance === 0
     ) {
       await ctx.reply(

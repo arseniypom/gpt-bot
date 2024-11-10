@@ -3,6 +3,10 @@ import { IUser } from '../../db/User';
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
 import { AiModel, AiModelsLabels } from '../types/types';
 
+export const BASIC_REQUEST_COST = 1.5;
+export const PRO_REQUEST_COST = 3;
+export const IMAGE_GENERATION_COST = 10;
+
 export const MAX_HISTORY_LENGTH = 5;
 export const DEFAULT_AI_MODEL = 'GPT_4O_MINI';
 export const MAX_USER_MESSAGE_LENGTH = 3000;
@@ -127,25 +131,26 @@ export const SUBSCRIPTIONS_MESSAGE = `
 *Описание уровней подписки*
 
 *${SUBSCRIPTIONS.FREE.icon} ${SUBSCRIPTIONS.FREE.title}*
-– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.FREE.basicRequestsPerDay} в день
+– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.FREE.basicRequestsPerWeek} в неделю
 
-*${SUBSCRIPTIONS.MINI.icon} ${SUBSCRIPTIONS.MINI.title}*
-– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.MINI.basicRequestsPerDay} в день
+*${SUBSCRIPTIONS.START.icon} ${SUBSCRIPTIONS.START.title}*
+– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.START.basicRequestsPerDay} в день
+– Генерация изображений (DALL-E 3) — ${SUBSCRIPTIONS.START.imageGenerationPerMonth} в месяц
 
-*${SUBSCRIPTIONS.BASIC.icon} ${SUBSCRIPTIONS.BASIC.title}*
-– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.BASIC.basicRequestsPerDay} в день
-– PRO запросы (GPT-4o) — ${SUBSCRIPTIONS.BASIC.proRequestsPerDay} в день
-– Генерация изображений (DALL-E 3) — ${SUBSCRIPTIONS.BASIC.imageGenerationPerDay} в день
+*${SUBSCRIPTIONS.OPTIMUM.icon} ${SUBSCRIPTIONS.OPTIMUM.title}*
+– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.OPTIMUM.basicRequestsPerDay} в день
+– PRO запросы (GPT-4o) — ${SUBSCRIPTIONS.OPTIMUM.proRequestsPerMonth} в месяц
+– Генерация изображений (DALL-E 3) — ${SUBSCRIPTIONS.OPTIMUM.imageGenerationPerMonth} в месяц
 
-*${SUBSCRIPTIONS.PRO.icon} ${SUBSCRIPTIONS.PRO.title}*
-– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.PRO.basicRequestsPerDay} в день
-– PRO запросы (GPT-4o) — ${SUBSCRIPTIONS.PRO.proRequestsPerDay} в день
-– Генерация изображений (DALL-E 3) — ${SUBSCRIPTIONS.PRO.imageGenerationPerDay} в день
+*${SUBSCRIPTIONS.PREMIUM.icon} ${SUBSCRIPTIONS.PREMIUM.title}*
+– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.PREMIUM.basicRequestsPerDay} в день
+– PRO запросы (GPT-4o) — ${SUBSCRIPTIONS.PREMIUM.proRequestsPerMonth} в месяц
+– Генерация изображений (DALL-E 3) — ${SUBSCRIPTIONS.PREMIUM.imageGenerationPerMonth} в месяц
 
-*${SUBSCRIPTIONS.ULTIMATE.icon} ${SUBSCRIPTIONS.ULTIMATE.title}*
-– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.ULTIMATE.basicRequestsPerDay} в день
-– PRO запросы (GPT-4o) — ${SUBSCRIPTIONS.ULTIMATE.proRequestsPerDay} в день
-– Генерация изображений (DALL-E 3) — ${SUBSCRIPTIONS.ULTIMATE.imageGenerationPerDay} в день
+*${SUBSCRIPTIONS.ULTRA.icon} ${SUBSCRIPTIONS.ULTRA.title}*
+– Базовые запросы (GPT-4o mini) — ${SUBSCRIPTIONS.ULTRA.basicRequestsPerDay} в день
+– PRO запросы (GPT-4o) — ${SUBSCRIPTIONS.ULTRA.proRequestsPerMonth} в месяц
+– Генерация изображений (DALL-E 3) — ${SUBSCRIPTIONS.ULTRA.imageGenerationPerMonth} в месяц
 
 Нажмите на кнопку ниже, чтобы выбрать уровень 👇
 `;
@@ -170,11 +175,19 @@ export const getProfileMessage = (user: IUser) => {
   const expirationDate = dayjs(user.subscriptionExpiry)
     .format('DD.MM.YYYY')
     .replace(/\./g, '\\.');
+  const weeklyRequestsExpirationDate = dayjs(user.weeklyRequestsExpiry)
+    .format('DD.MM.YYYY')
+    .replace(/\./g, '\\.');
   const isNewSubscriptionLevelShown =
     user.newSubscriptionLevel &&
     user.newSubscriptionLevel !== user.subscriptionLevel;
   const newSubscriptionLevelTitle =
     user.newSubscriptionLevel && SUBSCRIPTIONS[user.newSubscriptionLevel].title;
+
+  const freeRequestsMessage =
+    user.subscriptionLevel === 'FREE'
+      ? `\n\nОстаток бесплатных запросов: ${user.basicRequestsLeftThisWeek}/${SUBSCRIPTIONS.FREE.basicRequestsPerWeek}\n_Обновятся ${weeklyRequestsExpirationDate}_`
+      : '';
 
   return `
 *Ваш уровень подписки: ${SUBSCRIPTIONS[user.subscriptionLevel].icon} ${
@@ -183,12 +196,12 @@ export const getProfileMessage = (user: IUser) => {
     isNewSubscriptionLevelShown
       ? `\n_После будет переключен на ${newSubscriptionLevelTitle}_`
       : ''
-  }
+  }${freeRequestsMessage}
 
 *Остаток запросов по подписке на сегодня*
-⭐️ Базовые: ${user.basicRequestsBalanceLeftToday}
-🌟 PRO: ${user.proRequestsBalanceLeftToday}
-🖼️ Генерация изображений: ${user.imageGenerationBalanceLeftToday}
+⭐️ Базовые: ${user.basicRequestsLeftToday}
+🌟 PRO: ${user.proRequestsLeftThisMonths}
+🖼️ Генерация изображений: ${user.imageGenerationLeftThisMonths}
 
 *Дополнительные запросы*
 ⭐️ Базовые: ${user.basicRequestsBalance}

@@ -21,16 +21,19 @@ cron.schedule('0 22 * * *', async () => {
       const batch = users.slice(processedUsers, processedUsers + BATCH_SIZE);
 
       for (const user of batch) {
-        if (user.subscriptionLevel) {
-          const subscriptionData = SUBSCRIPTIONS[user.subscriptionLevel];
-          user.basicRequestsBalanceLeftToday =
+        const subscriptionData = SUBSCRIPTIONS[user.subscriptionLevel];
+        if (subscriptionData.basicRequestsPerDay) {
+          user.basicRequestsLeftToday =
             subscriptionData.basicRequestsPerDay || 0;
-          user.proRequestsBalanceLeftToday =
-            subscriptionData.proRequestsPerDay || 0;
-          user.imageGenerationBalanceLeftToday =
-            subscriptionData.imageGenerationPerDay || 0;
-          await user.save();
         }
+        if (subscriptionData.basicRequestsPerWeek) {
+          if (dayjs().isSame(user.weeklyRequestsExpiry, 'day')) {
+            user.basicRequestsLeftThisWeek =
+              subscriptionData.basicRequestsPerWeek;
+            user.weeklyRequestsExpiry = dayjs().add(7, 'day').toDate();
+          }
+        }
+        await user.save();
       }
 
       processedUsers += BATCH_SIZE;

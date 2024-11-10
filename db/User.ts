@@ -8,6 +8,7 @@ import {
   SubscriptionDuration,
 } from '../src/types/types';
 import { SUBSCRIPTIONS } from '../src/bot-subscriptions';
+import dayjs from 'dayjs';
 
 export interface IUser {
   telegramId: number;
@@ -17,15 +18,18 @@ export interface IUser {
   proRequestsBalance: number;
   imageGenerationBalance: number;
   selectedModel: AiModel;
-  basicRequestsBalanceLeftToday: number;
-  proRequestsBalanceLeftToday: number;
-  imageGenerationBalanceLeftToday: number;
+  basicRequestsLeftThisWeek: number;
+  basicRequestsLeftToday: number;
+  proRequestsLeftThisMonths: number;
+  imageGenerationLeftThisMonths: number;
   subscriptionLevel: SubscriptionLevel;
   newSubscriptionLevel: SubscriptionLevel | null;
   subscriptionExpiry: Date | null;
+  weeklyRequestsExpiry: Date | null;
   subscriptionDuration: SubscriptionDuration | null;
   unsubscribeReason: string | null;
   yookassaPaymentMethodId: string | null;
+  coinsBalance: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,19 +59,24 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     default: DEFAULT_AI_MODEL,
     required: true,
   },
-  basicRequestsBalanceLeftToday: {
+  basicRequestsLeftThisWeek: {
     type: Number,
-    default: SUBSCRIPTIONS.FREE.basicRequestsPerDay,
+    default: SUBSCRIPTIONS.FREE.basicRequestsPerWeek,
     required: true,
   },
-  proRequestsBalanceLeftToday: {
+  basicRequestsLeftToday: {
     type: Number,
-    default: SUBSCRIPTIONS.FREE.proRequestsPerDay,
+    default: 0,
     required: true,
   },
-  imageGenerationBalanceLeftToday: {
+  proRequestsLeftThisMonths: {
     type: Number,
-    default: SUBSCRIPTIONS.FREE.imageGenerationPerDay,
+    default: 0,
+    required: true,
+  },
+  imageGenerationLeftThisMonths: {
+    type: Number,
+    default: 0,
     required: true,
   },
   subscriptionLevel: {
@@ -84,6 +93,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  weeklyRequestsExpiry: {
+    type: Date,
+    default: dayjs().add(7, 'day').toDate(),
+  },
   subscriptionDuration: {
     type: Object,
     default: null,
@@ -95,6 +108,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   yookassaPaymentMethodId: {
     type: String,
     default: null,
+  },
+  coinsBalance: {
+    type: Number,
+    default: 0,
   },
   createdAt: {
     type: Date,

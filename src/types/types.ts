@@ -64,18 +64,19 @@ export interface PackageData {
 
 export enum SubscriptionLevels {
   FREE = 'FREE',
-  MINI = 'MINI',
-  BASIC = 'BASIC',
-  PRO = 'PRO',
-  ULTIMATE = 'ULTIMATE',
+  START = 'START',
+  OPTIMUM = 'OPTIMUM',
+  PREMIUM = 'PREMIUM',
+  ULTRA = 'ULTRA',
 }
 
 export type SubscriptionLevel = keyof typeof SubscriptionLevels;
 
 export interface SubscriptionData {
-  basicRequestsPerDay: number;
-  proRequestsPerDay?: number;
-  imageGenerationPerDay?: number;
+  basicRequestsPerWeek?: number;
+  basicRequestsPerDay?: number;
+  proRequestsPerMonth?: number;
+  imageGenerationPerMonth?: number;
   price: number;
   description: string;
   title: string;

@@ -49,12 +49,17 @@ cron.schedule('0 21 * * *', async () => {
       if (newSubscriptionLevel === SubscriptionLevels.FREE) {
         user.subscriptionLevel = SubscriptionLevels.FREE;
         user.subscriptionExpiry = null;
-        user.basicRequestsBalanceLeftToday =
+        if (SUBSCRIPTIONS.FREE.basicRequestsPerWeek) {
+          user.basicRequestsLeftThisWeek =
+            SUBSCRIPTIONS.FREE.basicRequestsPerWeek;
+          user.weeklyRequestsExpiry = dayjs().add(7, 'day').toDate();
+        }
+        user.basicRequestsLeftToday =
           SUBSCRIPTIONS.FREE.basicRequestsPerDay || 0;
-        user.proRequestsBalanceLeftToday =
-          SUBSCRIPTIONS.FREE.proRequestsPerDay || 0;
-        user.imageGenerationBalanceLeftToday =
-          SUBSCRIPTIONS.FREE.imageGenerationPerDay || 0;
+        user.proRequestsLeftThisMonths =
+          SUBSCRIPTIONS.FREE.proRequestsPerMonth || 0;
+        user.imageGenerationLeftThisMonths =
+          SUBSCRIPTIONS.FREE.imageGenerationPerMonth || 0;
         user.yookassaPaymentMethodId = null;
 
         user.subscriptionDuration = null;
@@ -106,15 +111,17 @@ cron.schedule('0 21 * * *', async () => {
                 .toDate();
             }
 
-            user.basicRequestsBalanceLeftToday =
-              subscriptionData.basicRequestsPerDay || 0;
-            if (subscriptionData.proRequestsPerDay) {
-              user.proRequestsBalanceLeftToday =
-                subscriptionData.proRequestsPerDay || 0;
+            if (subscriptionData.basicRequestsPerDay) {
+              user.basicRequestsLeftToday =
+                subscriptionData.basicRequestsPerDay || 0;
             }
-            if (subscriptionData.imageGenerationPerDay) {
-              user.imageGenerationBalanceLeftToday =
-                subscriptionData.imageGenerationPerDay || 0;
+            if (subscriptionData.proRequestsPerMonth) {
+              user.proRequestsLeftThisMonths =
+                subscriptionData.proRequestsPerMonth || 0;
+            }
+            if (subscriptionData.imageGenerationPerMonth) {
+              user.imageGenerationLeftThisMonths =
+                subscriptionData.imageGenerationPerMonth || 0;
             }
             user.newSubscriptionLevel = null;
             user.updatedAt = new Date();
@@ -144,12 +151,12 @@ cron.schedule('0 21 * * *', async () => {
             user.newSubscriptionLevel = null;
 
             user.subscriptionExpiry = null;
-            user.basicRequestsBalanceLeftToday =
+            user.basicRequestsLeftToday =
               SUBSCRIPTIONS.FREE.basicRequestsPerDay || 0;
-            user.proRequestsBalanceLeftToday =
-              SUBSCRIPTIONS.FREE.proRequestsPerDay || 0;
-            user.imageGenerationBalanceLeftToday =
-              SUBSCRIPTIONS.FREE.imageGenerationPerDay || 0;
+            user.proRequestsLeftThisMonths =
+              SUBSCRIPTIONS.FREE.proRequestsPerMonth || 0;
+            user.imageGenerationLeftThisMonths =
+              SUBSCRIPTIONS.FREE.imageGenerationPerMonth || 0;
             user.yookassaPaymentMethodId = null;
 
             user.updatedAt = new Date();

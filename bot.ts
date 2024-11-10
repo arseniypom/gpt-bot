@@ -26,10 +26,12 @@ import Chat from './db/Chat';
 import Message from './db/Message';
 import { answerWithChatGPT } from './src/utils/gpt';
 import {
+  BASIC_REQUEST_COST,
   COMMANDS,
   getNoBalanceMessage,
   MAX_HISTORY_LENGTH,
   MAX_USER_MESSAGE_LENGTH,
+  PRO_REQUEST_COST,
   SUPPORT_MESSAGE_POSTFIX,
   UNSUBSCRIBE_REASONS,
 } from './src/utils/consts';
@@ -54,7 +56,7 @@ import {
   unsubscribeFinalStep,
   initiateChangeSubscriptionLevel,
 } from './src/commands';
-import { topupAndChangeModelKeyboard } from './src/commands/topup';
+import { getTopupAndChangeModelKeyboard } from './src/commands/topup';
 import { getModelsKeyboard } from './src/commands/changeAiModel';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
@@ -214,9 +216,10 @@ bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
 });
 bot.callbackQuery(
   [
-    SubscriptionLevels.BASIC,
-    SubscriptionLevels.PRO,
-    SubscriptionLevels.ULTIMATE,
+    SubscriptionLevels.START,
+    SubscriptionLevels.OPTIMUM,
+    SubscriptionLevels.PREMIUM,
+    SubscriptionLevels.ULTRA,
   ],
   async (ctx) => {
     await ctx.answerCallbackQuery();
@@ -261,6 +264,25 @@ bot.command('topup', topupImg);
 bot.command('subscription', subscription);
 bot.command('profile', myProfile);
 bot.command('support', support);
+bot.command('del', async (ctx) => {
+  const telegramId = ctx.from?.id;
+  try {
+    const user = await User.findOneAndDelete({ telegramId });
+    if (!user) {
+      await ctx.reply('⛔︎ Not found');
+      return;
+    }
+    await ctx.reply('⌦ Dropped');
+  } catch (error) {
+    logError({
+      message: 'Error deleting user',
+      error,
+      telegramId: ctx.from?.id,
+      username: ctx.from?.username,
+    });
+    await ctx.reply('Произошла ошибка при удалении пользователя');
+  }
+});
 
 // Admin commands
 bot.command('stats', getStats);
@@ -326,30 +348,37 @@ bot.on('message:text', async (ctx) => {
 
     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
       if (
-        user.proRequestsBalanceLeftToday === 0 &&
-        user.proRequestsBalance === 0
+        user.proRequestsLeftThisMonths === 0 &&
+        user.coinsBalance - PRO_REQUEST_COST < 0
       ) {
         await responseMessage.editText(
           getNoBalanceMessage(user.selectedModel),
           {
-            reply_markup: topupAndChangeModelKeyboard,
+            reply_markup: getTopupAndChangeModelKeyboard(
+              user.subscriptionLevel,
+            ),
+          },
+        );
+        return;
+      }
+    } else if (AiModels[user.selectedModel] === AiModels.GPT_4O_MINI) {
+      if (
+        user.basicRequestsLeftThisWeek === 0 &&
+        user.basicRequestsLeftToday === 0 &&
+        user.coinsBalance - BASIC_REQUEST_COST < 0
+      ) {
+        await responseMessage.editText(
+          getNoBalanceMessage(user.selectedModel),
+          {
+            reply_markup: getTopupAndChangeModelKeyboard(
+              user.subscriptionLevel,
+            ),
           },
         );
         return;
       }
     } else {
-      if (
-        user.basicRequestsBalanceLeftToday === 0 &&
-        user.basicRequestsBalance === 0
-      ) {
-        await responseMessage.editText(
-          getNoBalanceMessage(user.selectedModel),
-          {
-            reply_markup: topupAndChangeModelKeyboard,
-          },
-        );
-        return;
-      }
+      throw new Error('Invalid model: ' + user.selectedModel);
     }
 
     await Message.create({
@@ -388,16 +417,18 @@ bot.on('message:text', async (ctx) => {
     await chat.save();
 
     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
-      if (user.proRequestsBalanceLeftToday > 0) {
-        user.proRequestsBalanceLeftToday -= 1;
+      if (user.proRequestsLeftThisMonths > 0) {
+        user.proRequestsLeftThisMonths -= 1;
       } else {
-        user.proRequestsBalance -= 1;
+        user.coinsBalance -= PRO_REQUEST_COST;
       }
     } else {
-      if (user.basicRequestsBalanceLeftToday > 0) {
-        user.basicRequestsBalanceLeftToday -= 1;
+      if (user.basicRequestsLeftThisWeek > 0) {
+        user.basicRequestsLeftThisWeek -= 1;
+      } else if (user.basicRequestsLeftToday > 0) {
+        user.basicRequestsLeftToday -= 1;
       } else {
-        user.basicRequestsBalance -= 1;
+        user.coinsBalance -= BASIC_REQUEST_COST;
       }
     }
     user.updatedAt = new Date();
