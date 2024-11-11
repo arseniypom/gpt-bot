@@ -41,18 +41,15 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   userName: { type: String },
   basicRequestsBalance: {
     type: Number,
-    default: 15,
-    required: true,
+    default: 0,
   },
   proRequestsBalance: {
     type: Number,
-    default: 5,
-    required: true,
+    default: 0,
   },
   imageGenerationBalance: {
     type: Number,
-    default: 3,
-    required: true,
+    default: 0,
   },
   selectedModel: {
     type: String,
