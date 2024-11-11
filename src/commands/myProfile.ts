@@ -6,7 +6,7 @@ import { getProfileMessage } from '../utils/consts';
 import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 import { logError } from '../utils/utilFunctions';
 
-const profileAddSubscriptionKeyboard = new InlineKeyboard()
+export const profileAddSubscriptionKeyboard = new InlineKeyboard()
   .text('🎉 Подключить подписку', 'subscription')
   .row()
   .text('💰 Купить доп. запросы', 'topup');

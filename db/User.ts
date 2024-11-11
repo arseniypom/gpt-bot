@@ -28,8 +28,9 @@ export interface IUser {
   weeklyRequestsExpiry: Date | null;
   subscriptionDuration: SubscriptionDuration | null;
   unsubscribeReason: string | null;
+  lastUnsubscribeDate: Date | null;
   yookassaPaymentMethodId: string | null;
-  coinsBalance: number;
+  tokensBalance: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -95,7 +96,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   },
   weeklyRequestsExpiry: {
     type: Date,
-    default: dayjs().add(7, 'day').toDate(),
+    default: () => dayjs().add(7, 'day').toDate(),
   },
   subscriptionDuration: {
     type: Object,
@@ -105,11 +106,15 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     type: String,
     default: null,
   },
+  lastUnsubscribeDate: {
+    type: Date,
+    default: null,
+  },
   yookassaPaymentMethodId: {
     type: String,
     default: null,
   },
-  coinsBalance: {
+  tokensBalance: {
     type: Number,
     default: 0,
   },

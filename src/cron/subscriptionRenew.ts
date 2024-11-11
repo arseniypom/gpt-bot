@@ -11,6 +11,7 @@ import yookassaService from '../utils/yookassaService';
 import SubscriptionTransaction from '../../db/SubscriptionTransaction';
 import { mainKeyboard } from '../commands/start';
 import { isValidSubscriptionDuration } from '../types/typeguards';
+import { profileAddSubscriptionKeyboard } from '../commands/myProfile';
 
 // Schedule the task to run every day at 21:00 UTC
 cron.schedule('0 21 * * *', async () => {
@@ -54,18 +55,24 @@ cron.schedule('0 21 * * *', async () => {
             SUBSCRIPTIONS.FREE.basicRequestsPerWeek;
           user.weeklyRequestsExpiry = dayjs().add(7, 'day').toDate();
         }
-        user.basicRequestsLeftToday =
-          SUBSCRIPTIONS.FREE.basicRequestsPerDay || 0;
-        user.proRequestsLeftThisMonths =
-          SUBSCRIPTIONS.FREE.proRequestsPerMonth || 0;
-        user.imageGenerationLeftThisMonths =
-          SUBSCRIPTIONS.FREE.imageGenerationPerMonth || 0;
+        user.basicRequestsLeftToday = 0;
+        user.proRequestsLeftThisMonths = 0;
+        user.imageGenerationLeftThisMonths = 0;
         user.yookassaPaymentMethodId = null;
 
         user.subscriptionDuration = null;
         user.newSubscriptionLevel = null;
+        user.lastUnsubscribeDate = new Date();
         user.updatedAt = new Date();
         await user.save();
+        await bot.api.sendMessage(
+          user.telegramId,
+          `*Срок действия Вашей подписки закончился, и Вы были переключены на уровень \\"${icon}${SUBSCRIPTIONS.FREE.title}\\"*\n\nБлагодарим за использование нашего бота и надеемся увидеть Вас в числе подписчиков снова\\!`,
+          {
+            parse_mode: 'MarkdownV2',
+            reply_markup: profileAddSubscriptionKeyboard,
+          },
+        );
         continue;
       }
 

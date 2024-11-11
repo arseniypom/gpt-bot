@@ -3,7 +3,7 @@ import { InlineKeyboard } from 'grammy';
 import { v4 as uuidv4 } from 'uuid';
 import { type MyConversation, type MyContext } from '../types/types';
 import { logError } from '../utils/utilFunctions';
-import { PACKAGES } from '../bot-packages';
+import { TOKEN_PACKAGES } from '../bot-token-packages';
 import { ICreatePayment } from '../types/yookassaTypes';
 import yookassaService from '../utils/yookassaService';
 import {
@@ -16,7 +16,7 @@ const cancelKeyboard = new InlineKeyboard().text(
   'cancelPayment',
 );
 
-export async function createPaymentConversation(
+export async function buyTokensConversation(
   conversation: MyConversation,
   ctx: MyContext,
 ) {
@@ -35,8 +35,9 @@ export async function createPaymentConversation(
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   let isFirstAttempt = true;
-  const { numberIcon, description } = PACKAGES[packageKey];
-  const messagePrefix = `*Выбран пакет:*\n${numberIcon} ${description}`;
+  const { price, description, tokensNumber } =
+    TOKEN_PACKAGES[packageKey];
+  const messagePrefix = `*Выбран пакет:*\n 🪙 ${description}`;
 
   do {
     const requestText = isFirstAttempt
@@ -58,12 +59,12 @@ export async function createPaymentConversation(
 
   // Creating payment
   try {
-    const packageData = PACKAGES[packageKey];
+    const packageData = TOKEN_PACKAGES[packageKey];
 
     const idempotenceKey = uuidv4();
 
     const amountObj = {
-      value: `${packageData.price}.00`,
+      value: `${price}.00`,
       currency: 'RUB',
     };
 
@@ -91,9 +92,7 @@ export async function createPaymentConversation(
       metadata: {
         telegramId: id,
         packageName: packageKey,
-        basicRequestsBalance: packageData.basicRequestsBalance || null,
-        proRequestsBalance: packageData.proRequestsBalance || null,
-        imageGenerationBalance: packageData.imageGenerationBalance || null,
+        tokensNumber,
       },
     };
 
@@ -120,7 +119,7 @@ export async function createPaymentConversation(
       `Произошла ошибка при создании ссылки для оплаты. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
-      message: 'Error in createPaymentConversation',
+      message: 'Error in buyTokensConversation',
       error,
       telegramId: ctx.from?.id,
       username: ctx.from?.username,

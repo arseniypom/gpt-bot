@@ -12,14 +12,13 @@ import {
   ImageGenerationQuality,
   SessionData,
   AiModels,
-  PackageName,
   SubscriptionLevel,
   SubscriptionLevels,
+  TokenPackageName,
 } from './src/types/types';
 import {
   isValidAiModel,
   isValidImageGenerationQuality,
-  isValidSubscriptionLevel,
 } from './src/types/typeguards';
 import User from './db/User';
 import Chat from './db/Chat';
@@ -40,8 +39,7 @@ import {
   start,
   getStats,
   initiateAiModelChange,
-  topupImg,
-  topupText,
+  topup,
   createNewChat,
   checkChannelJoinAndRegisterUser,
   subscription,
@@ -61,7 +59,7 @@ import { getTopupAndChangeModelKeyboard } from './src/commands/topup';
 import { getModelsKeyboard } from './src/commands/changeAiModel';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
-import { createPaymentConversation } from './src/conversations/createPaymentConversation';
+import { buyTokensConversation } from './src/conversations/buyTokensConversation';
 import { buySubscriptionConversation } from './src/conversations/buySubscriptionConversation';
 import { PACKAGES } from './src/bot-packages';
 import { SUBSCRIPTIONS } from './src/bot-subscriptions';
@@ -72,6 +70,7 @@ import {
   getMongoDbUri,
 } from './src/utils/utilFunctions';
 import { telegramSuccessfulPaymentHandler } from './src/utils/payments';
+import { TOKEN_PACKAGES } from './src/bot-token-packages';
 
 const BOT_API_KEY = getBotApiKey();
 
@@ -114,7 +113,7 @@ bot.use(checkUserInDB);
 // Conversations
 bot.use(createConversation(imageConversation));
 bot.use(createConversation(supportConversation));
-bot.use(createConversation(createPaymentConversation));
+bot.use(createConversation(buyTokensConversation));
 bot.use(createConversation(buySubscriptionConversation));
 
 void bot.api.setMyCommands(COMMANDS);
@@ -182,7 +181,7 @@ bot.callbackQuery('cancelSupport', async (ctx) => {
 });
 bot.callbackQuery('cancelPayment', async (ctx) => {
   await ctx.answerCallbackQuery('Отменено ✅');
-  await ctx.conversation.exit('createPaymentConversation');
+  await ctx.conversation.exit('buyTokensConversation');
   await ctx.callbackQuery.message?.editText('Оплата отменена');
 });
 bot.callbackQuery('cancelSubscription', async (ctx) => {
@@ -208,12 +207,12 @@ bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
 
   await ctx.conversation.enter('imageConversation');
 });
-// Here you can enter createPaymentConversation or pass createInvoice function
-bot.callbackQuery(Object.keys(PACKAGES), async (ctx) => {
+// Here you can enter buyTokensConversation or pass createInvoice function
+bot.callbackQuery(Object.keys(TOKEN_PACKAGES), async (ctx) => {
   await ctx.answerCallbackQuery();
-  await ctx.callbackQuery.message?.editReplyMarkup(undefined);
-  ctx.session.packageName = ctx.callbackQuery.data as PackageName;
-  await ctx.conversation.enter('createPaymentConversation');
+  await ctx.callbackQuery.message?.delete();
+  ctx.session.packageName = ctx.callbackQuery.data as TokenPackageName;
+  await ctx.conversation.enter('buyTokensConversation');
 });
 bot.callbackQuery(
   [
@@ -232,8 +231,7 @@ bot.callbackQuery(
     await ctx.conversation.enter('buySubscriptionConversation');
   },
 );
-bot.callbackQuery('topupText', topupText);
-bot.callbackQuery('topup', topupImg);
+bot.callbackQuery('topup', topup);
 bot.callbackQuery('subscription', subscription);
 bot.callbackQuery('initiateAiModelChange', initiateAiModelChange);
 bot.callbackQuery(
@@ -261,11 +259,15 @@ bot.command('newchat', createNewChat);
 bot.command('image', generateImage);
 bot.command('models', initiateAiModelChange);
 bot.command('balance', balance);
-bot.command('topup', topupImg);
+bot.command('topup', topup);
 bot.command('subscription', subscription);
 bot.command('profile', myProfile);
 bot.command('support', support);
 bot.command('del', async (ctx) => {
+  if (ctx.from?.id !== Number(process.env.ADMIN_TELEGRAM_ID)) {
+    await ctx.reply('⛔︎ Действие недост');
+    return;
+  }
   const telegramId = ctx.from?.id;
   try {
     const user = await User.findOneAndDelete({ telegramId });
@@ -290,7 +292,7 @@ bot.command('stats', getStats);
 
 // Keyboard handlers
 bot.hears('🎉 Подключить подписку', subscription);
-bot.hears('💰 Купить доп. запросы', topupImg);
+bot.hears('💰 Купить доп. запросы', topup);
 bot.hears('🪪 Мой профиль', myProfile);
 bot.hears('💬 Начать новый чат', createNewChat);
 bot.hears('🖼️ Сгенерировать изображение', generateImage);
@@ -350,7 +352,7 @@ bot.on('message:text', async (ctx) => {
     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
       if (
         user.proRequestsLeftThisMonths === 0 &&
-        user.coinsBalance - PRO_REQUEST_COST < 0
+        user.tokensBalance - PRO_REQUEST_COST < 0
       ) {
         await responseMessage.editText(
           getNoBalanceMessage(user.selectedModel),
@@ -366,7 +368,7 @@ bot.on('message:text', async (ctx) => {
       if (
         user.basicRequestsLeftThisWeek === 0 &&
         user.basicRequestsLeftToday === 0 &&
-        user.coinsBalance - BASIC_REQUEST_COST < 0
+        user.tokensBalance - BASIC_REQUEST_COST < 0
       ) {
         await responseMessage.editText(
           getNoBalanceMessage(user.selectedModel),
@@ -421,7 +423,7 @@ bot.on('message:text', async (ctx) => {
       if (user.proRequestsLeftThisMonths > 0) {
         user.proRequestsLeftThisMonths -= 1;
       } else {
-        user.coinsBalance -= PRO_REQUEST_COST;
+        user.tokensBalance -= PRO_REQUEST_COST;
       }
     } else {
       if (user.basicRequestsLeftThisWeek > 0) {
@@ -429,14 +431,15 @@ bot.on('message:text', async (ctx) => {
       } else if (user.basicRequestsLeftToday > 0) {
         user.basicRequestsLeftToday -= 1;
       } else {
-        user.coinsBalance -= BASIC_REQUEST_COST;
+        user.tokensBalance -= BASIC_REQUEST_COST;
       }
     }
     user.updatedAt = new Date();
     await user.save();
 
     if (answer.length > MAX_BOT_MESSAGE_LENGTH) {
-      const chunks = answer.match(new RegExp(`[^]{1,${MAX_BOT_MESSAGE_LENGTH}}`, 'g')) || [];
+      const chunks =
+        answer.match(new RegExp(`[^]{1,${MAX_BOT_MESSAGE_LENGTH}}`, 'g')) || [];
       await responseMessage.editText(chunks[0]!);
       for (let i = 1; i < chunks.length; i++) {
         await new Promise((resolve) => setTimeout(resolve, 500));

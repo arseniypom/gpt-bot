@@ -9,7 +9,7 @@ import { IUser } from '../../db/User';
 export interface SessionData {
   chatId?: string;
   imageQuality: ImageGenerationQuality;
-  packageName?: PackageName;
+  packageName?: TokenPackageName;
   subscriptionLevel?: Exclude<SubscriptionLevel, 'FREE'>;
   user?: Pick<IUser, 'telegramId' | 'firstName' | 'userName'>;
 }
@@ -60,6 +60,15 @@ export interface PackageData {
   description: string;
   title: string;
   numberIcon: string;
+}
+
+export type TokenPackageName = 'token1' | 'token2' | 'token3';
+
+export interface TokenPackageData {
+  tokensNumber: number;
+  price: number;
+  description: string;
+  title: string;
 }
 
 export enum SubscriptionLevels {

@@ -1,6 +1,6 @@
 export { initiateAiModelChange } from './changeAiModel';
 export { getStats } from './stats';
-export { topupImg, topupText } from './topup';
+export { topup } from './topup';
 export { createNewChat } from './createNewChat';
 export { start, checkChannelJoinAndRegisterUser } from './start';
 export { subscription } from './subscription';

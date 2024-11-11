@@ -132,7 +132,7 @@ export async function buySubscriptionConversation(
       `Произошла ошибка при создании ссылки для оплаты. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
-      message: 'Error in createPaymentConversation',
+      message: 'Error in buyTokensConversation',
       error,
       telegramId: ctx.from?.id,
       username: ctx.from?.username,
