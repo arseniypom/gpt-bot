@@ -4,7 +4,7 @@ import { generateImage } from '../utils/gpt';
 import { logError } from '../utils/utilFunctions';
 import { type MyConversation, type MyContext } from '../types/types';
 import User from '../../db/User';
-import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
+import { BUTTON_LABELS, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 import { topupAndManageSubscriptionKeyboard } from '../commands/topup';
 
 const cancelKeyboard = new InlineKeyboard().text(
@@ -23,6 +23,16 @@ export async function imageConversation(
     });
 
     const { message } = await conversation.waitFor('message:text');
+
+    if (Object.values(BUTTON_LABELS).includes(message.text)) {
+      await ctx.reply(
+        `Генерация изображения отменена\\.\nПожалуйста, нажмите кнопку *${message.text}* повторно`,
+        {
+          parse_mode: 'MarkdownV2',
+        },
+      );
+      return;
+    }
     if (message.text.length > 1500) {
       await ctx.reply(
         'Превышен лимит символов. Пожалуйста, сократите Ваше сообщение и начните генерацию заново командой /image.',

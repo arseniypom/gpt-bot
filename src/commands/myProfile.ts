@@ -2,17 +2,17 @@ import { User as TelegramUser } from '@grammyjs/types';
 import { CallbackQueryContext, InlineKeyboard } from 'grammy';
 import User from '../../db/User';
 import { MyContext, SubscriptionLevels } from '../types/types';
-import { getProfileMessage } from '../utils/consts';
+import { BUTTON_LABELS, getProfileMessage } from '../utils/consts';
 import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 import { logError } from '../utils/utilFunctions';
 
 export const profileAddSubscriptionKeyboard = new InlineKeyboard()
-  .text('🎉 Подключить подписку', 'subscription')
+  .text(BUTTON_LABELS.subscribe, 'subscription')
   .row()
-  .text('🪙 Купить токены', 'topup');
+  .text(BUTTON_LABELS.buyTokens, 'topup');
 
 const profileManageSubscriptionKeyboard = new InlineKeyboard()
-  .text('🪙 Купить токены', 'topup')
+  .text(BUTTON_LABELS.buyTokens, 'topup')
   .row()
   .text('� Управление подпиской', 'subscriptionManage');
 

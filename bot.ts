@@ -26,6 +26,7 @@ import Message from './db/Message';
 import { answerWithChatGPT } from './src/utils/gpt';
 import {
   BASIC_REQUEST_COST,
+  BUTTON_LABELS,
   COMMANDS,
   getNoBalanceMessage,
   MAX_BOT_MESSAGE_LENGTH,
@@ -291,13 +292,13 @@ bot.command('del', async (ctx) => {
 bot.command('stats', getStats);
 
 // Keyboard handlers
-bot.hears('🎉 Подключить подписку', subscription);
-bot.hears('🪙 Купить токены', topup);
-bot.hears('👤 Мой профиль', myProfile);
-bot.hears('🖼️ Сгенерировать изображение', generateImage);
-bot.hears('⚙️ Настройки', initiateAiModelChange);
-bot.hears('ℹ️ Информация', help);
-bot.hears('🆘 Поддержка', support);
+bot.hears(BUTTON_LABELS.subscribe, subscription);
+bot.hears(BUTTON_LABELS.buyTokens, topup);
+bot.hears(BUTTON_LABELS.profile, myProfile);
+bot.hears(BUTTON_LABELS.image, generateImage);
+bot.hears(BUTTON_LABELS.settings, initiateAiModelChange);
+bot.hears(BUTTON_LABELS.help, help);
+bot.hears(BUTTON_LABELS.support, support);
 
 // Message handler
 bot.on('message:text', async (ctx) => {

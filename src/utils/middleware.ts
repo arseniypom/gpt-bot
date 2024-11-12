@@ -5,7 +5,7 @@ import { logError } from './utilFunctions';
 import { MyContext } from '../types/types';
 import { isMyContext } from '../types/typeguards';
 import logger from './logger';
-import { SUPPORT_MESSAGE_POSTFIX } from './consts';
+import { BUTTON_LABELS, SUPPORT_MESSAGE_POSTFIX } from './consts';
 
 export const checkUserInDB = async (
   ctx: MyContext | { chat: { type: 'private' | 'channel' } },
@@ -20,7 +20,7 @@ export const checkUserInDB = async (
     ctx.hasCommand('start') ||
     ctx.hasCommand('support') ||
     (await ctx.conversation.active())?.supportConversation ||
-    ctx.message?.text === '🆘 Поддержка' ||
+    ctx.message?.text === BUTTON_LABELS.support ||
     ctx.callbackQuery?.data === 'checkChannelJoinAndRegisterUser'
   ) {
     await next();

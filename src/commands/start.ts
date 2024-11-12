@@ -1,7 +1,11 @@
 import 'dotenv/config';
 import { User as TelegramUser } from '@grammyjs/types';
 import { logError } from '../utils/utilFunctions';
-import { START_MESSAGE_V2, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
+import {
+  BUTTON_LABELS,
+  START_MESSAGE_V2,
+  SUPPORT_MESSAGE_POSTFIX,
+} from '../utils/consts';
 import { MyContext, SubscriptionLevels } from '../types/types';
 import User from '../../db/User';
 import Chat from '../../db/Chat';
@@ -79,30 +83,30 @@ export const checkChannelJoinAndRegisterUser = async (
 };
 
 export const mainKeyboard = new Keyboard()
-  .text('👤 Мой профиль')
-  .text('⚙️ Настройки')
+  .text(BUTTON_LABELS.profile)
+  .text(BUTTON_LABELS.settings)
   .row()
-  .text('🎉 Подключить подписку')
+  .text(BUTTON_LABELS.subscribe)
   .row()
-  .text('🖼️ Сгенерировать изображение')
+  .text(BUTTON_LABELS.image)
   .row()
-  .text('ℹ️ Информация')
-  .text('🆘 Поддержка')
+  .text(BUTTON_LABELS.help)
+  .text(BUTTON_LABELS.support)
   .resized()
   .persistent();
 
 export const mainSubscribedUserKeyboard = new Keyboard()
-.text('👤 Мой профиль')
-.text('⚙️ Настройки')
-.row()
-.text('🪙 Купить токены')
-.row()
-.text('🖼️ Сгенерировать изображение')
-.row()
-.text('ℹ️ Информация')
-.text('🆘 Поддержка')
-.resized()
-.persistent();
+  .text(BUTTON_LABELS.profile)
+  .text(BUTTON_LABELS.settings)
+  .row()
+  .text(BUTTON_LABELS.buyTokens)
+  .row()
+  .text(BUTTON_LABELS.image)
+  .row()
+  .text(BUTTON_LABELS.help)
+  .text(BUTTON_LABELS.support)
+  .resized()
+  .persistent();
 
 export const registerUser = async (ctx: CallbackQueryContext<MyContext>) => {
   const { id, first_name, username } = ctx.from as TelegramUser;
