@@ -31,7 +31,6 @@ export const answerWithChatGPT = async (
         ...formattedMessages,
       ],
       user: telegramId.toString(),
-      temperature: 0.8,
     });
 
     return response.choices[0].message.content;
