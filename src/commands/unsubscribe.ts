@@ -12,7 +12,7 @@ const unsubscribeVerificationKeyboard = new InlineKeyboard()
   .text('Да', 'verifySubscriptionCancel');
 
 const unsubscribeReasonKeyboard = new InlineKeyboard()
-  .text(UNSUBSCRIBE_REASONS.additionalPackages, 'additionalPackages')
+  .text(UNSUBSCRIBE_REASONS.tokens, 'tokens')
   .row()
   .text(UNSUBSCRIBE_REASONS.somethingNotWorking, 'somethingNotWorking')
   .row()
@@ -69,7 +69,7 @@ export const unsubscribeFinalStep = async (
         sendMessageToAdmin(
           `Пользователь ${user.telegramId} отменил подписку по причине "Что-то не работает" ⭕`,
         );
-      case 'additionalPackages':
+      case 'tokens':
       case 'notUsingBot':
       case 'subscriptionTooExpensive':
       case 'enoughFreeTariff':

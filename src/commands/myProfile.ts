@@ -9,12 +9,12 @@ import { logError } from '../utils/utilFunctions';
 export const profileAddSubscriptionKeyboard = new InlineKeyboard()
   .text('🎉 Подключить подписку', 'subscription')
   .row()
-  .text('💰 Купить доп. запросы', 'topup');
+  .text('🪙 Купить токены', 'topup');
 
 const profileManageSubscriptionKeyboard = new InlineKeyboard()
-  .text('💰 Купить доп. запросы', 'topup')
+  .text('🪙 Купить токены', 'topup')
   .row()
-  .text('⚙️ Управление подпиской', 'subscriptionManage');
+  .text('� Управление подпиской', 'subscriptionManage');
 
 export const myProfile = async (
   ctx: MyContext | CallbackQueryContext<MyContext>,

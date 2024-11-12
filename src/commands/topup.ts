@@ -13,24 +13,24 @@ const topupKeyboard = new InlineKeyboard()
   .text(`${TOKEN_PACKAGES.token3.tokensNumber}`, 'token3');
 
 export const initiateTopupKeyboard = new InlineKeyboard().text(
-  '💰 Пополнить баланс',
+  '🪙 Пополнить баланс токенов',
   'topup',
 );
 export const topupAndManageSubscriptionKeyboard = new InlineKeyboard()
-  .text('💰 Пополнить баланс', 'topup')
+  .text('🪙 Пополнить баланс токенов', 'topup')
   .row()
-  .text('⚙️ Управление подпиской', 'subscriptionManage');
+  .text('🔄 Управление подпиской', 'subscriptionManage');
 export const getTopupAndChangeModelKeyboard = (
   subscriptionLevel: SubscriptionLevel,
 ) => {
   const keyboard = new InlineKeyboard()
-    .text('💰 Пополнить баланс', 'topup')
+    .text('🪙 Пополнить баланс токенов', 'topup')
     .row();
 
   if (subscriptionLevel === 'FREE') {
     keyboard.text('🎉 Подключить подписку', 'subscription');
   } else {
-    keyboard.text('⚙️ Управление подпиской', 'subscriptionManage');
+    keyboard.text('🔄 Управление подпиской', 'subscriptionManage');
   }
 
   return keyboard.row().text('🤖 Сменить модель', 'initiateAiModelChange');

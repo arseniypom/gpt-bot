@@ -292,11 +292,10 @@ bot.command('stats', getStats);
 
 // Keyboard handlers
 bot.hears('🎉 Подключить подписку', subscription);
-bot.hears('💰 Купить доп. запросы', topup);
-bot.hears('🪪 Мой профиль', myProfile);
-bot.hears('💬 Начать новый чат', createNewChat);
+bot.hears('🪙 Купить токены', topup);
+bot.hears('👤 Мой профиль', myProfile);
 bot.hears('🖼️ Сгенерировать изображение', generateImage);
-bot.hears('🤖 Выбрать AI-модель', initiateAiModelChange);
+bot.hears('⚙️ Настройки', initiateAiModelChange);
 bot.hears('ℹ️ Информация', help);
 bot.hears('🆘 Поддержка', support);
 

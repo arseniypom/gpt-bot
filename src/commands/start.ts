@@ -79,14 +79,12 @@ export const checkChannelJoinAndRegisterUser = async (
 };
 
 export const mainKeyboard = new Keyboard()
+  .text('👤 Мой профиль')
+  .text('⚙️ Настройки')
+  .row()
   .text('🎉 Подключить подписку')
   .row()
-  .text('🪪 Мой профиль')
-  .row()
-  .text('💬 Начать новый чат')
-  .row()
   .text('🖼️ Сгенерировать изображение')
-  .text('🤖 Выбрать AI-модель')
   .row()
   .text('ℹ️ Информация')
   .text('🆘 Поддержка')
@@ -94,19 +92,17 @@ export const mainKeyboard = new Keyboard()
   .persistent();
 
 export const mainSubscribedUserKeyboard = new Keyboard()
-  .text('💰 Купить доп. запросы')
-  .row()
-  .text('🪪 Мой профиль')
-  .row()
-  .text('💬 Начать новый чат')
-  .row()
-  .text('🖼️ Сгенерировать изображение')
-  .text('🤖 Выбрать AI-модель')
-  .row()
-  .text('ℹ️ Информация')
-  .text('🆘 Поддержка')
-  .resized()
-  .persistent();
+.text('👤 Мой профиль')
+.text('⚙️ Настройки')
+.row()
+.text('🪙 Купить токены')
+.row()
+.text('🖼️ Сгенерировать изображение')
+.row()
+.text('ℹ️ Информация')
+.text('🆘 Поддержка')
+.resized()
+.persistent();
 
 export const registerUser = async (ctx: CallbackQueryContext<MyContext>) => {
   const { id, first_name, username } = ctx.from as TelegramUser;

@@ -11,7 +11,6 @@ import yookassaService from '../utils/yookassaService';
 import SubscriptionTransaction from '../../db/SubscriptionTransaction';
 import { mainKeyboard } from '../commands/start';
 import { isValidSubscriptionDuration } from '../types/typeguards';
-import { profileAddSubscriptionKeyboard } from '../commands/myProfile';
 
 // Schedule the task to run every day at 21:00 UTC
 cron.schedule('0 21 * * *', async () => {
@@ -70,7 +69,7 @@ cron.schedule('0 21 * * *', async () => {
           `*Срок действия Вашей подписки закончился, и Вы были переключены на уровень \\"${icon}${SUBSCRIPTIONS.FREE.title}\\"*\n\nБлагодарим за использование нашего бота и надеемся увидеть Вас в числе подписчиков снова\\!`,
           {
             parse_mode: 'MarkdownV2',
-            reply_markup: profileAddSubscriptionKeyboard,
+            reply_markup: mainKeyboard,
           },
         );
         continue;
@@ -135,7 +134,7 @@ cron.schedule('0 21 * * *', async () => {
             await user.save();
             await bot.api.sendMessage(
               user.telegramId,
-              `*Ваша подписка уровня \\"${title}\\" успешно продлена ${icon} *\n\nПриятного использования\\!`,
+              `*Ваша подписка уровня \\"${icon} ${title}\\" успешно продлена ✔️ *\n\nПриятного использования\\!`,
               {
                 parse_mode: 'MarkdownV2',
               },
@@ -155,26 +154,31 @@ cron.schedule('0 21 * * *', async () => {
               },
             });
             user.subscriptionLevel = SubscriptionLevels.FREE;
-            user.newSubscriptionLevel = null;
-
             user.subscriptionExpiry = null;
-            user.basicRequestsLeftToday =
-              SUBSCRIPTIONS.FREE.basicRequestsPerDay || 0;
-            user.proRequestsLeftThisMonths =
-              SUBSCRIPTIONS.FREE.proRequestsPerMonth || 0;
-            user.imageGenerationLeftThisMonths =
-              SUBSCRIPTIONS.FREE.imageGenerationPerMonth || 0;
+            if (SUBSCRIPTIONS.FREE.basicRequestsPerWeek) {
+              user.basicRequestsLeftThisWeek =
+                SUBSCRIPTIONS.FREE.basicRequestsPerWeek;
+              user.weeklyRequestsExpiry = dayjs().add(7, 'day').toDate();
+            }
+            user.basicRequestsLeftToday = 0;
+            user.proRequestsLeftThisMonths = 0;
+            user.imageGenerationLeftThisMonths = 0;
             user.yookassaPaymentMethodId = null;
 
+            user.subscriptionDuration = null;
+            user.newSubscriptionLevel = null;
+            user.lastUnsubscribeDate = new Date();
+            user.unsubscribeReason =
+              paymentResponse.cancellation_details?.reason;
             user.updatedAt = new Date();
             await user.save();
 
-            let paymentFailedMessage = `К сожалению, ваша подписка уровня ${title} не была продлена 🙁`;
+            let paymentFailedMessage = `*К сожалению, ваша подписка уровня ${title} не была продлена 🙁*`;
             if (
               paymentResponse.cancellation_details?.reason ===
               'insufficient_funds'
             ) {
-              paymentFailedMessage += `\n\nПричина: Недостаточно средств на карте\nПожалуйста, проверьте баланс карты и попробуйте снова /subscription`;
+              paymentFailedMessage += `\n\nПричина: Недостаточно средств на карте\nПожалуйста, проверьте баланс и попробуйте снова /subscription`;
             } else {
               paymentFailedMessage += `\n\nПожалуйста, попробуйте снова: /subscription`;
             }
