@@ -62,7 +62,6 @@ import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
 import { buyTokensConversation } from './src/conversations/buyTokensConversation';
 import { buySubscriptionConversation } from './src/conversations/buySubscriptionConversation';
-import { PACKAGES } from './src/bot-packages';
 import { SUBSCRIPTIONS } from './src/bot-subscriptions';
 import { checkUserInDB, ignoreOld } from './src/utils/middleware';
 import {
@@ -70,7 +69,6 @@ import {
   getBotApiKey,
   getMongoDbUri,
 } from './src/utils/utilFunctions';
-import { telegramSuccessfulPaymentHandler } from './src/utils/payments';
 import { TOKEN_PACKAGES } from './src/bot-token-packages';
 
 const BOT_API_KEY = getBotApiKey();
@@ -118,8 +116,6 @@ bot.use(createConversation(buyTokensConversation));
 bot.use(createConversation(buySubscriptionConversation));
 
 void bot.api.setMyCommands(COMMANDS);
-
-bot.on(':successful_payment', telegramSuccessfulPaymentHandler);
 
 // Callback queries
 bot.callbackQuery(
