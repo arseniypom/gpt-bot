@@ -14,9 +14,6 @@ export interface IUser {
   telegramId: number;
   firstName?: string;
   userName?: string;
-  basicRequestsBalance: number;
-  proRequestsBalance: number;
-  imageGenerationBalance: number;
   selectedModel: AiModel;
   basicRequestsLeftThisWeek: number;
   basicRequestsLeftToday: number;
@@ -39,18 +36,6 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   telegramId: { type: Number, unique: true, required: true },
   firstName: { type: String },
   userName: { type: String },
-  basicRequestsBalance: {
-    type: Number,
-    default: 0,
-  },
-  proRequestsBalance: {
-    type: Number,
-    default: 0,
-  },
-  imageGenerationBalance: {
-    type: Number,
-    default: 0,
-  },
   selectedModel: {
     type: String,
     enum: Object.keys(AiModels),
