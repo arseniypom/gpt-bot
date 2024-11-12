@@ -4,7 +4,11 @@ import { generateImage } from '../utils/gpt';
 import { logError } from '../utils/utilFunctions';
 import { type MyConversation, type MyContext } from '../types/types';
 import User from '../../db/User';
-import { BUTTON_LABELS, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
+import {
+  BUTTON_LABELS,
+  IMAGE_GENERATION_COST,
+  SUPPORT_MESSAGE_POSTFIX,
+} from '../utils/consts';
 import { topupAndManageSubscriptionKeyboard } from '../commands/topup';
 
 const cancelKeyboard = new InlineKeyboard().text(
@@ -18,6 +22,26 @@ export async function imageConversation(
 ) {
   try {
     const { id } = ctx.from as TelegramUser;
+    const user = await conversation.external(() =>
+      User.findOne({ telegramId: id }),
+    );
+    if (!user) {
+      await ctx.reply('Пожалуйста, начните новый чат с помощью команды /start');
+      return;
+    }
+    if (
+      user.imageGenerationLeftThisMonth === 0 &&
+      user.tokensBalance - IMAGE_GENERATION_COST < 0
+    ) {
+      await ctx.reply(
+        'У вас нет доступных запросов для генерации изображений. Смените уровень подписки или пополните баланс токенов ↓',
+        {
+          reply_markup: topupAndManageSubscriptionKeyboard,
+        },
+      );
+      return;
+    }
+
     await ctx.reply('Опишите, что должно быть на изображении?', {
       reply_markup: cancelKeyboard,
     });
@@ -39,25 +63,6 @@ export async function imageConversation(
       );
       return;
     }
-    const user = await conversation.external(() =>
-      User.findOne({ telegramId: id }),
-    );
-    if (!user) {
-      await ctx.reply('Пожалуйста, начните новый чат с помощью команды /start');
-      return;
-    }
-    if (
-      user.imageGenerationLeftThisMonths === 0 &&
-      user.imageGenerationBalance === 0
-    ) {
-      await ctx.reply(
-        'У вас закончились запросы на генерацию изображений на сегодня. Пожалуйста, подключите подписку или пополните баланс.',
-        {
-          reply_markup: topupAndManageSubscriptionKeyboard,
-        },
-      );
-      return;
-    }
 
     const responseMessage = await ctx.reply('Генерация изображения...');
 
@@ -71,7 +76,11 @@ export async function imageConversation(
     await ctx.replyWithPhoto(imageUrl);
     await responseMessage.editText('Готово!');
 
-    user.imageGenerationBalance -= 1;
+    if (user.imageGenerationLeftThisMonth > 0) {
+      user.imageGenerationLeftThisMonth -= 1;
+    } else {
+      user.tokensBalance -= IMAGE_GENERATION_COST;
+    }
     user.updatedAt = new Date();
     await conversation.external(() => user.save());
   } catch (error) {

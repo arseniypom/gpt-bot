@@ -55,8 +55,8 @@ cron.schedule('0 21 * * *', async () => {
           user.weeklyRequestsExpiry = dayjs().add(7, 'day').toDate();
         }
         user.basicRequestsLeftToday = 0;
-        user.proRequestsLeftThisMonths = 0;
-        user.imageGenerationLeftThisMonths = 0;
+        user.proRequestsLeftThisMonth = 0;
+        user.imageGenerationLeftThisMonth = 0;
         user.yookassaPaymentMethodId = null;
 
         user.subscriptionDuration = null;
@@ -122,11 +122,11 @@ cron.schedule('0 21 * * *', async () => {
                 subscriptionData.basicRequestsPerDay || 0;
             }
             if (subscriptionData.proRequestsPerMonth) {
-              user.proRequestsLeftThisMonths =
+              user.proRequestsLeftThisMonth =
                 subscriptionData.proRequestsPerMonth || 0;
             }
             if (subscriptionData.imageGenerationPerMonth) {
-              user.imageGenerationLeftThisMonths =
+              user.imageGenerationLeftThisMonth =
                 subscriptionData.imageGenerationPerMonth || 0;
             }
             user.newSubscriptionLevel = null;
@@ -161,8 +161,8 @@ cron.schedule('0 21 * * *', async () => {
               user.weeklyRequestsExpiry = dayjs().add(7, 'day').toDate();
             }
             user.basicRequestsLeftToday = 0;
-            user.proRequestsLeftThisMonths = 0;
-            user.imageGenerationLeftThisMonths = 0;
+            user.proRequestsLeftThisMonth = 0;
+            user.imageGenerationLeftThisMonth = 0;
             user.yookassaPaymentMethodId = null;
 
             user.subscriptionDuration = null;

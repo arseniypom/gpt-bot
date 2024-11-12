@@ -223,8 +223,8 @@ export const getProfileMessage = (user: IUser) => {
 
 *Остаток запросов по подписке на сегодня*
 ⭐️ Базовые: ${user.basicRequestsLeftToday}
-🌟 PRO: ${user.proRequestsLeftThisMonths}
-🖼️ Генерация изображений: ${user.imageGenerationLeftThisMonths}
+🌟 PRO: ${user.proRequestsLeftThisMonth}
+🖼️ Генерация изображений: ${user.imageGenerationLeftThisMonth}
 
 *Доступные токены*
 🪙 ${user.tokensBalance.toString().replace(/\./g, '\\.')}

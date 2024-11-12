@@ -17,8 +17,8 @@ export interface IUser {
   selectedModel: AiModel;
   basicRequestsLeftThisWeek: number;
   basicRequestsLeftToday: number;
-  proRequestsLeftThisMonths: number;
-  imageGenerationLeftThisMonths: number;
+  proRequestsLeftThisMonth: number;
+  imageGenerationLeftThisMonth: number;
   subscriptionLevel: SubscriptionLevel;
   newSubscriptionLevel: SubscriptionLevel | null;
   subscriptionExpiry: Date | null;
@@ -52,12 +52,12 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     default: 0,
     required: true,
   },
-  proRequestsLeftThisMonths: {
+  proRequestsLeftThisMonth: {
     type: Number,
     default: 0,
     required: true,
   },
-  imageGenerationLeftThisMonths: {
+  imageGenerationLeftThisMonth: {
     type: Number,
     default: 0,
     required: true,

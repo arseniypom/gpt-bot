@@ -351,7 +351,7 @@ bot.on('message:text', async (ctx) => {
 
     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
       if (
-        user.proRequestsLeftThisMonths === 0 &&
+        user.proRequestsLeftThisMonth === 0 &&
         user.tokensBalance - PRO_REQUEST_COST < 0
       ) {
         await responseMessage.editText(
@@ -420,8 +420,8 @@ bot.on('message:text', async (ctx) => {
     await chat.save();
 
     if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
-      if (user.proRequestsLeftThisMonths > 0) {
-        user.proRequestsLeftThisMonths -= 1;
+      if (user.proRequestsLeftThisMonth > 0) {
+        user.proRequestsLeftThisMonth -= 1;
       } else {
         user.tokensBalance -= PRO_REQUEST_COST;
       }
