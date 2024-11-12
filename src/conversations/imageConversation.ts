@@ -22,19 +22,19 @@ export async function imageConversation(
 ) {
   try {
     const { id } = ctx.from as TelegramUser;
-    const user = await conversation.external(() =>
+    const userObj = await conversation.external(() =>
       User.findOne({ telegramId: id }),
     );
-    if (!user) {
+    if (!userObj) {
       await ctx.reply('Пожалуйста, начните новый чат с помощью команды /start');
       return;
     }
     if (
-      user.imageGenerationLeftThisMonth === 0 &&
-      user.tokensBalance - IMAGE_GENERATION_COST < 0
+      userObj.imageGenerationLeftThisMonth === 0 &&
+      userObj.tokensBalance - IMAGE_GENERATION_COST < 0
     ) {
       await ctx.reply(
-        'У вас нет доступных запросов для генерации изображений. Смените уровень подписки или пополните баланс токенов ↓',
+        'У вас нет доступных запросов для генерации изображений и не хватает токенов. Смените уровень подписки или пополните баланс токенов ↓',
         {
           reply_markup: topupAndManageSubscriptionKeyboard,
         },
@@ -68,7 +68,7 @@ export async function imageConversation(
 
     const imageUrl = await generateImage(
       message.text,
-      ctx.session.imageQuality,
+      conversation.session.imageQuality,
     );
     if (!imageUrl) {
       throw new Error('Image generation failed: no image URL');
@@ -76,13 +76,31 @@ export async function imageConversation(
     await ctx.replyWithPhoto(imageUrl);
     await responseMessage.editText('Готово!');
 
-    if (user.imageGenerationLeftThisMonth > 0) {
-      user.imageGenerationLeftThisMonth -= 1;
+    const user = await conversation.external(() =>
+      User.findOne({ telegramId: id }),
+    );
+    const date = await conversation.external(() => new Date());
+    if (user!.imageGenerationLeftThisMonth > 0) {
+      await conversation.external(() =>
+        User.updateOne(
+          { telegramId: id },
+          {
+            updatedAt: date,
+            imageGenerationLeftThisMonth: user!.imageGenerationLeftThisMonth - 1,
+          },
+        ),
+      );
     } else {
-      user.tokensBalance -= IMAGE_GENERATION_COST;
+      await conversation.external(() =>
+        User.updateOne(
+          { telegramId: id },
+          {
+            updatedAt: date,
+            tokensBalance: user!.tokensBalance - IMAGE_GENERATION_COST,
+          },
+        ),
+      );
     }
-    user.updatedAt = new Date();
-    await conversation.external(() => user.save());
   } catch (error) {
     await ctx.reply(
       `Произошла ошибка при генерации изображения. ${SUPPORT_MESSAGE_POSTFIX}`,
