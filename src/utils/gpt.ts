@@ -14,7 +14,9 @@ export const answerWithChatGPT = async (
 ): Promise<string | null> => {
   const formattedMessages = messages.map((msg) => ({
     role: msg.role as 'system' | 'user' | 'assistant',
-    content: msg.content,
+    content: [{ type: 'text', text: msg.content }] as [
+      { type: 'text'; text: string },
+    ],
   }));
 
   if (!isValidAiModel(modelName)) {
@@ -25,10 +27,11 @@ export const answerWithChatGPT = async (
     const response = await openai.chat.completions.create({
       model: AiModels[modelName],
       messages: [
-        { role: 'system', content: PROMPT_MESSAGE },
+        { role: 'system', content: [{ type: 'text', text: PROMPT_MESSAGE }] },
         ...formattedMessages,
       ],
       user: telegramId.toString(),
+      temperature: 0.8,
     });
 
     return response.choices[0].message.content;
