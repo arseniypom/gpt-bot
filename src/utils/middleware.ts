@@ -1,4 +1,4 @@
-import { NextFunction } from 'grammy';
+import { InlineKeyboard, NextFunction } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import User from '../../db/User';
 import { logError } from './utilFunctions';
@@ -6,6 +6,18 @@ import { MyContext } from '../types/types';
 import { isMyContext } from '../types/typeguards';
 import logger from './logger';
 import { BUTTON_LABELS, SUPPORT_MESSAGE_POSTFIX } from './consts';
+import { checkIsChannelMember } from '../commands/start';
+import { getChannelTelegramName } from '../utils/utilFunctions';
+
+const channelTelegramName = getChannelTelegramName();
+if (!channelTelegramName) {
+  throw new Error('Env var CHANNEL_TELEGRAM_NAME_* is not defined');
+}
+
+const subscribeToChannelKeyboard = new InlineKeyboard()
+  .url('Ссылка на канал', `https://t.me/${channelTelegramName}`)
+  .row()
+  .text('🔄 Проверить подписку', 'checkChannelJoin');
 
 export const checkUserInDB = async (
   ctx: MyContext | { chat: { type: 'private' | 'channel' } },
@@ -20,32 +32,43 @@ export const checkUserInDB = async (
     ctx.hasCommand('start') ||
     ctx.hasCommand('support') ||
     (await ctx.conversation.active())?.supportConversation ||
-    ctx.message?.text === BUTTON_LABELS.support ||
-    ctx.callbackQuery?.data === 'checkChannelJoinAndRegisterUser'
+    ctx.message?.text === BUTTON_LABELS.support
   ) {
     await next();
     return;
   }
 
-  const { id } = ctx.from as TelegramUser;
-
-  if (ctx.session.user) {
-    await next();
-    return;
-  }
-
   try {
-    const user = await User.findOne({ telegramId: id }).lean();
-    if (!user) {
-      await ctx.reply('Пожалуйста, начните с команды /start');
+    const { id } = ctx.from as TelegramUser;
+
+    const isChannelMember = await checkIsChannelMember(id);
+
+    if (isChannelMember) {
+      await next();
       return;
     }
 
-    ctx.session.user = user;
-    await next();
+    if (ctx.callbackQuery?.data === 'checkChannelJoin') {
+      await ctx.callbackQuery.message?.editText(
+        'Мы не нашли Вас в числе подписчиков канала 🙁\nПожалуйста, подпишитесь и нажмите\n"🔄 Проверить подписку" повторно\n\nЕсли Вы убедились, что подписаны, но по-прежнему получаете это сообщение, обратитесь в поддержку /support',
+        {
+          reply_markup: subscribeToChannelKeyboard,
+        },
+      );
+      return;
+    }
+
+    await ctx.reply(
+      `Чтобы пользоваться ботом, Вам необходимо подписаться на наш канал [Кухня ИИ](https://t.me/${channelTelegramName}) 🔗\n\nЭто сделано для защиты от спама и вредоносных ботов, чтобы обеспечить нашим пользователям комфортный бесперебойный доступ к ChatGPT\\.\nПожалуйста, подпишитесь и нажмите на кнопку "🔄 Проверить подписку"`,
+      {
+        parse_mode: 'MarkdownV2',
+        reply_markup: subscribeToChannelKeyboard,
+      },
+    );
+    return;
   } catch (error) {
     logError({
-      message: 'Error checking user existence middleware',
+      message: 'Middleware: Error checking user channel membership',
       error,
       telegramId: ctx.from?.id,
       username: ctx.from?.username,

@@ -21,64 +21,19 @@ if (!channelTelegramName) {
   throw new Error('Env var CHANNEL_TELEGRAM_NAME_* is not defined');
 }
 
-const startKeyboard = new InlineKeyboard()
-  .url('Ссылка на канал', `https://t.me/${channelTelegramName}`)
-  .row()
-  .text('Проверить подписку', 'checkChannelJoinAndRegisterUser');
-
-export const start = async (ctx: MyContext) => {
-  if (!isRegistrationEnabled) {
-    await ctx.reply(
-      'К сожалению, регистрация новых пользователей временно приостановлена',
-    );
-    return;
-  }
-  await ctx.reply(
-    'Чтобы пользоваться ботом, Вам необходимо подписаться на наш канал по ссылке ниже 👇\n\nЭто сделано для защиты от спама и вредоносных ботов\\.\nПожалуйста, подпишитесь и нажмите на кнопку "Проверить подписку"',
-    {
-      parse_mode: 'MarkdownV2',
-      reply_markup: startKeyboard,
-    },
-  );
-};
-
-export const checkChannelJoinAndRegisterUser = async (
-  ctx: CallbackQueryContext<MyContext>,
-) => {
-  await ctx.answerCallbackQuery();
-  const { id, username } = ctx.from as TelegramUser;
-  try {
-    const member = await bot.api.getChatMember(`@${channelTelegramName}`, id);
-    switch (member.status) {
-      case 'creator':
-      case 'administrator':
-      case 'member':
-        await ctx.callbackQuery.message?.editText(
-          'Подписка оформлена ✅\nВы можете пользоваться ботом.',
-        );
-        await registerUser(ctx);
-        break;
-      case 'restricted':
-      case 'left':
-      case 'kicked':
-        await ctx.callbackQuery.message?.editText(
-          'Мы не нашли Вас в числе подписчиков канала 🙁\nПожалуйста, подпишитесь и нажмите "Проверить подписку"\n\nЕсли Вы убедились, что подписаны, но по-прежнему получаете это сообщение, попробуйте нажать "Проверить подписку" еще раз или обратитесь в поддержку /support',
-          {
-            reply_markup: startKeyboard,
-          },
-        );
-        break;
-    }
-  } catch (error) {
-    await ctx.reply(
-      `Произошла ошибка при проверке подписки на канал. ${SUPPORT_MESSAGE_POSTFIX}`,
-    );
-    logError({
-      message: 'Error in checkChannelJoinAndRegisterUser callbackQuery',
-      error,
-      telegramId: id,
-      username,
-    });
+export const checkIsChannelMember = async (tgId: number) => {
+  const member = await bot.api.getChatMember(`@${channelTelegramName}`, tgId);
+  switch (member.status) {
+    case 'creator':
+    case 'administrator':
+    case 'member':
+      return true;
+    case 'restricted':
+    case 'left':
+    case 'kicked':
+      return false;
+    default:
+      return false;
   }
 };
 
@@ -108,7 +63,14 @@ export const mainSubscribedUserKeyboard = new Keyboard()
   .resized()
   .persistent();
 
-export const registerUser = async (ctx: CallbackQueryContext<MyContext>) => {
+export const start = async (ctx: MyContext) => {
+  if (!isRegistrationEnabled) {
+    await ctx.reply(
+      'К сожалению, регистрация новых пользователей временно приостановлена',
+    );
+    return;
+  }
+
   const { id, first_name, username } = ctx.from as TelegramUser;
 
   await ctx.reply(START_MESSAGE_V2, {
@@ -131,7 +93,7 @@ export const registerUser = async (ctx: CallbackQueryContext<MyContext>) => {
       });
       await responseMsg.delete();
       await ctx.reply(
-        'Ваш персональный чат-бот создан! Чтобы начать чат, просто напишите сообщение 💬\n\nПодробнее – кнопка "ℹ️ Информация" ниже 👇',
+        'Ваш персональный чат-бот создан! Чтобы начать чат, просто напишите сообщение 💬\n\nПодробнее – кнопка "ℹ️ Информация" ↓',
         {
           reply_markup: mainKeyboard,
         },
@@ -145,7 +107,7 @@ export const registerUser = async (ctx: CallbackQueryContext<MyContext>) => {
     } else {
       const isSubscribed = user.subscriptionLevel !== SubscriptionLevels.FREE;
       await ctx.reply(
-        'Чем я могу Вам помочь? Напишите запрос или выберите команду из меню ниже 👇',
+        'Чем я могу Вам помочь? Напишите запрос или выберите команду из меню ↓',
         {
           reply_markup: isSubscribed
             ? mainSubscribedUserKeyboard

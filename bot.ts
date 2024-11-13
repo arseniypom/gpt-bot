@@ -42,7 +42,6 @@ import {
   initiateAiModelChange,
   topup,
   createNewChat,
-  checkChannelJoinAndRegisterUser,
   subscription,
   generateImage,
   myProfile,
@@ -118,10 +117,6 @@ bot.use(createConversation(buySubscriptionConversation));
 void bot.api.setMyCommands(COMMANDS);
 
 // Callback queries
-bot.callbackQuery(
-  'checkChannelJoinAndRegisterUser',
-  checkChannelJoinAndRegisterUser,
-);
 bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
   await ctx.answerCallbackQuery();
   const selectedModel = ctx.callbackQuery.data;
@@ -248,6 +243,12 @@ bot.callbackQuery(
   changeSubscriptionLevel,
 );
 bot.callbackQuery('backToMyProfile', myProfile);
+bot.callbackQuery('checkChannelJoin', async (ctx) => {
+  await ctx.answerCallbackQuery();
+  await ctx.callbackQuery.message?.editText(
+    'Подписка проверена ✅\nТеперь Вы можете пользоваться ботом. Чем я могу помочь?',
+  );
+});
 
 // User commands
 bot.command('start', start);

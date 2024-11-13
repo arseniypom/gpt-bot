@@ -2,7 +2,7 @@ export { initiateAiModelChange } from './changeAiModel';
 export { getStats } from './stats';
 export { topup } from './topup';
 export { createNewChat } from './createNewChat';
-export { start, checkChannelJoinAndRegisterUser } from './start';
+export { start } from './start';
 export { subscription } from './subscription';
 export { generateImage } from './generateImage';
 export { myProfile } from './myProfile';
