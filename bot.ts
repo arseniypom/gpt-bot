@@ -16,10 +16,7 @@ import {
   SubscriptionLevels,
   TokenPackageName,
 } from './src/types/types';
-import {
-  isValidAiModel,
-  isValidImageGenerationQuality,
-} from './src/types/typeguards';
+import { isValidImageGenerationQuality } from './src/types/typeguards';
 import User from './db/User';
 import Chat from './db/Chat';
 import Message from './db/Message';
@@ -28,6 +25,7 @@ import {
   BASIC_REQUEST_COST,
   BUTTON_LABELS,
   COMMANDS,
+  DEFAULT_CHAT_MODE,
   getNoBalanceMessage,
   MAX_BOT_MESSAGE_LENGTH,
   MAX_HISTORY_LENGTH,
@@ -48,6 +46,9 @@ import {
   balance,
   support,
   help,
+  settings,
+  settingsChangeModel,
+  settingsChangeChatMode,
   subscriptionManage,
   changeSubscriptionLevel,
   unsubscribeInitiate,
@@ -86,6 +87,7 @@ bot.use(
   session({
     initial: (): SessionData => ({
       imageQuality: ImageGenerationQuality.STANDARD,
+      chatMode: 'basic',
     }),
   }),
 );
@@ -117,50 +119,9 @@ bot.use(createConversation(buySubscriptionConversation));
 void bot.api.setMyCommands(COMMANDS);
 
 // Callback queries
-bot.callbackQuery(Object.keys(AiModelsLabels), async (ctx) => {
-  await ctx.answerCallbackQuery();
-  const selectedModel = ctx.callbackQuery.data;
-  const { id } = ctx.from;
-
-  if (!isValidAiModel(selectedModel)) {
-    await ctx.callbackQuery.message?.editText(
-      'Неверная модель. Пожалуйста, выберите правильную модель.',
-    );
-    return;
-  }
-
-  try {
-    const user = await User.findOne({ telegramId: id });
-    if (!user) {
-      await ctx.reply('Пожалуйста, начните с команды /start.');
-      return;
-    }
-
-    user.selectedModel = selectedModel;
-    user.updatedAt = new Date();
-    await user.save();
-
-    const messagePostfix =
-      AiModels[selectedModel] === AiModels.GPT_4O ? '' : ' (базовые запросы) ';
-
-    await ctx.callbackQuery.message?.editText(
-      `Вы переключились на модель\n${AiModelsLabels[selectedModel]}${messagePostfix}`,
-      {
-        reply_markup: getModelsKeyboard(AiModelsLabels[selectedModel]),
-      },
-    );
-  } catch (error) {
-    await ctx.reply(
-      `Произошла ошибка при сохранении модели. ${SUPPORT_MESSAGE_POSTFIX}`,
-    );
-    logError({
-      message: 'Error in callbackQuery handler',
-      error,
-      telegramId: id,
-      username: ctx.from.username,
-    });
-  }
-});
+bot.callbackQuery(Object.keys(AiModelsLabels), settingsChangeModel);
+bot.callbackQuery(['basic', 'dialogue'], settingsChangeChatMode);
+bot.callbackQuery('newChat', createNewChat);
 bot.callbackQuery('cancelImageGeneration', async (ctx) => {
   await ctx.answerCallbackQuery('Отменено ✅');
   await ctx.conversation.exit('imageConversation');
@@ -249,6 +210,7 @@ bot.callbackQuery('checkChannelJoin', async (ctx) => {
     'Подписка проверена ✅\nТеперь Вы можете пользоваться ботом. Чем я могу помочь?',
   );
 });
+bot.callbackQuery('newChat', createNewChat);
 
 // User commands
 bot.command('start', start);
@@ -293,7 +255,8 @@ bot.hears(BUTTON_LABELS.subscribe, subscription);
 bot.hears(BUTTON_LABELS.buyTokens, topup);
 bot.hears(BUTTON_LABELS.profile, myProfile);
 bot.hears(BUTTON_LABELS.image, generateImage);
-bot.hears(BUTTON_LABELS.settings, initiateAiModelChange);
+// bot.hears(BUTTON_LABELS.settings, initiateAiModelChange);
+bot.hears(BUTTON_LABELS.settings, settings);
 bot.hears(BUTTON_LABELS.help, help);
 bot.hears(BUTTON_LABELS.support, support);
 

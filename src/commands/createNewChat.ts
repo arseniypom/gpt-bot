@@ -4,8 +4,15 @@ import { MyContext } from '../types/types';
 import User from '../../db/User';
 import Chat from '../../db/Chat';
 import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
+import { CallbackQueryContext } from 'grammy';
 
-export const createNewChat = async (ctx: MyContext) => {
+export const createNewChat = async (
+  ctx: MyContext | CallbackQueryContext<MyContext>,
+) => {
+  if (ctx.callbackQuery) {
+    await ctx.answerCallbackQuery();
+  }
+
   const { id } = ctx.from as TelegramUser;
 
   try {
@@ -21,7 +28,9 @@ export const createNewChat = async (ctx: MyContext) => {
 
     ctx.session.chatId = chat._id.toString();
 
-    await ctx.reply('Новый чат создан ✅\nПожалуйста, введите запрос');
+    await ctx.reply('*Новый чат создан ✅*\nПожалуйста, введите запрос', {
+      parse_mode: 'MarkdownV2',
+    });
   } catch (error) {
     await ctx.reply(
       `Произошла ошибка при создании нового чата. ${SUPPORT_MESSAGE_POSTFIX}`,

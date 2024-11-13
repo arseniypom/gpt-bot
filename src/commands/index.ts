@@ -9,6 +9,7 @@ export { myProfile } from './myProfile';
 export { balance } from './balance';
 export { support } from './support';
 export { help } from './help';
+export { settings, settingsChangeModel, settingsChangeChatMode } from './settings';
 export { subscriptionManage } from './subscriptionManage';
 export {
   unsubscribeInitiate,
