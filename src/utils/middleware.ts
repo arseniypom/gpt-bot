@@ -17,7 +17,7 @@ if (!channelTelegramName) {
 const subscribeToChannelKeyboard = new InlineKeyboard()
   .url('Ссылка на канал', `https://t.me/${channelTelegramName}`)
   .row()
-  .text('🔄 Проверить подписку', 'checkChannelJoin');
+  .text('✅ Я подписался(лась) на канал', 'checkChannelJoin');
 
 export const checkUserInDB = async (
   ctx: MyContext | { chat: { type: 'private' | 'channel' } },
@@ -49,12 +49,10 @@ export const checkUserInDB = async (
     }
 
     if (ctx.callbackQuery?.data === 'checkChannelJoin') {
-      await ctx.callbackQuery.message?.editText(
-        'Мы не нашли Вас в числе подписчиков канала 🙁\nПожалуйста, подпишитесь и нажмите\n"🔄 Проверить подписку" повторно\n\nЕсли Вы убедились, что подписаны, но по-прежнему получаете это сообщение, обратитесь в поддержку /support',
-        {
-          reply_markup: subscribeToChannelKeyboard,
-        },
-      );
+      await ctx.answerCallbackQuery({
+        text: 'Вы не подписаны на канал 🙁',
+        show_alert: true,
+      });
       return;
     }
 

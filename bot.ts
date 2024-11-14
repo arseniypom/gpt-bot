@@ -36,6 +36,8 @@ import {
   balance,
   support,
   help,
+  helpMessagesHandler,
+  helpBackHandler,
   settings,
   settingsChangeModel,
   settingsChangeChatMode,
@@ -223,18 +225,31 @@ bot.callbackQuery('checkChannelJoin', async (ctx) => {
   }
 });
 bot.callbackQuery('newChat', createNewChat);
+bot.callbackQuery(
+  [
+    'helpFindMenu',
+    'helpHowToUseBot',
+    'helpRequests',
+    'helpModels',
+    'helpSubscription',
+    'helpTokens',
+    'helpChatModes',
+  ],
+  helpMessagesHandler,
+);
+bot.callbackQuery(['helpBack', 'helpBackFindMenu'], helpBackHandler);
 
 // User commands
 bot.command('start', start);
 bot.command('help', help);
 bot.command('newchat', createNewChat);
 bot.command('image', generateImage);
-bot.command('models', initiateAiModelChange);
 bot.command('balance', balance);
 bot.command('topup', topup);
 bot.command('subscription', subscription);
 bot.command('profile', myProfile);
 bot.command('support', support);
+bot.command('settings', settings);
 bot.command('del', async (ctx) => {
   if (ctx.from?.id !== Number(process.env.ADMIN_TELEGRAM_ID)) {
     await ctx.reply('⛔︎ Действие недост');

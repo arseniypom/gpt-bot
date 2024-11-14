@@ -2,7 +2,11 @@ import { CallbackQueryContext, InlineKeyboard, InputFile } from 'grammy';
 import { logError } from '../utils/utilFunctions';
 import { MyContext, SubscriptionLevel } from '../types/types';
 import { PACKAGES } from '../bot-packages';
-import { BUTTON_LABELS, SUPPORT_MESSAGE_POSTFIX, TOPUP_MESSAGE } from '../utils/consts';
+import {
+  BUTTON_LABELS,
+  SUPPORT_MESSAGE_POSTFIX,
+  TOPUP_MESSAGE,
+} from '../utils/consts';
 import { TOKEN_PACKAGES } from '../bot-token-packages';
 
 const topupKeyboard = new InlineKeyboard()
@@ -20,6 +24,21 @@ export const topupAndManageSubscriptionKeyboard = new InlineKeyboard()
   .text(BUTTON_LABELS.buyTokens, 'topup')
   .row()
   .text('🔄 Управление подпиской', 'subscriptionManage');
+export const getTopupAndManageSubscriptionKeyboard = (
+  subscriptionLevel: SubscriptionLevel,
+) => {
+  const keyboard = new InlineKeyboard()
+    .text(BUTTON_LABELS.buyTokens, 'topup')
+    .row();
+
+  if (subscriptionLevel === 'FREE') {
+    keyboard.text('🎉 Подключить подписку', 'subscription');
+  } else {
+    keyboard.text('🔄 Управление подпиской', 'subscriptionManage');
+  }
+
+  return keyboard;
+};
 export const getTopupAndChangeModelKeyboard = (
   subscriptionLevel: SubscriptionLevel,
 ) => {

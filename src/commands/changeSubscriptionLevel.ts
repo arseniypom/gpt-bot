@@ -4,12 +4,18 @@ import { CallbackQueryContext, InlineKeyboard } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import { MyContext, SubscriptionLevels } from '../types/types';
 import User from '../../db/User';
-import { SUBSCRIPTIONS_MESSAGE, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
+import {
+  SUBSCRIPTIONS_MESSAGE,
+  SUPPORT_MESSAGE_POSTFIX,
+} from '../utils/consts';
 import { logError } from '../utils/utilFunctions';
-import dayjs from 'dayjs';;
+import dayjs from 'dayjs';
 import { isValidSubscriptionLevel } from '../types/typeguards';
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
-import { getChangeSubscriptionLevelsKeyboard } from './subscription';
+import {
+  getChangeSubscriptionLevelsKeyboard,
+  getSubscriptionLevelsKeyboard,
+} from './subscription';
 
 export const initiateChangeSubscriptionLevel = async (
   ctx: CallbackQueryContext<MyContext>,
@@ -33,6 +39,13 @@ export const changeSubscriptionLevel = async (
     const user = await User.findOne({ telegramId: id });
     if (!user) {
       await ctx.reply('Пожалуйста, начните новый чат с помощью команды /start');
+      return;
+    }
+    if (user.subscriptionLevel === SubscriptionLevels.FREE) {
+      await ctx.callbackQuery.message?.delete();
+      await ctx.reply('Пожалуйста, выберите уровень подписки повторно:', {
+        reply_markup: getSubscriptionLevelsKeyboard(),
+      });
       return;
     }
     if (isValidSubscriptionLevel(newSubscriptionLevel)) {

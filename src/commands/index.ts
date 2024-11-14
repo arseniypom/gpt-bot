@@ -8,7 +8,7 @@ export { generateImage } from './generateImage';
 export { myProfile } from './myProfile';
 export { balance } from './balance';
 export { support } from './support';
-export { help } from './help';
+export { help, helpMessagesHandler, helpBackHandler } from './help';
 export { settings, settingsChangeModel, settingsChangeChatMode } from './settings';
 export { subscriptionManage } from './subscriptionManage';
 export {

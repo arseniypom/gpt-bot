@@ -16,7 +16,7 @@ export const initiateSubscriptionKeyboard = new InlineKeyboard().text(
   'subscription',
 );
 
-export const getSubscriptionLevelsKeyboard = () => {
+export const getSubscriptionLevelsKeyboard = (isHelp = false) => {
   const keyboard = new InlineKeyboard();
 
   Object.keys(SUBSCRIPTIONS)
@@ -30,6 +30,10 @@ export const getSubscriptionLevelsKeyboard = () => {
         )
         .row();
     });
+
+  if (isHelp) {
+    keyboard.text('← Назад', 'helpBack');
+  }
 
   return keyboard;
 };

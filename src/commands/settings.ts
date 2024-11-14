@@ -7,36 +7,21 @@ import { getSettingsMessage, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 import { isValidAiModel } from '../types/typeguards';
 import Chat from '../../db/Chat';
 
-const getSettingsKeyboard = (activeModel: AiModelsLabels, chatMode: ChatMode) =>
-  new InlineKeyboard()
-    .text(`⚪ ${AiModelsLabels.GPT_4O_MINI}`, 'GPT_4O_MINI')
-    .text(`🔘 ${AiModelsLabels.GPT_4O}`, 'GPT_4O')
-    .row()
-    .text('Обычный', 'basic')
-    .text('Диалог', 'dialogue')
-    .row()
-    .text('Начать новый чат', 'newChat');
-
 export const getSettingsKeyboardv2 = (
   activeModel: AiModelsLabels,
   activeChatMode: ChatMode,
 ) => {
   const aiModelsBtns = Object.entries(AiModelsLabels).map(([name, label]) => {
     const isActive = activeModel === label;
-    const labelText = isActive ? `🔘 ${label}` : `⚪ ${label}`;
+    const labelText = isActive ? `☑️ ${label}` : `${label}`;
     return [labelText, name];
   });
-  // const chatModesBtns = Object.entries(ChatModes).map(([name, label]) => {
-  //   const isActive = activeChatMode === label;
-  //   const labelText = isActive ? `🔘 ${label}` : `⚪ ${label}`;
-  //   return [labelText, name];
-  // });
   const chatModesBtns = [
     ['basic', 'Обычный'],
     ['dialogue', 'Диалог'],
   ].map(([name, label]) => {
     const isActive = activeChatMode === name;
-    const labelText = isActive ? `🔘 ${label}` : `⚪ ${label}`;
+    const labelText = isActive ? `☑️ ${label}` : `${label}`;
     return [labelText, name];
   });
   const aiModelsRow = aiModelsBtns.map(([label, data]) =>

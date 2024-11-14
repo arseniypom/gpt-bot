@@ -9,7 +9,7 @@ import {
   IMAGE_GENERATION_COST,
   SUPPORT_MESSAGE_POSTFIX,
 } from '../utils/consts';
-import { topupAndManageSubscriptionKeyboard } from '../commands/topup';
+import { getTopupAndManageSubscriptionKeyboard } from '../commands/topup';
 
 const cancelKeyboard = new InlineKeyboard().text(
   '❌ Отменить',
@@ -36,7 +36,9 @@ export async function imageConversation(
       await ctx.reply(
         'У вас нет доступных запросов для генерации изображений и не хватает токенов. Смените уровень подписки или пополните баланс токенов ↓',
         {
-          reply_markup: topupAndManageSubscriptionKeyboard,
+          reply_markup: getTopupAndManageSubscriptionKeyboard(
+            userObj.subscriptionLevel,
+          ),
         },
       );
       return;
@@ -86,7 +88,8 @@ export async function imageConversation(
           { telegramId: id },
           {
             updatedAt: date,
-            imageGenerationLeftThisMonth: user!.imageGenerationLeftThisMonth - 1,
+            imageGenerationLeftThisMonth:
+              user!.imageGenerationLeftThisMonth - 1,
           },
         ),
       );

@@ -116,3 +116,12 @@ export type UserStage =
   | 'subscribedToChannel'
   | 'usedFreeRequests'
   | 'boughtSubscription';
+
+export type HelpMessage =
+  | 'helpFindMenu'
+  | 'helpHowToUseBot'
+  | 'helpRequests'
+  | 'helpModels'
+  | 'helpTokens'
+  | 'helpSubscription'
+  | 'helpChatModes';
