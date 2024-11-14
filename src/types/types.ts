@@ -104,3 +104,15 @@ export interface CancellationDetails {
   party?: string;
   reason?: string;
 }
+
+export enum UserStages {
+  REGISTERED = 'registered',
+  SUBSCRIBED_TO_CHANNEL = 'subscribedToChannel',
+  USED_FREE_REQUESTS = 'usedFreeRequests',
+  BOUGHT_SUBSCRIPTION = 'boughtSubscription',
+}
+export type UserStage =
+  | 'registered'
+  | 'subscribedToChannel'
+  | 'usedFreeRequests'
+  | 'boughtSubscription';

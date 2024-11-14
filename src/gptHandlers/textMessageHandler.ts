@@ -1,4 +1,4 @@
-import { MyContext } from '../types/types';
+import { MyContext, UserStages } from '../types/types';
 import { User as TelegramUser } from '@grammyjs/types';
 import { AiModels } from '../types/types';
 import User from '../../db/User';
@@ -157,6 +157,12 @@ export const handleTextMessage = async (ctx: MyContext) => {
       } else {
         user.tokensBalance -= BASIC_REQUEST_COST;
       }
+    }
+    if (
+      user.subscriptionLevel === 'FREE' &&
+      user.userStage === UserStages.SUBSCRIBED_TO_CHANNEL
+    ) {
+      user.userStage = UserStages.USED_FREE_REQUESTS;
     }
     user.updatedAt = new Date();
     await user.save();

@@ -11,25 +11,16 @@ import {
   AiModelsLabels,
   ImageGenerationQuality,
   SessionData,
-  AiModels,
+  UserStages,
   SubscriptionLevel,
   SubscriptionLevels,
   TokenPackageName,
 } from './src/types/types';
 import { isValidImageGenerationQuality } from './src/types/typeguards';
 import User from './db/User';
-import Chat from './db/Chat';
-import Message, { IMessage } from './db/Message';
-import { answerWithChatGPT } from './src/utils/gpt';
 import {
-  BASIC_REQUEST_COST,
   BUTTON_LABELS,
   COMMANDS,
-  getNoBalanceMessage,
-  MAX_BOT_MESSAGE_LENGTH,
-  MAX_HISTORY_LENGTH,
-  MAX_USER_MESSAGE_LENGTH,
-  PRO_REQUEST_COST,
   SUPPORT_MESSAGE_POSTFIX,
   UNSUBSCRIBE_REASONS,
 } from './src/utils/consts';
@@ -55,8 +46,6 @@ import {
   unsubscribeFinalStep,
   initiateChangeSubscriptionLevel,
 } from './src/commands';
-import { getTopupAndChangeModelKeyboard } from './src/commands/topup';
-import { getModelsKeyboard } from './src/commands/changeAiModel';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
 import { buyTokensConversation } from './src/conversations/buyTokensConversation';
@@ -205,9 +194,33 @@ bot.callbackQuery(
 bot.callbackQuery('backToMyProfile', myProfile);
 bot.callbackQuery('checkChannelJoin', async (ctx) => {
   await ctx.answerCallbackQuery();
-  await ctx.callbackQuery.message?.editText(
-    'Подписка проверена ✅\nТеперь Вы можете пользоваться ботом. Чем я могу помочь?',
-  );
+  const { id } = ctx.from;
+  try {
+    const user = await User.findOne({ telegramId: id });
+    if (!user) {
+      await ctx.reply('Пожалуйста, начните с команды /start.');
+      return;
+    }
+
+    if (user.userStage === UserStages.REGISTERED) {
+      user.userStage = UserStages.SUBSCRIBED_TO_CHANNEL;
+      await user.save();
+    }
+
+    await ctx.callbackQuery.message?.editText(
+      'Подписка проверена ✅\nТеперь Вы можете пользоваться ботом. Чем я могу помочь?',
+    );
+  } catch (error) {
+    await ctx.reply(
+      `Произошла ошибка при проверке подписки. ${SUPPORT_MESSAGE_POSTFIX}`,
+    );
+    logError({
+      message: 'Error in checkChannelJoin callback query',
+      error,
+      telegramId: ctx.from?.id,
+      username: ctx.from?.username,
+    });
+  }
 });
 bot.callbackQuery('newChat', createNewChat);
 

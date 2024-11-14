@@ -7,6 +7,8 @@ import {
   SubscriptionLevels,
   SubscriptionDuration,
   ChatMode,
+  UserStage,
+  UserStages,
 } from '../src/types/types';
 import { SUBSCRIPTIONS } from '../src/bot-subscriptions';
 import dayjs from 'dayjs';
@@ -30,6 +32,7 @@ export interface IUser {
   lastUnsubscribeDate: Date | null;
   yookassaPaymentMethodId: string | null;
   tokensBalance: number;
+  userStage: UserStage;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -106,6 +109,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   tokensBalance: {
     type: Number,
     default: 0,
+  },
+  userStage: {
+    type: String,
+    default: UserStages.REGISTERED,
   },
   createdAt: {
     type: Date,
