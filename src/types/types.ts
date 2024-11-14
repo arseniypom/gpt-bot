@@ -12,7 +12,6 @@ export interface SessionData {
   packageName?: TokenPackageName;
   subscriptionLevel?: Exclude<SubscriptionLevel, 'FREE'>;
   user?: Pick<IUser, 'telegramId' | 'firstName' | 'userName'>;
-  chatMode: ChatMode;
 }
 
 export type MyContext = HydrateFlavor<

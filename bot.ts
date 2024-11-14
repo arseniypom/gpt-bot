@@ -19,13 +19,12 @@ import {
 import { isValidImageGenerationQuality } from './src/types/typeguards';
 import User from './db/User';
 import Chat from './db/Chat';
-import Message from './db/Message';
+import Message, { IMessage } from './db/Message';
 import { answerWithChatGPT } from './src/utils/gpt';
 import {
   BASIC_REQUEST_COST,
   BUTTON_LABELS,
   COMMANDS,
-  DEFAULT_CHAT_MODE,
   getNoBalanceMessage,
   MAX_BOT_MESSAGE_LENGTH,
   MAX_HISTORY_LENGTH,
@@ -87,7 +86,6 @@ bot.use(
   session({
     initial: (): SessionData => ({
       imageQuality: ImageGenerationQuality.STANDARD,
-      chatMode: 'basic',
     }),
   }),
 );
@@ -351,11 +349,14 @@ bot.on('message:text', async (ctx) => {
       content: userMessageText,
     });
 
-    const messages = await Message.find({ chatId: chat._id })
-      .sort({ createdAt: 1 })
-      .lean();
+    let history: IMessage[] = [];
+    if (user.chatMode === 'dialogue') {
+      const messages = await Message.find({ chatId: chat._id })
+        .sort({ createdAt: 1 })
+        .lean();
+      history = messages.slice(-MAX_HISTORY_LENGTH);
+    }
 
-    const history = messages.slice(-MAX_HISTORY_LENGTH);
     const selectedModelName = user.selectedModel;
     const answer = await answerWithChatGPT(
       history,

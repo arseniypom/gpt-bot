@@ -5,6 +5,7 @@ import { AiModelsLabels, ChatMode, MyContext } from '../types/types';
 import User from '../../db/User';
 import { getSettingsMessage, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 import { isValidAiModel } from '../types/typeguards';
+import Chat from '../../db/Chat';
 
 const getSettingsKeyboard = (activeModel: AiModelsLabels, chatMode: ChatMode) =>
   new InlineKeyboard()
@@ -60,7 +61,7 @@ export const settings = async (ctx: MyContext) => {
       await ctx.reply('Пожалуйста, начните с команды /start.');
       return;
     }
-    const chatMode = ctx.session.chatMode;
+    const chatMode = user.chatMode;
     const activeModel = AiModelsLabels[user.selectedModel];
     await ctx.reply(getSettingsMessage(activeModel, chatMode), {
       parse_mode: 'MarkdownV2',
@@ -104,7 +105,7 @@ export const settingsChangeModel = async (
       return;
     }
 
-    const chatMode = ctx.session.chatMode;
+    const chatMode = user.chatMode;
     const activeModel = AiModelsLabels[selectedModel];
     user.selectedModel = selectedModel;
     user.updatedAt = new Date();
@@ -140,9 +141,6 @@ export const settingsChangeChatMode = async (
   await ctx.answerCallbackQuery();
 
   const chatMode = ctx.callbackQuery.data as ChatMode;
-  if (ctx.session.chatMode === chatMode) {
-    return;
-  }
 
   const { id } = ctx.from;
 
@@ -152,8 +150,20 @@ export const settingsChangeChatMode = async (
       await ctx.reply('Пожалуйста, начните с команды /start.');
       return;
     }
+    if (user.chatMode === chatMode) {
+      return;
+    }
     const activeModel = AiModelsLabels[user.selectedModel];
-    ctx.session.chatMode = chatMode;
+    user.chatMode = chatMode;
+    await user.save();
+
+    if (chatMode === 'dialogue') {
+      const chat = await Chat.create({
+        userId: user._id,
+      });
+      ctx.session.chatId = chat._id.toString();
+    }
+
     user.updatedAt = new Date();
     await user.save();
 

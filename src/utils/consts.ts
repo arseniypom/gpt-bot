@@ -11,7 +11,6 @@ export const IMAGE_GENERATION_COST = 10;
 export const MAX_BOT_MESSAGE_LENGTH = 4000;
 export const MAX_HISTORY_LENGTH = 5;
 export const DEFAULT_AI_MODEL = 'GPT_4O_MINI';
-export const DEFAULT_CHAT_MODE = 'BASIC';
 export const MAX_USER_MESSAGE_LENGTH = 3000;
 
 export const COMMANDS = [

@@ -8,11 +8,11 @@ import { DEFAULT_AI_MODEL, PROMPT_MESSAGE } from './consts';
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const answerWithChatGPT = async (
-  messages: IMessage[],
+  chatHistory: IMessage[],
   telegramId: number,
   modelName: AiModel = DEFAULT_AI_MODEL,
 ): Promise<string | null> => {
-  const formattedMessages = messages.map((msg) => ({
+  const formattedHistoryMessages = chatHistory.map((msg) => ({
     role: msg.role as 'system' | 'user' | 'assistant',
     content: [{ type: 'text', text: msg.content }] as [
       { type: 'text'; text: string },
@@ -28,7 +28,7 @@ export const answerWithChatGPT = async (
       model: AiModels[modelName],
       messages: [
         { role: 'system', content: [{ type: 'text', text: PROMPT_MESSAGE }] },
-        ...formattedMessages,
+        ...formattedHistoryMessages,
       ],
       user: telegramId.toString(),
     });

@@ -6,6 +6,7 @@ import {
   SubscriptionLevel,
   SubscriptionLevels,
   SubscriptionDuration,
+  ChatMode,
 } from '../src/types/types';
 import { SUBSCRIPTIONS } from '../src/bot-subscriptions';
 import dayjs from 'dayjs';
@@ -15,6 +16,7 @@ export interface IUser {
   firstName?: string;
   userName?: string;
   selectedModel: AiModel;
+  chatMode: ChatMode;
   basicRequestsLeftThisWeek: number;
   basicRequestsLeftToday: number;
   proRequestsLeftThisMonth: number;
@@ -40,6 +42,11 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     type: String,
     enum: Object.keys(AiModels),
     default: DEFAULT_AI_MODEL,
+    required: true,
+  },
+  chatMode: {
+    type: String,
+    default: 'basic',
     required: true,
   },
   basicRequestsLeftThisWeek: {
