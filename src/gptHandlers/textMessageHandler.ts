@@ -103,7 +103,7 @@ export const handleTextMessage = async (ctx: MyContext) => {
       throw new Error('Invalid model: ' + user.selectedModel);
     }
 
-    await Message.create({
+    const userMessage = await Message.create({
       chatId: chat._id,
       userId: user._id,
       role: 'user',
@@ -116,6 +116,8 @@ export const handleTextMessage = async (ctx: MyContext) => {
         .sort({ createdAt: 1 })
         .lean();
       history = messages.slice(-MAX_HISTORY_LENGTH);
+    } else {
+      history = [userMessage.toJSON()];
     }
 
     const selectedModelName = user.selectedModel;
