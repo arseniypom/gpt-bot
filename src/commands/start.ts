@@ -3,7 +3,7 @@ import { User as TelegramUser } from '@grammyjs/types';
 import { logError } from '../utils/utilFunctions';
 import {
   BUTTON_LABELS,
-  getSTART_MESSAGE_STEP_1,
+  START_MESSAGE_STEP_1,
   START_MESSAGE_STEP_2,
   START_MESSAGE_STEP_3,
   START_MESSAGE_STEP_4,
@@ -116,16 +116,6 @@ export const startStep1 = async (ctx: MyContext) => {
 
   const { id, first_name, username } = ctx.from as TelegramUser;
 
-  const displayName = first_name || username;
-
-  await ctx.reply(getSTART_MESSAGE_STEP_1(displayName), {
-    parse_mode: 'MarkdownV2',
-    reply_markup: step1Keyboard,
-    link_preview_options: {
-      is_disabled: true,
-    },
-  });
-
   try {
     let user = await User.findOne({ telegramId: id });
     if (!user) {
@@ -134,8 +124,11 @@ export const startStep1 = async (ctx: MyContext) => {
         firstName: first_name,
         userName: username,
       });
+      const displayName = first_name || username;
       await ctx.reply(
-        'Ваш персональный чат-бот создан! Чтобы начать чат, просто напишите сообщение 💬\n\nПодробнее – кнопка "ℹ️ Информация" ↓',
+        `👋 ${
+          displayName ? `Здравствуйте, ${displayName}!` : 'Здравствуйте!'
+        } `,
         {
           reply_markup: mainKeyboard,
         },
@@ -147,6 +140,13 @@ export const startStep1 = async (ctx: MyContext) => {
 
       ctx.session.chatId = chat._id.toString();
     }
+    await ctx.reply(START_MESSAGE_STEP_1, {
+      parse_mode: 'MarkdownV2',
+      reply_markup: step1Keyboard,
+      link_preview_options: {
+        is_disabled: true,
+      },
+    });
   } catch (error) {
     await ctx.reply(
       `Произошла ошибка при регистрации Вашего персонального чат-бота. ${SUPPORT_MESSAGE_POSTFIX}`,
