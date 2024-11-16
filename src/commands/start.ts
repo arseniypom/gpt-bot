@@ -3,13 +3,24 @@ import { User as TelegramUser } from '@grammyjs/types';
 import { logError } from '../utils/utilFunctions';
 import {
   BUTTON_LABELS,
-  START_MESSAGE_V2,
+  getSTART_MESSAGE_STEP_1,
+  START_MESSAGE_STEP_2,
+  START_MESSAGE_STEP_3,
+  START_MESSAGE_STEP_4,
+  START_MESSAGE_STEP_5,
+  START_MESSAGE_STEP_6,
+  START_MESSAGE_STEP_7,
   SUPPORT_MESSAGE_POSTFIX,
 } from '../utils/consts';
 import { MyContext, SubscriptionLevels } from '../types/types';
 import User from '../../db/User';
 import Chat from '../../db/Chat';
-import { CallbackQueryContext, InlineKeyboard, Keyboard } from 'grammy';
+import {
+  CallbackQueryContext,
+  InlineKeyboard,
+  InputFile,
+  Keyboard,
+} from 'grammy';
 import bot from '../../bot';
 import { getChannelTelegramName } from '../utils/utilFunctions';
 
@@ -63,7 +74,39 @@ export const mainSubscribedUserKeyboard = new Keyboard()
   .resized()
   .persistent();
 
-export const start = async (ctx: MyContext) => {
+const step1Keyboard = new InlineKeyboard()
+  .text('С чем ты можешь мне помочь?', 'startStep2')
+  .row()
+  .text('Пропустить знакомство', 'startSkip');
+
+const step2Keyboard = new InlineKeyboard()
+  .text('А как ты все это делаешь?', 'startStep3')
+  .row()
+  .text('Пропустить знакомство', 'startSkip');
+
+const step3Keyboard = new InlineKeyboard()
+  .text('И я могу пользоваться этим бесплатно?', 'startStep4')
+  .row()
+  .text('Пропустить знакомство', 'startSkip');
+
+const step4Keyboard = new InlineKeyboard()
+  .text('Класс, попробую Оптимум!', SubscriptionLevels.OPTIMUM_TRIAL)
+  .row()
+  .text('Я подумаю, продолжить', 'startStep5')
+  .row()
+  .text('Пропустить знакомство', 'startSkip');
+
+const step5Keyboard = new InlineKeyboard()
+  .text('Последнее: как тобой управлять?', 'startStep6')
+  .row()
+  .text('Пропустить знакомство', 'startSkip');
+
+const step6Keyboard = new InlineKeyboard().text(
+  'Закончить и протестировать бота!',
+  'startStep7',
+);
+
+export const startStep1 = async (ctx: MyContext) => {
   if (!isRegistrationEnabled) {
     await ctx.reply(
       'К сожалению, регистрация новых пользователей временно приостановлена',
@@ -73,8 +116,11 @@ export const start = async (ctx: MyContext) => {
 
   const { id, first_name, username } = ctx.from as TelegramUser;
 
-  await ctx.reply(START_MESSAGE_V2, {
+  const displayName = first_name || username;
+
+  await ctx.reply(getSTART_MESSAGE_STEP_1(displayName), {
     parse_mode: 'MarkdownV2',
+    reply_markup: step1Keyboard,
     link_preview_options: {
       is_disabled: true,
     },
@@ -83,15 +129,11 @@ export const start = async (ctx: MyContext) => {
   try {
     let user = await User.findOne({ telegramId: id });
     if (!user) {
-      const responseMsg = await ctx.reply(
-        'Создаю Ваш персональный чат-бот, одну секунду...',
-      );
       user = await User.create({
         telegramId: id,
         firstName: first_name,
         userName: username,
       });
-      await responseMsg.delete();
       await ctx.reply(
         'Ваш персональный чат-бот создан! Чтобы начать чат, просто напишите сообщение 💬\n\nПодробнее – кнопка "ℹ️ Информация" ↓',
         {
@@ -104,26 +146,64 @@ export const start = async (ctx: MyContext) => {
       });
 
       ctx.session.chatId = chat._id.toString();
-    } else {
-      const isSubscribed = user.subscriptionLevel !== SubscriptionLevels.FREE;
-      await ctx.reply(
-        'Чем я могу Вам помочь? Напишите запрос или выберите команду из меню ↓',
-        {
-          reply_markup: isSubscribed
-            ? mainSubscribedUserKeyboard
-            : mainKeyboard,
-        },
-      );
     }
   } catch (error) {
     await ctx.reply(
-      `Произошла ошибка при создании персонального чат-бота. ${SUPPORT_MESSAGE_POSTFIX}`,
+      `Произошла ошибка при регистрации Вашего персонального чат-бота. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
-      message: 'Error in /start command',
+      message: 'Error in /start (startStep1) command',
       error,
       telegramId: id,
       username,
     });
   }
+};
+
+export const startStep2 = async (ctx: CallbackQueryContext<MyContext>) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply(START_MESSAGE_STEP_2, {
+    parse_mode: 'MarkdownV2',
+    reply_markup: step2Keyboard,
+  });
+};
+
+export const startStep3 = async (ctx: CallbackQueryContext<MyContext>) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply(START_MESSAGE_STEP_3, {
+    parse_mode: 'MarkdownV2',
+    reply_markup: step3Keyboard,
+  });
+};
+
+export const startStep4 = async (ctx: CallbackQueryContext<MyContext>) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply(START_MESSAGE_STEP_4, {
+    parse_mode: 'MarkdownV2',
+    reply_markup: step4Keyboard,
+  });
+};
+
+export const startStep5 = async (ctx: CallbackQueryContext<MyContext>) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply(START_MESSAGE_STEP_5, {
+    parse_mode: 'MarkdownV2',
+    reply_markup: step5Keyboard,
+  });
+};
+
+export const startStep6 = async (ctx: CallbackQueryContext<MyContext>) => {
+  await ctx.answerCallbackQuery();
+  await ctx.replyWithPhoto(new InputFile('src/images/keyboard-help-img.jpg'), {
+    caption: START_MESSAGE_STEP_6,
+    parse_mode: 'MarkdownV2',
+    reply_markup: step6Keyboard,
+  });
+};
+
+export const startStep7 = async (ctx: CallbackQueryContext<MyContext>) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply(START_MESSAGE_STEP_7, {
+    parse_mode: 'MarkdownV2',
+  });
 };

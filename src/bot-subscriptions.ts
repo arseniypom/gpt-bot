@@ -67,4 +67,18 @@ export const SUBSCRIPTIONS: Record<SubscriptionLevel, SubscriptionData> = {
       months: 1,
     },
   },
+  OPTIMUM_TRIAL: {
+    basicRequestsPerWeek: 0,
+    basicRequestsPerDay: 50,
+    proRequestsPerMonth: 50,
+    imageGenerationPerMonth: 20,
+    price: 399,
+    description:
+      '50 базовых запросов в день, 50 PRO запросов и 20 генераций изображений в месяц на 1 месяц',
+    title: 'Оптимум',
+    icon: '🚀',
+    duration: {
+      days: 3,
+    },
+  },
 };

@@ -79,6 +79,7 @@ export enum SubscriptionLevels {
   OPTIMUM = 'OPTIMUM',
   PREMIUM = 'PREMIUM',
   ULTRA = 'ULTRA',
+  OPTIMUM_TRIAL = 'OPTIMUM_TRIAL',
 }
 
 export type SubscriptionLevel = keyof typeof SubscriptionLevels;

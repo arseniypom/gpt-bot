@@ -27,12 +27,21 @@ export const checkUserInDB = async (
     return;
   }
 
+  const whiteListCallbackQueries = [
+    'startStep2',
+    'startStep3',
+    'startStep4',
+    'startStep5',
+    'startStep6',
+  ];
+
   if (
     !isMyContext(ctx) ||
     ctx.hasCommand('start') ||
     ctx.hasCommand('support') ||
     (await ctx.conversation.active())?.supportConversation ||
-    ctx.message?.text === BUTTON_LABELS.support
+    ctx.message?.text === BUTTON_LABELS.support ||
+    whiteListCallbackQueries.includes(ctx.callbackQuery?.data || '')
   ) {
     await next();
     return;

@@ -25,7 +25,13 @@ import {
   UNSUBSCRIBE_REASONS,
 } from './src/utils/consts';
 import {
-  start,
+  startStep1,
+  startStep2,
+  startStep3,
+  startStep4,
+  startStep5,
+  startStep6,
+  startStep7,
   getStats,
   topup,
   createNewChat,
@@ -108,6 +114,12 @@ bot.use(createConversation(buySubscriptionConversation));
 void bot.api.setMyCommands(COMMANDS);
 
 // Callback queries
+bot.callbackQuery('startStep2', startStep2);
+bot.callbackQuery('startStep3', startStep3);
+bot.callbackQuery('startStep4', startStep4);
+bot.callbackQuery('startStep5', startStep5);
+bot.callbackQuery('startStep6', startStep6);
+bot.callbackQuery(['startStep7', 'startSkip'], startStep7);
 bot.callbackQuery(Object.keys(AiModelsLabels), settingsChangeModel);
 bot.callbackQuery(['basic', 'dialogue'], settingsChangeChatMode);
 bot.callbackQuery('newChat', createNewChat);
@@ -173,6 +185,13 @@ bot.callbackQuery(
     await ctx.conversation.enter('buySubscriptionConversation');
   },
 );
+bot.callbackQuery(SubscriptionLevels.OPTIMUM_TRIAL, async (ctx) => {
+  await ctx.answerCallbackQuery();
+  ctx.session.subscriptionLevel = SubscriptionLevels.OPTIMUM_TRIAL;
+  await ctx.reply(
+    'Функционал ещё не доступен, приносим извинения за доставленные неудобства',
+  );
+});
 bot.callbackQuery('topup', topup);
 bot.callbackQuery('subscription', subscription);
 bot.callbackQuery('settings', settings);
@@ -212,7 +231,7 @@ bot.callbackQuery('checkChannelJoin', async (ctx) => {
       '*Подписка проверена ✅*\nТеперь Вы можете пользоваться ботом\\!\n\nЧем я могу помочь?',
       {
         parse_mode: 'MarkdownV2',
-      }
+      },
     );
   } catch (error) {
     await ctx.reply(
@@ -242,7 +261,7 @@ bot.callbackQuery(
 bot.callbackQuery(['helpBack', 'helpBackFindMenu'], helpBackHandler);
 
 // User commands
-bot.command('start', start);
+bot.command('start', startStep1);
 bot.command('help', help);
 bot.command('newchat', createNewChat);
 bot.command('image', generateImage);
