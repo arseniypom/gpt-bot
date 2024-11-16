@@ -1,14 +1,16 @@
 import cron from 'node-cron';
 import dayjs from 'dayjs';
+import bot from '../../bot';
 import User from '../../db/User';
 import { logError } from '../utils/utilFunctions';
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
+import { profileAddSubscriptionKeyboard } from '../commands/myProfile';
 
 const BATCH_SIZE = 100;
 const BATCH_DELAY_MS = 1000;
 
 // Schedule the task to run every day at 22:00 UTC
-cron.schedule('0 22 * * *', async () => {
+cron.schedule('57 10 * * *', async () => {
   console.log('Current time:', dayjs().format('HH:mm'));
   console.log('running refresh requests cron job');
 
@@ -31,6 +33,14 @@ cron.schedule('0 22 * * *', async () => {
             user.basicRequestsLeftThisWeek =
               subscriptionData.basicRequestsPerWeek;
             user.weeklyRequestsExpiry = dayjs().add(7, 'day').toDate();
+            await bot.api.sendMessage(
+              user.telegramId,
+              `*Ваша недельная квота запросов обновилась ✔️ *\n\nНачислено *${subscriptionData.basicRequestsPerWeek} запросов к базовой модели*`,
+              {
+                parse_mode: 'MarkdownV2',
+                reply_markup: profileAddSubscriptionKeyboard,
+              },
+            );
           }
         }
         await user.save();

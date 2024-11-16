@@ -210,7 +210,10 @@ bot.callbackQuery('checkChannelJoin', async (ctx) => {
     }
 
     await ctx.callbackQuery.message?.editText(
-      'Подписка проверена ✅\nТеперь Вы можете пользоваться ботом. Чем я могу помочь?',
+      '*Подписка проверена ✅*\nТеперь Вы можете пользоваться ботом\\!\n\nЧем я могу помочь?',
+      {
+        parse_mode: 'MarkdownV2',
+      }
     );
   } catch (error) {
     await ctx.reply(
@@ -252,7 +255,7 @@ bot.command('support', support);
 bot.command('settings', settings);
 bot.command('del', async (ctx) => {
   if (ctx.from?.id !== Number(process.env.ADMIN_TELEGRAM_ID)) {
-    await ctx.reply('⛔︎ Действие недост');
+    await ctx.reply('⛔︎ Действие недоступно');
     return;
   }
   const telegramId = ctx.from?.id;
