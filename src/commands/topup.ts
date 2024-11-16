@@ -47,7 +47,7 @@ export const getTopupAndChangeModelKeyboard = (
     keyboard.text('🔄 Управление подпиской', 'subscriptionManage');
   }
 
-  return keyboard.row().text('🤖 Сменить модель', 'initiateAiModelChange');
+  return keyboard.row().text('🤖 Сменить модель', 'settings');
 };
 
 export const topup = async (

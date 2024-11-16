@@ -37,7 +37,12 @@ export const getSettingsKeyboardv2 = (
   ]);
 };
 
-export const settings = async (ctx: MyContext) => {
+export const settings = async (
+  ctx: MyContext | CallbackQueryContext<MyContext>,
+) => {
+  if (ctx.callbackQuery) {
+    await ctx.answerCallbackQuery();
+  }
   const { id } = ctx.from as TelegramUser;
 
   try {

@@ -27,7 +27,6 @@ import {
 import {
   start,
   getStats,
-  initiateAiModelChange,
   topup,
   createNewChat,
   subscription,
@@ -176,7 +175,7 @@ bot.callbackQuery(
 );
 bot.callbackQuery('topup', topup);
 bot.callbackQuery('subscription', subscription);
-bot.callbackQuery('initiateAiModelChange', initiateAiModelChange);
+bot.callbackQuery('settings', settings);
 bot.callbackQuery(
   ['subscriptionManage', 'backToSubscriptionManage'],
   subscriptionManage,
@@ -285,7 +284,6 @@ bot.hears(BUTTON_LABELS.subscribe, subscription);
 bot.hears(BUTTON_LABELS.buyTokens, topup);
 bot.hears(BUTTON_LABELS.profile, myProfile);
 bot.hears(BUTTON_LABELS.image, generateImage);
-// bot.hears(BUTTON_LABELS.settings, initiateAiModelChange);
 bot.hears(BUTTON_LABELS.settings, settings);
 bot.hears(BUTTON_LABELS.help, help);
 bot.hears(BUTTON_LABELS.support, support);
