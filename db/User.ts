@@ -33,6 +33,9 @@ export interface IUser {
   yookassaPaymentMethodId: string | null;
   tokensBalance: number;
   userStage: UserStage;
+  basicReqsMade: number;
+  proReqsMade: number;
+  imgGensMade: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -113,6 +116,18 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   userStage: {
     type: String,
     default: UserStages.REGISTERED,
+  },
+  basicReqsMade: {
+    type: Number,
+    default: 0,
+  },
+  proReqsMade: {
+    type: Number,
+    default: 0,
+  },
+  imgGensMade: {
+    type: Number,
+    default: 0,
   },
   createdAt: {
     type: Date,

@@ -149,6 +149,7 @@ export const handleTextMessage = async (ctx: MyContext) => {
       } else {
         user.tokensBalance -= PRO_REQUEST_COST;
       }
+      user.proReqsMade += 1;
     } else {
       if (user.basicRequestsLeftThisWeek > 0) {
         user.basicRequestsLeftThisWeek -= 1;
@@ -157,6 +158,7 @@ export const handleTextMessage = async (ctx: MyContext) => {
       } else {
         user.tokensBalance -= BASIC_REQUEST_COST;
       }
+      user.basicReqsMade += 1;
     }
     if (
       user.subscriptionLevel === 'FREE' &&
