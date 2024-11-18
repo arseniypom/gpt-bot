@@ -1,4 +1,4 @@
-import { MyContext, UserStages } from '../types/types';
+import { MyContext, SubscriptionLevels, UserStages } from '../types/types';
 import { User as TelegramUser } from '@grammyjs/types';
 import { AiModels } from '../types/types';
 import User from '../../db/User';
@@ -9,7 +9,9 @@ import {
   BASIC_REQUEST_COST,
   getNoBalanceMessage,
   MAX_BOT_MESSAGE_LENGTH,
-  MAX_HISTORY_LENGTH,
+  MAX_HISTORY_LENGTH_FREE,
+  MAX_HISTORY_LENGTH_START_OPTIMUM,
+  MAX_HISTORY_LENGTH_PREMIUM_ULTRA,
   MAX_USER_MESSAGE_LENGTH,
   PRO_REQUEST_COST,
   SUPPORT_MESSAGE_POSTFIX,
@@ -112,10 +114,25 @@ export const handleTextMessage = async (ctx: MyContext) => {
 
     let history: IMessage[] = [];
     if (user.chatMode === 'dialogue') {
+      let maxHistoryLength;
+      switch (user.subscriptionLevel) {
+        case SubscriptionLevels.START:
+        case SubscriptionLevels.OPTIMUM:
+        case SubscriptionLevels.OPTIMUM_TRIAL:
+          maxHistoryLength = MAX_HISTORY_LENGTH_START_OPTIMUM;
+          break;
+        case SubscriptionLevels.PREMIUM:
+        case SubscriptionLevels.ULTRA:
+          maxHistoryLength = MAX_HISTORY_LENGTH_PREMIUM_ULTRA;
+          break;
+        default:
+          maxHistoryLength = MAX_HISTORY_LENGTH_FREE;
+          break;
+      }
       const messages = await Message.find({ chatId: chat._id })
         .sort({ createdAt: 1 })
         .lean();
-      history = messages.slice(-MAX_HISTORY_LENGTH);
+      history = messages.slice(-maxHistoryLength);
     } else {
       history = [userMessage.toJSON()];
     }

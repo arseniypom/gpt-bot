@@ -9,7 +9,10 @@ export const PRO_REQUEST_COST = 3;
 export const IMAGE_GENERATION_COST = 10;
 
 export const MAX_BOT_MESSAGE_LENGTH = 4000;
-export const MAX_HISTORY_LENGTH = 5;
+export const MAX_HISTORY_LENGTH_FREE = 5;
+export const MAX_HISTORY_LENGTH_START_OPTIMUM = 15;
+export const MAX_HISTORY_LENGTH_PREMIUM_ULTRA = 30;
+
 export const DEFAULT_AI_MODEL = 'GPT_4O_MINI';
 export const MAX_USER_MESSAGE_LENGTH = 3000;
 
@@ -66,7 +69,7 @@ export const PROMPT_MESSAGE = `
 – расписать меню на неделю под любые специфические запросы
 – сгенерировать изображение по текстовому запросу пользователя через модель DALL-E 3
 И многое другое.
-Всегда обращайся на Вы и помни, что ты учитываешь только последние ${MAX_HISTORY_LENGTH} сообщений в чате для поддержания контекста.
+Всегда обращайся на Вы и помни, что ты учитываешь только последние ${MAX_HISTORY_LENGTH_FREE}-${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений в чате для поддержания контекста.
 Если пользователь просит тебя форматировать ответ в виде таблицы, скажи, что таблица будет некорректно отображаться в телеграме и сделай форматирование в виде упорядоченного или неупорядоченного списка.
 Ни в коем случае не используй знаки форматирования заголовков, такие как *, _, <, > и т.д. Всегда вместо **Заголовок** или <Заголовок> используй Заголовок. Также не используй escape-последовательности в тексте, такие как \\* и \\<\\>, то есть вместо \(x\) пиши (x).
 `;
@@ -95,7 +98,7 @@ export const PROMPT_MESSAGE_V2 = `
 - Если запрос требует структурированного ответа, используй списки и чёткие разделы с заголовками и подзаголовками, если уместно.
 
 ### Удержание контекста:
-Учти, что ты анализируешь только последние ${MAX_HISTORY_LENGTH} сообщений, чтобы поддерживать актуальный контекст диалога. 
+Учти, что ты анализируешь только последние ${MAX_HISTORY_LENGTH_FREE}-${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений, чтобы поддерживать актуальный контекст диалога. 
 
 ### Специальные инструкции:
 - При сложных запросах сначала уточняй детали, чтобы правильно понять цель пользователя.
@@ -192,7 +195,7 @@ _300 базовых запросов в день, 300 PRO запросов и 50
 ➕ Плюс \\– они не имеют срока действия
 ➖ Минус \\– подписка гораздо выгоднее
 
-Купить подписку: /subscription
+Ознакомиться со всеми преимуществами подписки и выбрать подходящий уровень: /subscription
 Подробнее почитать про токены: /help
 `;
 
@@ -310,23 +313,32 @@ export const SUBSCRIPTIONS_MESSAGE = `
 *Описание уровней подписки*
 
 *${SUBSCRIPTIONS.START.icon} ${SUBSCRIPTIONS.START.title}*  \\| ${SUBSCRIPTIONS.START.price}₽
-– ${SUBSCRIPTIONS.START.basicRequestsPerDay} базовых запросов (GPT-4o mini) / день
-– ${SUBSCRIPTIONS.START.imageGenerationPerMonth} генераций изображений (DALL-E 3) / месяц
+– ${SUBSCRIPTIONS.START.basicRequestsPerDay} базовых запросов / день
+– ${SUBSCRIPTIONS.START.imageGenerationPerMonth} генераций изображений / месяц
+– _Стандартный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_START_OPTIMUM} сообщений)
 
 *${SUBSCRIPTIONS.OPTIMUM.icon} ${SUBSCRIPTIONS.OPTIMUM.title}*  \\| ${SUBSCRIPTIONS.OPTIMUM.price}₽
-– ${SUBSCRIPTIONS.OPTIMUM.basicRequestsPerDay} базовых запросов (GPT-4o mini) / день
-– ${SUBSCRIPTIONS.OPTIMUM.proRequestsPerMonth} PRO запросов (GPT-4o) / месяц
-– ${SUBSCRIPTIONS.OPTIMUM.imageGenerationPerMonth} генераций изображений (DALL-E 3) / месяц
+– ${SUBSCRIPTIONS.OPTIMUM.basicRequestsPerDay} базовых запросов / день
+– ${SUBSCRIPTIONS.OPTIMUM.proRequestsPerMonth} PRO запросов / месяц
+– ${SUBSCRIPTIONS.OPTIMUM.imageGenerationPerMonth} генераций изображений / месяц
+– _Стандартный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_START_OPTIMUM} сообщений)
 
 *${SUBSCRIPTIONS.PREMIUM.icon} ${SUBSCRIPTIONS.PREMIUM.title}*  \\| ${SUBSCRIPTIONS.PREMIUM.price}₽
-– ${SUBSCRIPTIONS.PREMIUM.basicRequestsPerDay} базовых запросов (GPT-4o mini) / день
-– ${SUBSCRIPTIONS.PREMIUM.proRequestsPerMonth} PRO запросов (GPT-4o) / месяц
-– ${SUBSCRIPTIONS.PREMIUM.imageGenerationPerMonth} генераций изображений (DALL-E 3) / месяц
+– ${SUBSCRIPTIONS.PREMIUM.basicRequestsPerDay} базовых запросов / день
+– ${SUBSCRIPTIONS.PREMIUM.proRequestsPerMonth} PRO запросов / месяц
+– ${SUBSCRIPTIONS.PREMIUM.imageGenerationPerMonth} генераций изображений / месяц
+– _Расширенный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений)
 
 *${SUBSCRIPTIONS.ULTRA.icon} ${SUBSCRIPTIONS.ULTRA.title}*  \\| ${SUBSCRIPTIONS.ULTRA.price}₽
-– ${SUBSCRIPTIONS.ULTRA.basicRequestsPerDay} базовых запросов (GPT-4o mini) / день
-– ${SUBSCRIPTIONS.ULTRA.proRequestsPerMonth} PRO запросов (GPT-4o) / месяц
-– ${SUBSCRIPTIONS.ULTRA.imageGenerationPerMonth} генераций изображений (DALL-E 3) / месяц
+– ${SUBSCRIPTIONS.ULTRA.basicRequestsPerDay} базовых запросов / день
+– ${SUBSCRIPTIONS.ULTRA.proRequestsPerMonth} PRO запросов / месяц
+– ${SUBSCRIPTIONS.ULTRA.imageGenerationPerMonth} генераций изображений / месяц
+– _Расширенный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений)
+
+__Базовые__ запросы – это запросы к GPT-4o mini
+__PRO__ запросы – это запросы к GPT-4o
+
+Почитать про разницу моделей: /help
 
 Какой уровень подключаем?
 Нажмите на кнопку ниже ↓
@@ -336,23 +348,32 @@ export const SUBSCRIPTIONS_MESSAGE_WITH_TRIAL = `
 *Описание уровней подписки*
 
 *${SUBSCRIPTIONS.START.icon} ${SUBSCRIPTIONS.START.title}*  \\| ${SUBSCRIPTIONS.START.price}₽
-– ${SUBSCRIPTIONS.START.basicRequestsPerDay} базовых запросов (GPT-4o mini) / день
-– ${SUBSCRIPTIONS.START.imageGenerationPerMonth} генераций изображений (DALL-E 3) / месяц
+– ${SUBSCRIPTIONS.START.basicRequestsPerDay} базовых запросов / день
+– ${SUBSCRIPTIONS.START.imageGenerationPerMonth} генераций изображений / месяц
+– _Стандартный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_START_OPTIMUM} сообщений)
 
 *${SUBSCRIPTIONS.OPTIMUM.icon} ${SUBSCRIPTIONS.OPTIMUM.title}*  \\| ~${SUBSCRIPTIONS.OPTIMUM.price}₽~ *${SUBSCRIPTIONS.OPTIMUM_TRIAL.price}₽* на 3 дня 🌟
-– ${SUBSCRIPTIONS.OPTIMUM.basicRequestsPerDay} базовых запросов (GPT-4o mini) / день
-– ${SUBSCRIPTIONS.OPTIMUM.proRequestsPerMonth} PRO запросов (GPT-4o) / месяц
-– ${SUBSCRIPTIONS.OPTIMUM.imageGenerationPerMonth} генераций изображений (DALL-E 3) / месяц
+– ${SUBSCRIPTIONS.OPTIMUM.basicRequestsPerDay} базовых запросов / день
+– ${SUBSCRIPTIONS.OPTIMUM.proRequestsPerMonth} PRO запросов / месяц
+– ${SUBSCRIPTIONS.OPTIMUM.imageGenerationPerMonth} генераций изображений / месяц
+– _Стандартный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_START_OPTIMUM} сообщений)
 
 *${SUBSCRIPTIONS.PREMIUM.icon} ${SUBSCRIPTIONS.PREMIUM.title}*  \\| ${SUBSCRIPTIONS.PREMIUM.price}₽
-– ${SUBSCRIPTIONS.PREMIUM.basicRequestsPerDay} базовых запросов (GPT-4o mini) / день
-– ${SUBSCRIPTIONS.PREMIUM.proRequestsPerMonth} PRO запросов (GPT-4o) / месяц
-– ${SUBSCRIPTIONS.PREMIUM.imageGenerationPerMonth} генераций изображений (DALL-E 3) / месяц
+– ${SUBSCRIPTIONS.PREMIUM.basicRequestsPerDay} базовых запросов / день
+– ${SUBSCRIPTIONS.PREMIUM.proRequestsPerMonth} PRO запросов / месяц
+– ${SUBSCRIPTIONS.PREMIUM.imageGenerationPerMonth} генераций изображений / месяц
+– _Расширенный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений)
 
 *${SUBSCRIPTIONS.ULTRA.icon} ${SUBSCRIPTIONS.ULTRA.title}*  \\| ${SUBSCRIPTIONS.ULTRA.price}₽
-– ${SUBSCRIPTIONS.ULTRA.basicRequestsPerDay} базовых запросов (GPT-4o mini) / день
-– ${SUBSCRIPTIONS.ULTRA.proRequestsPerMonth} PRO запросов (GPT-4o) / месяц
-– ${SUBSCRIPTIONS.ULTRA.imageGenerationPerMonth} генераций изображений (DALL-E 3) / месяц
+– ${SUBSCRIPTIONS.ULTRA.basicRequestsPerDay} базовых запросов / день
+– ${SUBSCRIPTIONS.ULTRA.proRequestsPerMonth} PRO запросов / месяц
+– ${SUBSCRIPTIONS.ULTRA.imageGenerationPerMonth} генераций изображений / месяц
+– _Расширенный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений)
+
+__Базовые__ запросы – это запросы к GPT-4o mini
+__PRO__ запросы – это запросы к GPT-4o
+
+Почитать про разницу моделей и режим диалога: /help
 
 Какой уровень подключаем?
 Нажмите на кнопку ниже ↓
@@ -412,7 +433,7 @@ export const getProfileMessage = (user: IUser) => {
       : '';
 
   return `
-*Ваш уровень подписки: ${SUBSCRIPTIONS[user.subscriptionLevel].icon} ${
+*Уровень подписки: ${SUBSCRIPTIONS[user.subscriptionLevel].icon} ${
     SUBSCRIPTIONS[user.subscriptionLevel].title
   }*${user.subscriptionExpiry ? `\n_Действует до ${expirationDate}_` : ''}${
     isNewSubscriptionLevelShown
@@ -440,7 +461,7 @@ export const getManageSubscriptionMessage = (user: IUser) => {
   const displayPrice = price ? `${price}₽` : 'Бесплатно';
 
   return `
-*Ваш уровень подписки*: ${SUBSCRIPTIONS[user.subscriptionLevel].icon} ${
+*Уровень подписки*: ${SUBSCRIPTIONS[user.subscriptionLevel].icon} ${
     SUBSCRIPTIONS[user.subscriptionLevel].title
   }
 *Описание*: ${SUBSCRIPTIONS[user.subscriptionLevel].description}
