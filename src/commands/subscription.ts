@@ -21,16 +21,16 @@ export const initiateSubscriptionKeyboard = new InlineKeyboard().text(
 
 export const getSubscriptionLevelsKeyboard = ({
   isHelp,
-  hasActivatedTrial,
+  canActivateTrial,
 }: {
   isHelp?: boolean;
-  hasActivatedTrial?: boolean;
+  canActivateTrial?: boolean;
 } = {}) => {
   const keyboard = new InlineKeyboard();
 
   Object.keys(SUBSCRIPTIONS)
     .filter((key) => {
-      if (hasActivatedTrial) {
+      if (!canActivateTrial) {
         return (
           key !== SubscriptionLevels.FREE &&
           key !== SubscriptionLevels.OPTIMUM_TRIAL
@@ -94,14 +94,14 @@ export const subscription = async (
       return;
     }
 
-    const message = user.hasActivatedTrial
-      ? SUBSCRIPTIONS_MESSAGE
-      : SUBSCRIPTIONS_MESSAGE_WITH_TRIAL;
+    const message = user.canActivateTrial
+      ? SUBSCRIPTIONS_MESSAGE_WITH_TRIAL
+      : SUBSCRIPTIONS_MESSAGE;
 
     await ctx.reply(message.replace(/[().-]/g, '\\$&'), {
       parse_mode: 'MarkdownV2',
       reply_markup: getSubscriptionLevelsKeyboard({
-        hasActivatedTrial: user.hasActivatedTrial,
+        canActivateTrial: user.canActivateTrial,
       }),
     });
   } catch (error) {

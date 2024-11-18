@@ -6,9 +6,7 @@ import { TOKEN_PACKAGES } from '../bot-token-packages';
 
 const topupKeyboard = new InlineKeyboard()
   .text(`${TOKEN_PACKAGES.token1.tokensNumber}`, 'token1')
-  .row()
   .text(`${TOKEN_PACKAGES.token2.tokensNumber}`, 'token2')
-  .row()
   .text(`${TOKEN_PACKAGES.token3.tokensNumber}`, 'token3');
 
 export const initiateTopupKeyboard = new InlineKeyboard().text(

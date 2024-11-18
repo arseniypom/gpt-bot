@@ -11,10 +11,9 @@ import {
   YOOKASSA_PAYMENT_MESSAGE,
 } from '../utils/consts';
 
-const cancelKeyboard = new InlineKeyboard().text(
-  '❌ Отменить',
-  'cancelPayment',
-);
+const cancelKeyboard = new InlineKeyboard()
+  .text('← Назад', 'backToTopup')
+  .text('❌ Отменить', 'cancelPayment');
 
 export async function buyTokensConversation(
   conversation: MyConversation,
@@ -35,8 +34,7 @@ export async function buyTokensConversation(
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   let isFirstAttempt = true;
-  const { price, description, tokensNumber } =
-    TOKEN_PACKAGES[packageKey];
+  const { price, description, tokensNumber } = TOKEN_PACKAGES[packageKey];
   const messagePrefix = `*Выбран пакет:*\n 🪙 ${description}`;
 
   do {

@@ -98,9 +98,9 @@ export const helpMessagesHandler = async (
           await ctx.reply('Пожалуйста, начните с команды /start');
           return;
         }
-        const message = user.hasActivatedTrial
-          ? SUBSCRIPTIONS_MESSAGE
-          : SUBSCRIPTIONS_MESSAGE_WITH_TRIAL;
+        const message = user.canActivateTrial
+          ? SUBSCRIPTIONS_MESSAGE_WITH_TRIAL
+          : SUBSCRIPTIONS_MESSAGE;
         await ctx.callbackQuery.message?.editText(
           message.replace(/[().-]/g, '\\$&'),
           {

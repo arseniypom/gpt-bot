@@ -24,7 +24,7 @@ export interface IUser {
   basicRequestsLeftToday: number;
   proRequestsLeftThisMonth: number;
   imageGenerationLeftThisMonth: number;
-  hasActivatedTrial: boolean;
+  canActivateTrial: boolean;
   subscriptionLevel: SubscriptionLevel;
   newSubscriptionLevel: SubscriptionLevel | null;
   subscriptionExpiry: Date | null;
@@ -78,9 +78,9 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     default: 0,
     required: true,
   },
-  hasActivatedTrial: {
+  canActivateTrial: {
     type: Boolean,
-    default: false,
+    default: true,
   },
   subscriptionLevel: {
     type: String,

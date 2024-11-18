@@ -188,6 +188,11 @@ bot.callbackQuery(
   },
 );
 bot.callbackQuery('topup', topup);
+bot.callbackQuery('backToTopup', async (ctx) => {
+  await ctx.callbackQuery.message?.delete();
+  await ctx.conversation.exit('buyTokensConversation');
+  await topup(ctx);
+});
 bot.callbackQuery('subscription', subscription);
 bot.callbackQuery('backToSubscriptions', async (ctx) => {
   await ctx.callbackQuery.message?.delete();
@@ -273,7 +278,7 @@ bot.command('settings', settings);
 bot.command('stats', getStats);
 bot.command('del', async (ctx) => {
   if (
-    ctx.from?.id !== Number(process.env.ADMIN_TELEGRAM_ID) ||
+    ctx.from?.id !== Number(process.env.ADMIN_TELEGRAM_ID) &&
     ctx.from?.id !== 6605675131
   ) {
     await ctx.reply('⛔︎ Действие недоступно');
