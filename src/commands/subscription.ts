@@ -1,4 +1,6 @@
-import { CallbackQueryContext, InlineKeyboard, InputFile } from 'grammy';
+import { User as TelegramUser } from '@grammyjs/types';
+import { CallbackQueryContext, InlineKeyboard } from 'grammy';
+import User from '../../db/User';
 import { logError } from '../utils/utilFunctions';
 import {
   MyContext,
@@ -8,6 +10,7 @@ import {
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
 import {
   SUBSCRIPTIONS_MESSAGE,
+  SUBSCRIPTIONS_MESSAGE_WITH_TRIAL,
   SUPPORT_MESSAGE_POSTFIX,
 } from '../utils/consts';
 
@@ -16,19 +19,34 @@ export const initiateSubscriptionKeyboard = new InlineKeyboard().text(
   'subscription',
 );
 
-export const getSubscriptionLevelsKeyboard = (isHelp = false) => {
+export const getSubscriptionLevelsKeyboard = ({
+  isHelp,
+  hasActivatedTrial,
+}: {
+  isHelp?: boolean;
+  hasActivatedTrial?: boolean;
+} = {}) => {
   const keyboard = new InlineKeyboard();
 
   Object.keys(SUBSCRIPTIONS)
-    .filter((key) => key !== SubscriptionLevels.FREE)
+    .filter((key) => {
+      if (hasActivatedTrial) {
+        return (
+          key !== SubscriptionLevels.FREE &&
+          key !== SubscriptionLevels.OPTIMUM_TRIAL
+        );
+      }
+      return (
+        key !== SubscriptionLevels.FREE && key !== SubscriptionLevels.OPTIMUM
+      );
+    })
     .forEach((key) => {
       const subscription = SUBSCRIPTIONS[key as SubscriptionLevel];
-      keyboard
-        .text(
-          `${subscription.icon} ${subscription.title} за ${subscription.price}₽/мес`,
-          key.toUpperCase(),
-        )
-        .row();
+      const btnText =
+        key === SubscriptionLevels.OPTIMUM_TRIAL
+          ? `🎉 ${subscription.title} за ${subscription.price}₽ на ${subscription.duration?.days} дня 🎉`
+          : `${subscription.title} за ${subscription.price}₽/мес`;
+      keyboard.text(btnText, key.toUpperCase()).row();
     });
 
   if (isHelp) {
@@ -42,12 +60,16 @@ export const getChangeSubscriptionLevelsKeyboard = () => {
   const keyboard = new InlineKeyboard();
 
   Object.keys(SUBSCRIPTIONS)
-    .filter((key) => key !== SubscriptionLevels.FREE)
+    .filter(
+      (key) =>
+        key !== SubscriptionLevels.FREE &&
+        key !== SubscriptionLevels.OPTIMUM_TRIAL,
+    )
     .forEach((key) => {
       const subscription = SUBSCRIPTIONS[key as SubscriptionLevel];
       keyboard
         .text(
-          `${subscription.icon} ${subscription.title} за ${subscription.price}₽/мес`,
+          `${subscription.title} за ${subscription.price}₽/мес`,
           `${key}-CHANGE`,
         )
         .row();
@@ -64,9 +86,23 @@ export const subscription = async (
   }
 
   try {
-    await ctx.reply(SUBSCRIPTIONS_MESSAGE.replace(/[().-]/g, '\\$&'), {
+    const { id } = ctx.from as TelegramUser;
+
+    const user = await User.findOne({ telegramId: id });
+    if (!user) {
+      await ctx.reply('Пожалуйста, начните с команды /start');
+      return;
+    }
+
+    const message = user.hasActivatedTrial
+      ? SUBSCRIPTIONS_MESSAGE
+      : SUBSCRIPTIONS_MESSAGE_WITH_TRIAL;
+
+    await ctx.reply(message.replace(/[().-]/g, '\\$&'), {
       parse_mode: 'MarkdownV2',
-      reply_markup: getSubscriptionLevelsKeyboard(),
+      reply_markup: getSubscriptionLevelsKeyboard({
+        hasActivatedTrial: user.hasActivatedTrial,
+      }),
     });
   } catch (error) {
     await ctx.reply(

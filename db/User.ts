@@ -17,12 +17,14 @@ export interface IUser {
   telegramId: number;
   firstName?: string;
   userName?: string;
+  email?: string;
   selectedModel: AiModel;
   chatMode: ChatMode;
   basicRequestsLeftThisWeek: number;
   basicRequestsLeftToday: number;
   proRequestsLeftThisMonth: number;
   imageGenerationLeftThisMonth: number;
+  hasActivatedTrial: boolean;
   subscriptionLevel: SubscriptionLevel;
   newSubscriptionLevel: SubscriptionLevel | null;
   subscriptionExpiry: Date | null;
@@ -44,6 +46,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   telegramId: { type: Number, unique: true, required: true },
   firstName: { type: String },
   userName: { type: String },
+  email: { type: String },
   selectedModel: {
     type: String,
     enum: Object.keys(AiModels),
@@ -74,6 +77,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     type: Number,
     default: 0,
     required: true,
+  },
+  hasActivatedTrial: {
+    type: Boolean,
+    default: false,
   },
   subscriptionLevel: {
     type: String,

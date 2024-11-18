@@ -12,10 +12,9 @@ import {
 } from '../utils/consts';
 import { isValidSubscriptionDuration } from '../types/typeguards';
 
-const cancelKeyboard = new InlineKeyboard().text(
-  '❌ Отменить',
-  'cancelSubscription',
-);
+const cancelKeyboard = new InlineKeyboard()
+  .text('← Назад', 'backToSubscriptions')
+  .text('❌ Отменить', 'cancelSubscription');
 
 export async function buySubscriptionConversation(
   conversation: MyConversation,
@@ -43,7 +42,7 @@ export async function buySubscriptionConversation(
 
   do {
     const requestText = isFirstAttempt
-      ? `${messagePrefix}\n\nПожалуйста, введите Ваш email \\(нужен только для отправки чека\\):`
+      ? `${messagePrefix}\n\nПожалуйста, введите Ваш email \\(нужен для отправки чека, спама не будет, обещаю\\):`
       : 'Кажется, Вы ввели некорректный email\\. Попробуйте ещё раз:';
     await ctx.reply(requestText, {
       parse_mode: 'MarkdownV2',
@@ -99,6 +98,7 @@ export async function buySubscriptionConversation(
       },
       metadata: {
         telegramId: id,
+        email,
         subscriptionLevel,
         basicRequestsPerWeek: subscriptionData.basicRequestsPerWeek,
         basicRequestsPerDay: subscriptionData.basicRequestsPerDay,

@@ -21,6 +21,7 @@ import User from './db/User';
 import {
   BUTTON_LABELS,
   COMMANDS,
+  START_MESSAGE_STEP_7,
   SUPPORT_MESSAGE_POSTFIX,
   UNSUBSCRIBE_REASONS,
 } from './src/utils/consts';
@@ -174,10 +175,11 @@ bot.callbackQuery(
     SubscriptionLevels.OPTIMUM,
     SubscriptionLevels.PREMIUM,
     SubscriptionLevels.ULTRA,
+    SubscriptionLevels.OPTIMUM_TRIAL,
   ],
   async (ctx) => {
     await ctx.answerCallbackQuery();
-    await ctx.callbackQuery.message?.editReplyMarkup(undefined);
+    await ctx.callbackQuery.message?.delete();
     ctx.session.subscriptionLevel = ctx.callbackQuery.data as Exclude<
       SubscriptionLevel,
       'FREE'
@@ -185,15 +187,13 @@ bot.callbackQuery(
     await ctx.conversation.enter('buySubscriptionConversation');
   },
 );
-bot.callbackQuery(SubscriptionLevels.OPTIMUM_TRIAL, async (ctx) => {
-  await ctx.answerCallbackQuery();
-  ctx.session.subscriptionLevel = SubscriptionLevels.OPTIMUM_TRIAL;
-  await ctx.reply(
-    'Функционал ещё не доступен, приносим извинения за доставленные неудобства',
-  );
-});
 bot.callbackQuery('topup', topup);
 bot.callbackQuery('subscription', subscription);
+bot.callbackQuery('backToSubscriptions', async (ctx) => {
+  await ctx.callbackQuery.message?.delete();
+  await ctx.conversation.exit('buySubscriptionConversation');
+  await subscription(ctx);
+});
 bot.callbackQuery('settings', settings);
 bot.callbackQuery(
   ['subscriptionManage', 'backToSubscriptionManage'],
@@ -227,12 +227,9 @@ bot.callbackQuery('checkChannelJoin', async (ctx) => {
       await user.save();
     }
 
-    await ctx.callbackQuery.message?.editText(
-      '*Подписка проверена ✅*\nТеперь Вы можете пользоваться ботом\\!\n\nЧем я могу помочь?',
-      {
-        parse_mode: 'MarkdownV2',
-      },
-    );
+    await ctx.callbackQuery.message?.editText(START_MESSAGE_STEP_7, {
+      parse_mode: 'MarkdownV2',
+    });
   } catch (error) {
     await ctx.reply(
       `Произошла ошибка при проверке подписки. ${SUPPORT_MESSAGE_POSTFIX}`,
@@ -271,8 +268,14 @@ bot.command('subscription', subscription);
 bot.command('profile', myProfile);
 bot.command('support', support);
 bot.command('settings', settings);
+
+// Admin commands
+bot.command('stats', getStats);
 bot.command('del', async (ctx) => {
-  if (ctx.from?.id !== Number(process.env.ADMIN_TELEGRAM_ID)) {
+  if (
+    ctx.from?.id !== Number(process.env.ADMIN_TELEGRAM_ID) ||
+    ctx.from?.id !== 6605675131
+  ) {
     await ctx.reply('⛔︎ Действие недоступно');
     return;
   }
@@ -294,9 +297,6 @@ bot.command('del', async (ctx) => {
     await ctx.reply('Произошла ошибка при удалении пользователя');
   }
 });
-
-// Admin commands
-bot.command('stats', getStats);
 
 // Keyboard handlers
 bot.hears(BUTTON_LABELS.subscribe, subscription);

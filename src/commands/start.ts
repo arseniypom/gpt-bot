@@ -124,15 +124,6 @@ export const startStep1 = async (ctx: MyContext) => {
         firstName: first_name,
         userName: username,
       });
-      const displayName = first_name || username;
-      await ctx.reply(
-        `👋 ${
-          displayName ? `Здравствуйте, ${displayName}!` : 'Здравствуйте!'
-        } `,
-        {
-          reply_markup: mainKeyboard,
-        },
-      );
 
       const chat = await Chat.create({
         userId: user._id,
@@ -140,6 +131,15 @@ export const startStep1 = async (ctx: MyContext) => {
 
       ctx.session.chatId = chat._id.toString();
     }
+    const displayName = first_name || username;
+    const isSubscribed = user.subscriptionLevel !== SubscriptionLevels.FREE;
+    await ctx.reply(
+      `👋 ${displayName ? `Здравствуйте, ${displayName}!` : 'Здравствуйте!'} `,
+      {
+        reply_markup: isSubscribed ? mainSubscribedUserKeyboard : mainKeyboard,
+      },
+    );
+
     await ctx.reply(START_MESSAGE_STEP_1, {
       parse_mode: 'MarkdownV2',
       reply_markup: step1Keyboard,
@@ -152,7 +152,7 @@ export const startStep1 = async (ctx: MyContext) => {
       `Произошла ошибка при регистрации Вашего персонального чат-бота. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     logError({
-      message: 'Error in /start (startStep1) command',
+      message: 'Error in /start startStep1 command',
       error,
       telegramId: id,
       username,

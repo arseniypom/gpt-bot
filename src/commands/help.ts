@@ -10,9 +10,11 @@ import {
   HELP_MESSAGE_TOKENS,
   SUPPORT_MESSAGE_POSTFIX,
   SUBSCRIPTIONS_MESSAGE,
+  SUBSCRIPTIONS_MESSAGE_WITH_TRIAL,
 } from '../utils/consts';
 import { logError } from '../utils/utilFunctions';
 import { getSubscriptionLevelsKeyboard } from './subscription';
+import User from '../../db/User';
 
 const helpMainKeyboard = new InlineKeyboard()
   .text('Как открыть меню?', 'helpFindMenu')
@@ -91,11 +93,19 @@ export const helpMessagesHandler = async (
         helpResponseMessage = HELP_MESSAGE_TOKENS;
         break;
       case 'helpSubscription':
+        const user = await User.findOne({ telegramId: ctx.from?.id });
+        if (!user) {
+          await ctx.reply('Пожалуйста, начните с команды /start');
+          return;
+        }
+        const message = user.hasActivatedTrial
+          ? SUBSCRIPTIONS_MESSAGE
+          : SUBSCRIPTIONS_MESSAGE_WITH_TRIAL;
         await ctx.callbackQuery.message?.editText(
-          SUBSCRIPTIONS_MESSAGE.replace(/[().-]/g, '\\$&'),
+          message.replace(/[().-]/g, '\\$&'),
           {
             parse_mode: 'MarkdownV2',
-            reply_markup: getSubscriptionLevelsKeyboard(true),
+            reply_markup: getSubscriptionLevelsKeyboard({ isHelp: true }),
           },
         );
         return;

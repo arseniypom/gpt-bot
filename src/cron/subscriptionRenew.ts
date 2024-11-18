@@ -29,16 +29,15 @@ cron.schedule('0 21 * * *', async () => {
     });
 
     for (const user of users) {
-      const { subscriptionDuration } = user;
-      if (!isValidSubscriptionDuration(subscriptionDuration)) {
-        throw new Error(
-          `telegramId: ${user.telegramId} userName: @${user.userName} subscriptionDuration is invalid or not set: ${subscriptionDuration}`,
-        );
-      }
-
       const newSubscriptionLevel =
         user.newSubscriptionLevel || user.subscriptionLevel;
       const subscriptionData = SUBSCRIPTIONS[newSubscriptionLevel];
+      const subscriptionDuration = subscriptionData.duration;
+      if (!isValidSubscriptionDuration(subscriptionDuration)) {
+        throw new Error(
+          `telegramId: ${user.telegramId} userName: @${user.userName} subscriptionDuration for ${newSubscriptionLevel} is invalid or not set: ${subscriptionDuration}`,
+        );
+      }
 
       const { title, price, description, icon } = subscriptionData;
       const amountObj = {
@@ -100,6 +99,7 @@ cron.schedule('0 21 * * *', async () => {
           case 'succeeded':
             await SubscriptionTransaction.create({
               telegramId: user.telegramId,
+              email: user.email || '',
               totalAmount: price,
               subscriptionLevel: newSubscriptionLevel,
               yookassaPaymentId: paymentResponse.id,
@@ -129,12 +129,14 @@ cron.schedule('0 21 * * *', async () => {
               user.imageGenerationLeftThisMonth =
                 subscriptionData.imageGenerationPerMonth || 0;
             }
+            user.subscriptionLevel = newSubscriptionLevel;
+            user.subscriptionDuration = subscriptionDuration;
             user.newSubscriptionLevel = null;
             user.updatedAt = new Date();
             await user.save();
             await bot.api.sendMessage(
               user.telegramId,
-              `*Ваша подписка уровня \\"${icon} ${title}\\" успешно продлена ✔️ *\n\nПриятного использования\\!`,
+              `*Ваша подписка уровня\n\\"${icon} ${title}\\" успешно продлена ✔️ *\n\nПриятного использования\\!`,
               {
                 parse_mode: 'MarkdownV2',
               },
@@ -143,6 +145,7 @@ cron.schedule('0 21 * * *', async () => {
           case 'canceled':
             await SubscriptionTransaction.create({
               telegramId: user.telegramId,
+              email: user.email || '',
               totalAmount: price,
               subscriptionLevel: newSubscriptionLevel,
               yookassaPaymentId: paymentResponse.id,
