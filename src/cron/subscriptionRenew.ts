@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import bot from '../../bot';
 import User from '../../db/User';
-import { logError } from '../utils/utilFunctions';
+import { logError, setUserBlocked } from '../utils/utilFunctions';
 import { SubscriptionLevels } from '../types/types';
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
 import { ICreatePayment } from '../types/yookassaTypes';
@@ -11,6 +11,7 @@ import yookassaService from '../utils/yookassaService';
 import SubscriptionTransaction from '../../db/SubscriptionTransaction';
 import { mainKeyboard } from '../commands/start';
 import { isValidSubscriptionDuration } from '../types/typeguards';
+import { GrammyError } from 'grammy';
 
 // Schedule the task to run every day at 21:00 UTC
 cron.schedule('0 21 * * *', async () => {
@@ -212,6 +213,14 @@ cron.schedule('0 21 * * *', async () => {
       }
     }
   } catch (error) {
+    if (
+      error instanceof GrammyError &&
+      error.error_code === 403 &&
+      /block/.test(error.description)
+    ) {
+      await setUserBlocked(error.payload.chat_id as number);
+      return
+    }
     logError({
       message: 'Error in subscription expiry check cron job',
       error,

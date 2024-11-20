@@ -131,6 +131,10 @@ export const startStep1 = async (ctx: MyContext) => {
 
       ctx.session.chatId = chat._id.toString();
     }
+    if (user.isBlockedBot) {
+      user.isBlockedBot = false;
+      await user.save();
+    }
     const displayName = first_name || username;
     const isSubscribed = user.subscriptionLevel !== SubscriptionLevels.FREE;
     await ctx.reply(

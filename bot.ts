@@ -64,6 +64,7 @@ import {
   logError,
   getBotApiKey,
   getMongoDbUri,
+  setUserBlocked,
 } from './src/utils/utilFunctions';
 import { TOKEN_PACKAGES } from './src/bot-token-packages';
 import { handleTextMessage } from './src/gptHandlers/textMessageHandler';
@@ -328,6 +329,13 @@ bot.catch(async (err) => {
   let message;
 
   if (e instanceof GrammyError) {
+    if (
+      e.error_code === 403 &&
+      /block/.test(e.description)
+    ) {
+      await setUserBlocked(e.payload.chat_id as number);
+      return
+    }
     message = 'Error in request';
   } else if (e instanceof HttpError) {
     message = 'Could not contact Telegram';

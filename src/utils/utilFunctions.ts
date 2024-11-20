@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import bot from '../../bot';
 import logger from './logger';
+import User from '../../db/User';
 
 const ADMIN_TELEGRAM_ID = process.env.ADMIN_TELEGRAM_ID;
 
@@ -103,3 +104,11 @@ export function logError({
     Message: "${errorMessage}"
         `);
 }
+
+export const setUserBlocked = async (telegramId: number) => {
+  try {
+    await User.updateOne({ telegramId }, { $set: { isBlockedBot: true } });
+  } catch (error) {
+    logError({ message: 'Error insetUserBlocked util func', telegramId, error });
+  }
+};

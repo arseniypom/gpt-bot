@@ -35,6 +35,7 @@ export interface IUser {
   yookassaPaymentMethodId: string | null;
   tokensBalance: number;
   userStage: UserStage;
+  isBlockedBot: boolean;
   basicReqsMade: number;
   proReqsMade: number;
   imgGensMade: number;
@@ -123,6 +124,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   userStage: {
     type: String,
     default: UserStages.REGISTERED,
+  },
+  isBlockedBot: {
+    type: Boolean,
+    default: false,
   },
   basicReqsMade: {
     type: Number,

@@ -2,9 +2,10 @@ import cron from 'node-cron';
 import dayjs from 'dayjs';
 import bot from '../../bot';
 import User from '../../db/User';
-import { logError } from '../utils/utilFunctions';
+import { logError, setUserBlocked } from '../utils/utilFunctions';
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
 import { profileAddSubscriptionKeyboard } from '../commands/myProfile';
+import { GrammyError } from 'grammy';
 
 const BATCH_SIZE = 100;
 const BATCH_DELAY_MS = 1000;
@@ -54,6 +55,14 @@ cron.schedule('0 22 * * *', async () => {
       }
     }
   } catch (error) {
+    if (
+      error instanceof GrammyError &&
+      error.error_code === 403 &&
+      /block/.test(error.description)
+    ) {
+      await setUserBlocked(error.payload.chat_id as number);
+      return
+    }
     logError({
       message: 'Error fetching users',
       error,
