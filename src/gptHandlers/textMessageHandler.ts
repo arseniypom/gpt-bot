@@ -76,11 +76,16 @@ export const handleTextMessage = async (ctx: MyContext) => {
         user.tokensBalance - PRO_REQUEST_COST < 0
       ) {
         await responseMessage.editText(
-          getNoBalanceMessage(user.selectedModel),
+          getNoBalanceMessage(
+            user.selectedModel,
+            user.canActivateTrial,
+            user.subscriptionLevel === SubscriptionLevels.FREE,
+          ),
           {
             reply_markup: getTopupAndChangeModelKeyboard(
               user.subscriptionLevel,
             ),
+            parse_mode: 'MarkdownV2',
           },
         );
         return;
@@ -92,11 +97,16 @@ export const handleTextMessage = async (ctx: MyContext) => {
         user.tokensBalance - BASIC_REQUEST_COST < 0
       ) {
         await responseMessage.editText(
-          getNoBalanceMessage(user.selectedModel),
+          getNoBalanceMessage(
+            user.selectedModel,
+            user.canActivateTrial,
+            user.subscriptionLevel === SubscriptionLevels.FREE,
+          ),
           {
             reply_markup: getTopupAndChangeModelKeyboard(
               user.subscriptionLevel,
             ),
+            parse_mode: 'MarkdownV2',
           },
         );
         return;

@@ -35,17 +35,19 @@ export const getTopupAndManageSubscriptionKeyboard = (
 export const getTopupAndChangeModelKeyboard = (
   subscriptionLevel: SubscriptionLevel,
 ) => {
-  const keyboard = new InlineKeyboard()
-    .text(BUTTON_LABELS.buyTokens, 'topup')
-    .row();
+  const keyboard = new InlineKeyboard();
 
   if (subscriptionLevel === 'FREE') {
     keyboard.text('🎉 Подключить подписку', 'subscription');
   } else {
-    keyboard.text('🔄 Управление подпиской', 'subscriptionManage');
+    keyboard.text('🔄 Изменить уровень подписки', 'initiateChangeSubscriptionLevel');
   }
 
-  return keyboard.row().text('🤖 Сменить модель', 'settings');
+  return keyboard
+    .row()
+    .text(BUTTON_LABELS.buyTokens, 'topup')
+    .row()
+    .text('🤖 Сменить модель', 'settings');
 };
 
 export const topup = async (

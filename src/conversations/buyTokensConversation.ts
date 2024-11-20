@@ -8,7 +8,7 @@ import { ICreatePayment } from '../types/yookassaTypes';
 import yookassaService from '../utils/yookassaService';
 import {
   SUPPORT_MESSAGE_POSTFIX,
-  YOOKASSA_PAYMENT_MESSAGE,
+  YOOKASSA_PAYMENT_MESSAGE_BASE,
 } from '../utils/consts';
 
 const cancelKeyboard = new InlineKeyboard()
@@ -39,7 +39,7 @@ export async function buyTokensConversation(
 
   do {
     const requestText = isFirstAttempt
-      ? `${messagePrefix}\n\nПожалуйста, введите Ваш email \\(нужен только для отправки чека\\):`
+      ? `${messagePrefix}\n\nПожалуйста, введите Ваш email \\(нужен для отправки чека, спама не будет, обещаю\\):`
       : 'Кажется, Вы ввели некорректный email\\. Попробуйте ещё раз:';
     await ctx.reply(requestText, {
       parse_mode: 'MarkdownV2',
@@ -108,7 +108,7 @@ export async function buyTokensConversation(
 
     const paymentKeyboard = new InlineKeyboard().url('Оплатить', paymentUrl);
 
-    await ctx.reply(YOOKASSA_PAYMENT_MESSAGE, {
+    await ctx.reply(YOOKASSA_PAYMENT_MESSAGE_BASE, {
       parse_mode: 'MarkdownV2',
       reply_markup: paymentKeyboard,
     });

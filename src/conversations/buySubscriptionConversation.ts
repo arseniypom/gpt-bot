@@ -8,7 +8,8 @@ import { ICreatePayment } from '../types/yookassaTypes';
 import yookassaService from '../utils/yookassaService';
 import {
   SUPPORT_MESSAGE_POSTFIX,
-  YOOKASSA_PAYMENT_MESSAGE,
+  YOOKASSA_PAYMENT_MESSAGE_BASE,
+  YOOKASSA_PAYMENT_MESSAGE_SUBSCRIPTION_POSTFIX,
 } from '../utils/consts';
 import { isValidSubscriptionDuration } from '../types/typeguards';
 
@@ -123,10 +124,13 @@ export async function buySubscriptionConversation(
 
     const paymentKeyboard = new InlineKeyboard().url('Оплатить', paymentUrl);
 
-    await ctx.reply(YOOKASSA_PAYMENT_MESSAGE, {
-      parse_mode: 'MarkdownV2',
-      reply_markup: paymentKeyboard,
-    });
+    await ctx.reply(
+      `${YOOKASSA_PAYMENT_MESSAGE_BASE}${YOOKASSA_PAYMENT_MESSAGE_SUBSCRIPTION_POSTFIX}`,
+      {
+        parse_mode: 'MarkdownV2',
+        reply_markup: paymentKeyboard,
+      },
+    );
   } catch (error) {
     await ctx.reply(
       `Произошла ошибка при создании ссылки для оплаты. ${SUPPORT_MESSAGE_POSTFIX}`,

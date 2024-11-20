@@ -1,6 +1,7 @@
 import { InlineKeyboard } from 'grammy';
 import { type MyConversation, type MyContext } from '../types/types';
 import { logError, sendMessageToAdmin } from '../utils/utilFunctions';
+import { SUPPORT_MESSAGE } from '../utils/consts';
 
 const cancelKeyboard = new InlineKeyboard().text(
   '❌ Отменить',
@@ -12,8 +13,9 @@ export async function supportConversation(
   ctx: MyContext,
 ) {
   try {
-    await ctx.reply('Пожалуйста, опишите проблему как можно подробнее:', {
+    await ctx.reply(SUPPORT_MESSAGE, {
       reply_markup: cancelKeyboard,
+      parse_mode: 'MarkdownV2',
     });
 
     const { message } = await conversation.waitFor('message:text');

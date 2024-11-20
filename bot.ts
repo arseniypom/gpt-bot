@@ -133,7 +133,7 @@ bot.callbackQuery('cancelImageGeneration', async (ctx) => {
 bot.callbackQuery('cancelSupport', async (ctx) => {
   await ctx.answerCallbackQuery('Отменено ✅');
   await ctx.conversation.exit('supportConversation');
-  await ctx.callbackQuery.message?.editText('Запрос в поддержку отменен');
+  await ctx.callbackQuery.message?.editText('Запрос в поддержку отменен ✅');
 });
 bot.callbackQuery('cancelPayment', async (ctx) => {
   await ctx.answerCallbackQuery('Отменено ✅');
