@@ -148,11 +148,12 @@ export const handleTextMessage = async (ctx: MyContext) => {
     }
 
     const selectedModelName = user.selectedModel;
-    const answer = await answerWithChatGPT(
-      history,
+    const answer = await answerWithChatGPT({
+      chatHistory: history,
       telegramId,
-      selectedModelName,
-    );
+      chatMode: user.chatMode,
+      modelName: selectedModelName,
+    });
 
     if (!answer) {
       await responseMessage.editText(
