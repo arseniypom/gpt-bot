@@ -398,7 +398,7 @@ export const getNoBalanceMessage = ({
 }) => {
   const requestPurpose =
     reqType === 'image'
-      ? 'генерации изображения'
+      ? 'генерации изображений'
       : `обращения к ${AiModelsLabels[reqType].replace(/-/g, '\\-')}`;
 
   const offer = canActivateTrial
