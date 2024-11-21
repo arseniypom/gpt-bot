@@ -9,12 +9,16 @@ import { logError } from '../utils/utilFunctions';
 export const profileAddSubscriptionKeyboard = new InlineKeyboard()
   .text(BUTTON_LABELS.subscribe, 'subscription')
   .row()
-  .text(BUTTON_LABELS.buyTokens, 'topup');
+  .text(BUTTON_LABELS.buyTokens, 'topup')
+  .row()
+  .text('👥 Реферальная программа', 'referralProgram');
 
 const profileManageSubscriptionKeyboard = new InlineKeyboard()
   .text(BUTTON_LABELS.buyTokens, 'topup')
   .row()
-  .text('🔄 Управление подпиской', 'subscriptionManage');
+  .text('🔄 Управление подпиской', 'subscriptionManage')
+  .row()
+  .text('👥 Реферальная программа', 'referralProgram');
 
 export const myProfile = async (
   ctx: MyContext | CallbackQueryContext<MyContext>,

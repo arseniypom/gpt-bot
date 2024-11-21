@@ -9,6 +9,7 @@ import {
   ChatMode,
   UserStage,
   UserStages,
+  ReferralProgram,
 } from '../src/types/types';
 import { SUBSCRIPTIONS } from '../src/bot-subscriptions';
 import dayjs from 'dayjs';
@@ -39,6 +40,7 @@ export interface IUser {
   basicReqsMade: number;
   proReqsMade: number;
   imgGensMade: number;
+  referralProgram: ReferralProgram;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -140,6 +142,16 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   imgGensMade: {
     type: Number,
     default: 0,
+  },
+  referralProgram: {
+    invitedBy: {
+      type: Number,
+      default: null,
+    },
+    invitedUserIds: {
+      type: [Number],
+      default: [],
+    },
   },
   createdAt: {
     type: Date,

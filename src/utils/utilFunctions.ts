@@ -75,6 +75,15 @@ export const getChannelTelegramName = () => {
   }
 };
 
+export const getBotUrl = () => {
+  switch (process.env.NODE_ENV) {
+    case 'production':
+      return process.env.BOT_URL_PROD;
+    default:
+      return process.env.BOT_URL_DEV;
+  }
+};
+
 export function logError({
   message,
   username,

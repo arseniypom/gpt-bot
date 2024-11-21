@@ -126,3 +126,8 @@ export type HelpMessage =
   | 'helpTokens'
   | 'helpSubscription'
   | 'helpChatModes';
+
+export interface ReferralProgram {
+  invitedBy: number | null;
+  invitedUserIds: number[];
+}

@@ -3,7 +3,7 @@ import { IUser } from '../../db/User';
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
 import { AiModel, AiModelsLabels, ChatMode } from '../types/types';
 import { TOKEN_PACKAGES } from '../bot-token-packages';
-import { getChannelTelegramName } from './utilFunctions';
+import { getBotUrl, getChannelTelegramName } from './utilFunctions';
 
 export const BASIC_REQUEST_COST = 1.5;
 export const PRO_REQUEST_COST = 3;
@@ -467,7 +467,7 @@ export const getProfileMessage = (user: IUser) => {
     .format('DD.MM.YYYY')
     .replace(/\./g, '\\.');
   const freeRequestsMessage = isFreeSubscription
-    ? `\n\nОстаток бесплатных запросов на неделю: ${user.basicRequestsLeftThisWeek}/${SUBSCRIPTIONS.FREE.basicRequestsPerWeek}\n_Обновятся ${weeklyRequestsExpirationDate}_`
+    ? `\n\n*Остаток бесплатных запросов:* ${user.basicRequestsLeftThisWeek}/${SUBSCRIPTIONS.FREE.basicRequestsPerWeek}\n_Обновятся ${weeklyRequestsExpirationDate}_`
     : '';
   const trialMessage = isFreeSubscription
     ? `\n🎁 Попробуйте Оптимум: 3 дня за ${SUBSCRIPTIONS.OPTIMUM_TRIAL.price}₽\\!\nЖмите "Подключить подписку" ↓`
@@ -526,6 +526,25 @@ ${
     ? `*Действует до*: ${expirationDate}\n\n_После окончания действия подписка будет автоматически продлена_`
     : ''
 }
+  `;
+};
+
+export const getReferralProgramMessage = (user: IUser) => {
+  const botUrl = getBotUrl();
+  const botUrlSanitized = botUrl?.replace(/[.-_]/g, '\\$&');
+
+  return `
+*👥 Реферальная программа*
+
+✔️ Вы можете бесплатно получить 12 токенов 🪙 за каждого приглашенного друга\\!
+
+⋅ Запросы зачислятся на баланс, когда друг активирует бота, перейдя по Вашей ссылке и нажав _Start_
+⋅ Вы можете пригласить до 10 друзей – например, отправив ссылку в общий чат с друзьями или коллегами
+
+Друзей приглашено: ${user.referralProgram.invitedUserIds.length} / 10
+
+⭐ Ваша реферальная ссылка:
+[${botUrlSanitized}/start\\=ref\\_${user.telegramId}](${botUrl}/start=ref_${user.telegramId})
   `;
 };
 

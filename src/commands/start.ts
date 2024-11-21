@@ -12,7 +12,7 @@ import {
   START_MESSAGE_STEP_7,
   SUPPORT_MESSAGE_POSTFIX,
 } from '../utils/consts';
-import { MyContext, SubscriptionLevels } from '../types/types';
+import { MyContext, ReferralProgram, SubscriptionLevels } from '../types/types';
 import User from '../../db/User';
 import Chat from '../../db/Chat';
 import {
@@ -119,14 +119,34 @@ export const startStep1 = async (ctx: MyContext) => {
   }
 
   const { id, first_name, username } = ctx.from as TelegramUser;
+  const referrerPrefix = ctx.message?.text?.split(' ')[1];
 
   try {
     let user = await User.findOne({ telegramId: id });
     if (!user) {
+      let referralProgramData: ReferralProgram = {
+        invitedBy: null,
+        invitedUserIds: [],
+      };
+      if (referrerPrefix) {
+        const referrerId = Number(referrerPrefix.split('_')[1]);
+        const referrerUser = await User.findOne({ telegramId: referrerId });
+        if (
+          referrerUser &&
+          referrerUser.referralProgram.invitedUserIds.length <= 10
+        ) {
+          referrerUser.tokensBalance += 12;
+          referrerUser.referralProgram.invitedUserIds.push(id);
+          await referrerUser.save();
+        }
+
+        referralProgramData.invitedBy = referrerId;
+      }
       user = await User.create({
         telegramId: id,
         firstName: first_name,
         userName: username,
+        referralProgram: referralProgramData,
       });
 
       const chat = await Chat.create({

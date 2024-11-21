@@ -39,6 +39,7 @@ import {
   subscription,
   generateImage,
   myProfile,
+  referralProgram,
   balance,
   support,
   help,
@@ -262,6 +263,11 @@ bot.callbackQuery(
   helpMessagesHandler,
 );
 bot.callbackQuery(['helpBack', 'helpBackFindMenu'], helpBackHandler);
+bot.callbackQuery('referralProgram', referralProgram);
+bot.callbackQuery('hide', async (ctx) => {
+  await ctx.answerCallbackQuery();
+  await ctx.callbackQuery.message?.delete();
+});
 
 // User commands
 bot.command('start', startStep1);
