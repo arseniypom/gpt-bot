@@ -2,10 +2,11 @@ import { InlineKeyboard } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import { generateImage } from '../utils/gpt';
 import { logError } from '../utils/utilFunctions';
-import { type MyConversation, type MyContext } from '../types/types';
+import { type MyConversation, type MyContext, SubscriptionLevels } from '../types/types';
 import User from '../../db/User';
 import {
   BUTTON_LABELS,
+  getNoBalanceMessage,
   IMAGE_GENERATION_COST,
   SUPPORT_MESSAGE_POSTFIX,
 } from '../utils/consts';
@@ -34,11 +35,16 @@ export async function imageConversation(
       userObj.tokensBalance - IMAGE_GENERATION_COST < 0
     ) {
       await ctx.reply(
-        'У вас нет доступных запросов для генерации изображений и не хватает токенов. Смените уровень подписки или пополните баланс токенов ↓',
+        getNoBalanceMessage({
+          reqType: 'image',
+          canActivateTrial: userObj.canActivateTrial,
+          isFreeUser: userObj.subscriptionLevel === SubscriptionLevels.FREE,
+        }),
         {
           reply_markup: getTopupAndManageSubscriptionKeyboard(
             userObj.subscriptionLevel,
           ),
+          parse_mode: 'MarkdownV2',
         },
       );
       return;
