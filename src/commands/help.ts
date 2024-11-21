@@ -105,7 +105,10 @@ export const helpMessagesHandler = async (
           message.replace(/[().-]/g, '\\$&'),
           {
             parse_mode: 'MarkdownV2',
-            reply_markup: getSubscriptionLevelsKeyboard({ isHelp: true }),
+            reply_markup: getSubscriptionLevelsKeyboard({
+              isHelp: true,
+              canActivateTrial: user.canActivateTrial,
+            }),
           },
         );
         return;

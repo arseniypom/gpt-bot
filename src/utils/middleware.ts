@@ -59,7 +59,10 @@ export const checkUserInDB = async (
       return;
     }
 
-    if (ctx.callbackQuery?.data === 'checkChannelJoin') {
+    if (
+      ctx.callbackQuery?.data === 'checkChannelJoin' ||
+      ctx.callbackQuery?.data === 'checkChannelJoinAndGoToStep6'
+    ) {
       await ctx.answerCallbackQuery({
         text: 'Не нашли Вас в числе подписчиков 🤔 Пожалуйста, подпишитесь и нажмите на кнопку снова',
         show_alert: true,
