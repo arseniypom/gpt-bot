@@ -97,7 +97,11 @@ const step4Keyboard = new InlineKeyboard()
   .text('Пропустить знакомство', 'startSkip');
 
 const step5Keyboard = new InlineKeyboard()
-  .text('Последнее: как тобой управлять?', 'startStep6')
+  .url('Ссылка на канал', `https://t.me/${channelTelegramName}`)
+  .row()
+  .text('✅ Я подписался(лась) на канал', 'checkChannelJoinAndGoToStep6')
+  .row()
+  .text('Подпишусь позже', 'startStep6')
   .row()
   .text('Пропустить знакомство', 'startSkip');
 

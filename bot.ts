@@ -120,7 +120,7 @@ bot.callbackQuery('startStep2', startStep2);
 bot.callbackQuery('startStep3', startStep3);
 bot.callbackQuery('startStep4', startStep4);
 bot.callbackQuery('startStep5', startStep5);
-bot.callbackQuery('startStep6', startStep6);
+bot.callbackQuery(['startStep6', 'checkChannelJoinAndGoToStep6'], startStep6);
 bot.callbackQuery(['startStep7', 'startSkip'], startStep7);
 bot.callbackQuery(Object.keys(AiModelsLabels), settingsChangeModel);
 bot.callbackQuery(['basic', 'dialogue'], settingsChangeChatMode);
