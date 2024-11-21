@@ -7,7 +7,7 @@ export interface SubscriptionTransaction {
   totalAmount: number;
   subscriptionLevel: SubscriptionLevel;
   yookassaPaymentId: string;
-  yookassaPaymentMethodId: string;
+  yookassaPaymentMethodId: string | null;
   cancellationDetails?: CancellationDetails;
   status: string;
   createdAt: Date;
@@ -20,7 +20,7 @@ const subscriptionTransactionSchema: Schema<SubscriptionTransaction> =
     totalAmount: { type: Number },
     subscriptionLevel: { type: String, required: true },
     yookassaPaymentId: { type: String, required: true },
-    yookassaPaymentMethodId: { type: String, required: true },
+    yookassaPaymentMethodId: { type: String },
     cancellationDetails: { type: Object },
     status: { type: String, required: true },
     createdAt: {
