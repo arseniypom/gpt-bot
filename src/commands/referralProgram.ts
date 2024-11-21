@@ -8,7 +8,7 @@ import {
   SUPPORT_MESSAGE_POSTFIX,
 } from '../utils/consts';
 
-const referralProgramKeyboard = new InlineKeyboard().text('Скрыть', 'hide');
+const referralProgramKeyboard = new InlineKeyboard().text('✖︎', 'hide');
 
 export const referralProgram = async (ctx: CallbackQueryContext<MyContext>) => {
   ctx.answerCallbackQuery();
@@ -24,6 +24,9 @@ export const referralProgram = async (ctx: CallbackQueryContext<MyContext>) => {
     await ctx.reply(getReferralProgramMessage(user), {
       parse_mode: 'MarkdownV2',
       reply_markup: referralProgramKeyboard,
+      link_preview_options: {
+        is_disabled: true,
+      },
     });
   } catch (error) {
     await ctx.reply(

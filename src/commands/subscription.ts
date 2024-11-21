@@ -51,6 +51,8 @@ export const getSubscriptionLevelsKeyboard = ({
 
   if (isHelp) {
     keyboard.text('← Назад', 'helpBack');
+  } else {
+    keyboard.text('✖︎', 'hide');
   }
 
   return keyboard;
