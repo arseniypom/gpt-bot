@@ -146,6 +146,7 @@ export const startStep1 = async (ctx: MyContext) => {
         telegramId: id,
         firstName: first_name,
         userName: username,
+        tokensBalance: referralProgramData.invitedBy ? 12 : 0,
         referralProgram: referralProgramData,
       });
 
