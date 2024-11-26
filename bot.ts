@@ -59,6 +59,7 @@ import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
 import { buyTokensConversation } from './src/conversations/buyTokensConversation';
 import { buySubscriptionConversation } from './src/conversations/buySubscriptionConversation';
+import { promocodeConversation } from './src/conversations/promocodeConversation';
 import { SUBSCRIPTIONS } from './src/bot-subscriptions';
 import { checkUserInDB, ignoreOld } from './src/utils/middleware';
 import {
@@ -113,6 +114,7 @@ bot.use(createConversation(imageConversation));
 bot.use(createConversation(supportConversation));
 bot.use(createConversation(buyTokensConversation));
 bot.use(createConversation(buySubscriptionConversation));
+bot.use(createConversation(promocodeConversation));
 
 void bot.api.setMyCommands(COMMANDS);
 
@@ -148,6 +150,11 @@ bot.callbackQuery('cancelSubscription', async (ctx) => {
 });
 bot.callbackQuery('cancelUnsubscribe', async (ctx) => {
   await ctx.answerCallbackQuery('Отменено ✅');
+  await ctx.callbackQuery.message?.editText('Действие отменено');
+});
+bot.callbackQuery('cancelPromocode', async (ctx) => {
+  await ctx.answerCallbackQuery('Отменено ✅');
+  await ctx.conversation.exit('promocodeConversation');
   await ctx.callbackQuery.message?.editText('Действие отменено');
 });
 bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
@@ -280,6 +287,9 @@ bot.command('subscription', subscription);
 bot.command('profile', myProfile);
 bot.command('support', support);
 bot.command('settings', settings);
+bot.command('promo', async (ctx) => {
+  await ctx.conversation.enter('promocodeConversation');
+});
 
 // Admin commands
 bot.command('stats', getStats);
