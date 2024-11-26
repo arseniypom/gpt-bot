@@ -8,7 +8,9 @@
     "build": "tsc",
     "start:local": "nodemon --exec ts-node bot.ts",
     "start:dev": "NODE_ENV=development node dist/bot.js",
-    "start:prod": "NODE_ENV=production node dist/bot.js"
+    "start:prod": "NODE_ENV=production node dist/bot.js",
+    "migrate": "ts-node migraton-base.ts",
+    "add-promo": "ts-node add-promo-base.ts"
   },
   "author": "",
   "license": "ISC",
