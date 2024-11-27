@@ -52,7 +52,13 @@ export const getStats = async (ctx: MyContext) => {
       message += `👤${isBlocked} ${username} | ${messageCount}\n`;
     }
 
-    await ctx.reply(message);
+    await ctx.reply(message, {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '✖︎', callback_data: 'hide' }],
+        ],
+      },
+    });
   } catch (error) {
     await ctx.reply('Произошла ошибка при получении статистики.');
     logger.error('Error in /stats:', error);
