@@ -95,7 +95,7 @@ const step3Keyboard = new InlineKeyboard()
   .text('Пропустить знакомство', 'startSkip');
 
 const step4Keyboard = new InlineKeyboard()
-  .text('Класс, попробую Оптимум!', SubscriptionLevels.OPTIMUM_TRIAL)
+  .text('Класс, попробую Оптимум!', `${SubscriptionLevels.OPTIMUM_TRIAL}-step5`)
   .row()
   .text('Я подумаю, продолжить', 'startStep5')
   .row()
@@ -109,6 +109,11 @@ const step5Keyboard = new InlineKeyboard()
   .text('Подпишусь позже', 'startStep6')
   .row()
   .text('Пропустить знакомство', 'startSkip');
+
+const step5buyTrialKeyboard = new InlineKeyboard()
+  .url('Ссылка на канал', `https://t.me/${channelTelegramName}`)
+  .row()
+  .text('✅ Я подписался(лась) на канал', 'checkChannelJoinAndBuyTrial')
 
 const step6Keyboard = new InlineKeyboard().text(
   'Закончить и протестировать бота!',
@@ -215,6 +220,16 @@ export const startStep4 = async (ctx: CallbackQueryContext<MyContext>) => {
   await ctx.reply(START_MESSAGE_STEP_4, {
     parse_mode: 'MarkdownV2',
     reply_markup: step4Keyboard,
+  });
+};
+
+export const startStep5BuyTrial = async (
+  ctx: CallbackQueryContext<MyContext>,
+) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply(START_MESSAGE_STEP_5, {
+    parse_mode: 'MarkdownV2',
+    reply_markup: step5buyTrialKeyboard,
   });
 };
 

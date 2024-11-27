@@ -8,6 +8,7 @@ export {
   startStep3,
   startStep4,
   startStep5,
+  startStep5BuyTrial,
   startStep6,
   checkChannelJoinAndGoToStep6,
   startStep7,

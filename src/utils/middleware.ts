@@ -2,7 +2,7 @@ import { InlineKeyboard, NextFunction } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import User from '../../db/User';
 import { logError, setUserBlocked } from './utilFunctions';
-import { MyContext } from '../types/types';
+import { MyContext, SubscriptionLevels } from '../types/types';
 import { isMyContext } from '../types/typeguards';
 import logger from './logger';
 import { BUTTON_LABELS, SUPPORT_MESSAGE_POSTFIX } from './consts';
@@ -34,6 +34,7 @@ export const checkUserInDB = async (
     'startStep5',
     'startStep6',
     'startStep7',
+    `${SubscriptionLevels.OPTIMUM_TRIAL}-step5`,
     'startSkip',
   ];
 
@@ -72,13 +73,17 @@ export const checkUserInDB = async (
 
     if (
       ctx.callbackQuery?.data === 'checkChannelJoin' ||
-      ctx.callbackQuery?.data === 'checkChannelJoinAndGoToStep6'
+      ctx.callbackQuery?.data === 'checkChannelJoinAndGoToStep6' ||
+      ctx.callbackQuery?.data === 'checkChannelJoinAndBuyTrial'
     ) {
       await ctx.answerCallbackQuery({
         text: 'Не нашли Вас в числе подписчиков 🤔 Пожалуйста, подпишитесь и нажмите на кнопку снова',
         show_alert: true,
       });
       return;
+    }
+    if (ctx.callbackQuery) {
+      await ctx.answerCallbackQuery();
     }
 
     await ctx.reply(

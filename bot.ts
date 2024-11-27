@@ -31,6 +31,7 @@ import {
   startStep3,
   startStep4,
   startStep5,
+  startStep5BuyTrial,
   startStep6,
   checkChannelJoinAndGoToStep6,
   startStep7,
@@ -198,6 +199,13 @@ bot.callbackQuery(
     await ctx.conversation.enter('buySubscriptionConversation');
   },
 );
+bot.callbackQuery('checkChannelJoinAndBuyTrial', async (ctx) => {
+  await ctx.answerCallbackQuery();
+  await ctx.callbackQuery.message?.delete();
+  ctx.session.subscriptionLevel = SubscriptionLevels.OPTIMUM_TRIAL;
+  await ctx.conversation.enter('buySubscriptionConversation');
+});
+bot.callbackQuery(`${SubscriptionLevels.OPTIMUM_TRIAL}-step5`, startStep5BuyTrial);
 bot.callbackQuery('topup', topup);
 bot.callbackQuery('backToTopup', async (ctx) => {
   await ctx.callbackQuery.message?.delete();
