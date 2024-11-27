@@ -469,9 +469,10 @@ export const getProfileMessage = (user: IUser) => {
   const freeRequestsMessage = isFreeSubscription
     ? `\n\n*Остаток бесплатных запросов:* ${user.basicRequestsLeftThisWeek}/${SUBSCRIPTIONS.FREE.basicRequestsPerWeek}\n_Обновятся ${weeklyRequestsExpirationDate}_`
     : '';
-  const trialMessage = isFreeSubscription
-    ? `\n🎁 Попробуйте Оптимум: 3 дня за ${SUBSCRIPTIONS.OPTIMUM_TRIAL.price}₽\\!\nЖмите "Подключить подписку" ↓`
-    : '';
+  const trialMessage =
+    isFreeSubscription && user.canActivateTrial
+      ? `\n🎁 Попробуйте Оптимум: 3 дня за ${SUBSCRIPTIONS.OPTIMUM_TRIAL.price}₽\\!\nЖмите "Подключить подписку" ↓`
+      : '';
 
   // Paid user
   const expirationDate = dayjs(user.subscriptionExpiry)
@@ -542,7 +543,7 @@ export const getReferralProgramMessage = (user: IUser) => {
 
 ⋅ Ваш друг также получит 12 токенов
 ⋅ Запросы зачислятся на баланс, когда друг активирует бота, перейдя по Вашей ссылке и нажав _Start_
-⋅ Токены можно потратить на запросы к любой модели ChatGPT или генерацию изображений \\(подробнее: /help\\)
+⋅ Токены можно потратить на запросы или генерацию изображений \\(подробнее: /help\\)
 ⋅ Вы можете пригласить до 10 друзей \\(например, отправив ссылку в общий чат с друзьями или коллегами\\)
 
 Друзей приглашено: ${user.referralProgram.invitedUserIds.length} / 10

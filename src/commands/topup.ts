@@ -7,7 +7,9 @@ import { TOKEN_PACKAGES } from '../bot-token-packages';
 const topupKeyboard = new InlineKeyboard()
   .text(`${TOKEN_PACKAGES.token1.tokensNumber}`, 'token1')
   .text(`${TOKEN_PACKAGES.token2.tokensNumber}`, 'token2')
-  .text(`${TOKEN_PACKAGES.token3.tokensNumber}`, 'token3');
+  .text(`${TOKEN_PACKAGES.token3.tokensNumber}`, 'token3')
+  .row()
+  .text('✖︎', 'hide');
 
 export const initiateTopupKeyboard = new InlineKeyboard().text(
   BUTTON_LABELS.buyTokens,
