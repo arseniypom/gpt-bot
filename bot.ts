@@ -201,11 +201,44 @@ bot.callbackQuery(
 );
 bot.callbackQuery('checkChannelJoinAndBuyTrial', async (ctx) => {
   await ctx.answerCallbackQuery();
-  await ctx.callbackQuery.message?.delete();
-  ctx.session.subscriptionLevel = SubscriptionLevels.OPTIMUM_TRIAL;
-  await ctx.conversation.enter('buySubscriptionConversation');
+  const { id } = ctx.from;
+  try {
+    const user = await User.findOne({ telegramId: id });
+    if (!user) {
+      await ctx.reply('Пожалуйста, начните с команды /start.');
+      return;
+    }
+
+    if (user.userStage === UserStages.REGISTERED) {
+      user.userStage = UserStages.SUBSCRIBED_TO_CHANNEL;
+      await user.save();
+    }
+    if (user.subscriptionLevel !== SubscriptionLevels.FREE) {
+      await ctx.reply(
+        'Подписка уже оформлена. Чтобы посмотреть лимиты или изменить уровень подписки, воспользуйтесь командой /profile',
+      );
+      return;
+    }
+    if (user.canActivateTrial) {
+      ctx.session.subscriptionLevel = SubscriptionLevels.OPTIMUM_TRIAL;
+    } else {
+      ctx.session.subscriptionLevel = SubscriptionLevels.OPTIMUM;
+    }
+    await ctx.conversation.enter('buySubscriptionConversation');
+  } catch (error) {
+    await ctx.reply(`Произошла ошибка. ${SUPPORT_MESSAGE_POSTFIX}`);
+    logError({
+      message: 'Error in checkChannelJoinAndBuyTrial callback query',
+      error,
+      telegramId: ctx.from?.id,
+      username: ctx.from?.username,
+    });
+  }
 });
-bot.callbackQuery(`${SubscriptionLevels.OPTIMUM_TRIAL}-step5`, startStep5BuyTrial);
+bot.callbackQuery(
+  `${SubscriptionLevels.OPTIMUM_TRIAL}-step5`,
+  startStep5BuyTrial,
+);
 bot.callbackQuery('topup', topup);
 bot.callbackQuery('backToTopup', async (ctx) => {
   await ctx.callbackQuery.message?.delete();
