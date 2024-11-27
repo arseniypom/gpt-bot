@@ -1,7 +1,7 @@
 import { InlineKeyboard, NextFunction } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import User from '../../db/User';
-import { logError } from './utilFunctions';
+import { logError, setUserBlocked } from './utilFunctions';
 import { MyContext } from '../types/types';
 import { isMyContext } from '../types/typeguards';
 import logger from './logger';
@@ -51,6 +51,11 @@ export const checkUserInDB = async (
 
   try {
     const { id } = ctx.from as TelegramUser;
+
+    if (ctx?.update.my_chat_member?.new_chat_member.status === 'kicked') {
+      await setUserBlocked(id);
+      return;
+    }
 
     const isChannelMember = await checkIsChannelMember(id);
 
