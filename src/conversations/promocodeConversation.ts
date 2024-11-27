@@ -60,6 +60,7 @@ export async function promocodeConversation(
           {
             updatedAt: date,
             tokensBalance: user.tokensBalance + promocode.tokenAmount!,
+            usedPromocodes: [...user.usedPromocodes, promocode.code],
           },
         ),
       );

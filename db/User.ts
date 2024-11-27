@@ -41,6 +41,7 @@ export interface IUser {
   proReqsMade: number;
   imgGensMade: number;
   referralProgram: ReferralProgram;
+  usedPromocodes: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -152,6 +153,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
       type: [Number],
       default: [],
     },
+  },
+  usedPromocodes: {
+    type: [String],
+    default: [],
   },
   createdAt: {
     type: Date,
