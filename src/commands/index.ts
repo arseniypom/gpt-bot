@@ -9,6 +9,7 @@ export {
   startStep4,
   startStep5,
   startStep6,
+  checkChannelJoinAndGoToStep6,
   startStep7,
 } from './start';
 export { subscription } from './subscription';

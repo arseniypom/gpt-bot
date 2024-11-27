@@ -32,6 +32,7 @@ import {
   startStep4,
   startStep5,
   startStep6,
+  checkChannelJoinAndGoToStep6,
   startStep7,
   getStats,
   topup,
@@ -123,7 +124,8 @@ bot.callbackQuery('startStep2', startStep2);
 bot.callbackQuery('startStep3', startStep3);
 bot.callbackQuery('startStep4', startStep4);
 bot.callbackQuery('startStep5', startStep5);
-bot.callbackQuery(['startStep6', 'checkChannelJoinAndGoToStep6'], startStep6);
+bot.callbackQuery('startStep6', startStep6);
+bot.callbackQuery('checkChannelJoinAndGoToStep6', checkChannelJoinAndGoToStep6);
 bot.callbackQuery(['startStep7', 'startSkip'], startStep7);
 bot.callbackQuery(Object.keys(AiModelsLabels), settingsChangeModel);
 bot.callbackQuery(['basic', 'dialogue'], settingsChangeChatMode);
@@ -345,12 +347,9 @@ bot.catch(async (err) => {
   let message;
 
   if (e instanceof GrammyError) {
-    if (
-      e.error_code === 403 &&
-      /block/.test(e.description)
-    ) {
+    if (e.error_code === 403 && /block/.test(e.description)) {
       await setUserBlocked(e.payload.chat_id as number);
-      return
+      return;
     }
     message = 'Error in request';
   } else if (e instanceof HttpError) {

@@ -12,7 +12,12 @@ import {
   START_MESSAGE_STEP_7,
   SUPPORT_MESSAGE_POSTFIX,
 } from '../utils/consts';
-import { MyContext, ReferralProgram, SubscriptionLevels } from '../types/types';
+import {
+  MyContext,
+  ReferralProgram,
+  SubscriptionLevels,
+  UserStages,
+} from '../types/types';
 import User from '../../db/User';
 import Chat from '../../db/Chat';
 import {
@@ -223,6 +228,28 @@ export const startStep5 = async (ctx: CallbackQueryContext<MyContext>) => {
 
 export const startStep6 = async (ctx: CallbackQueryContext<MyContext>) => {
   await ctx.answerCallbackQuery();
+  await ctx.replyWithPhoto(new InputFile('src/images/keyboard-help-img.jpg'), {
+    caption: START_MESSAGE_STEP_6,
+    parse_mode: 'MarkdownV2',
+    reply_markup: step6Keyboard,
+  });
+};
+
+export const checkChannelJoinAndGoToStep6 = async (
+  ctx: CallbackQueryContext<MyContext>,
+) => {
+  await ctx.answerCallbackQuery();
+  const { id } = ctx.from;
+  const user = await User.findOne({ telegramId: id });
+  if (!user) {
+    await ctx.reply('Пожалуйста, начните с команды /start.');
+    return;
+  }
+  if (user.userStage === UserStages.REGISTERED) {
+    user.userStage = UserStages.SUBSCRIBED_TO_CHANNEL;
+    await user.save();
+  }
+
   await ctx.replyWithPhoto(new InputFile('src/images/keyboard-help-img.jpg'), {
     caption: START_MESSAGE_STEP_6,
     parse_mode: 'MarkdownV2',
