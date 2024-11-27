@@ -44,6 +44,10 @@ export const COMMANDS = [
     description: '🖼️ Сгенерировать изображение',
   },
   {
+    command: 'promocode',
+    description: '🎁 Ввести промокод',
+  },
+  {
     command: 'help',
     description: 'ℹ️ Информация',
   },

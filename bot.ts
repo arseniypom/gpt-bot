@@ -330,7 +330,7 @@ bot.command('subscription', subscription);
 bot.command('profile', myProfile);
 bot.command('support', support);
 bot.command('settings', settings);
-bot.command('promo', async (ctx) => {
+bot.command('promocode', async (ctx) => {
   await ctx.conversation.enter('promocodeConversation');
 });
 
