@@ -37,13 +37,19 @@ export const checkUserInDB = async (
     'startSkip',
   ];
 
+  const hasUnblockedBot =
+    isMyContext(ctx) &&
+    ctx.update.my_chat_member?.old_chat_member.status === 'kicked' &&
+    ctx.update.my_chat_member?.new_chat_member.status === 'member';
+
   if (
     !isMyContext(ctx) ||
     ctx.hasCommand('start') ||
     ctx.hasCommand('support') ||
     (await ctx.conversation.active())?.supportConversation ||
     ctx.message?.text === BUTTON_LABELS.support ||
-    whiteListCallbackQueries.includes(ctx.callbackQuery?.data || '')
+    whiteListCallbackQueries.includes(ctx.callbackQuery?.data || '') ||
+    hasUnblockedBot
   ) {
     await next();
     return;
