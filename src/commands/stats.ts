@@ -24,9 +24,11 @@ export const getStats = async (ctx: MyContext) => {
     const totalUsers = await User.countDocuments();
 
     const users = await User.find();
+    const blockedUsers = await User.countDocuments({ isBlockedBot: true });
 
-    let message = `📊 Статистика:\n\n`;
-    message += `👥 Всего пользователей: ${totalUsers}\n\n`;
+    let message = `👥 Total users: ${totalUsers}\n`;
+    message += `🚫 Blocked users: ${blockedUsers}\n`;
+    message += `✅ Active users: ${totalUsers - blockedUsers}\n\n`;
 
     for (const user of users) {
       let username;
@@ -46,9 +48,8 @@ export const getStats = async (ctx: MyContext) => {
         const count = await Message.countDocuments({ chatId: chat._id });
         messageCount += count;
       }
-
-      message += `👤 : ${username}\n`;
-      message += `✉️ : ${messageCount}\n\n`;
+      const isBlocked = user.isBlockedBot ? '🚫' : '';
+      message += `👤${isBlocked} ${username} | ${messageCount}\n`;
     }
 
     await ctx.reply(message);
