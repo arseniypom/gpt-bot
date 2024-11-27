@@ -5,7 +5,8 @@ import Promocode from './db/Promocode';
 
 async function addPromocodeToDB() {
   try {
-    await mongoose.connect(process.env.MONGO_DB_URI_DEV!);
+    await mongoose.connect(process.env.MONGO_DB_URI_PROD!);
+    console.log('Mongoose connected');
 
     await Promocode.create({
       code: 'TEST',
@@ -19,6 +20,7 @@ async function addPromocodeToDB() {
     console.error('Error adding promocode:', error);
   } finally {
     await mongoose.disconnect();
+    console.log('Mongoose disconnected');
   }
 }
 
