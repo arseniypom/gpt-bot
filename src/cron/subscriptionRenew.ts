@@ -34,11 +34,6 @@ cron.schedule('0 21 * * *', async () => {
         user.newSubscriptionLevel || user.subscriptionLevel;
       const subscriptionData = SUBSCRIPTIONS[newSubscriptionLevel];
       const subscriptionDuration = subscriptionData.duration;
-      if (!isValidSubscriptionDuration(subscriptionDuration)) {
-        throw new Error(
-          `telegramId: ${user.telegramId} userName: @${user.userName} subscriptionDuration for ${newSubscriptionLevel} is invalid or not set: ${subscriptionDuration}`,
-        );
-      }
 
       const { title, price, description, icon } = subscriptionData;
       const amountObj = {
@@ -66,7 +61,7 @@ cron.schedule('0 21 * * *', async () => {
         await user.save();
         await bot.api.sendMessage(
           user.telegramId,
-          `*Срок действия Вашей подписки закончился, и Вы были переключены на уровень \\"${icon}${SUBSCRIPTIONS.FREE.title}\\"*\n\nБлагодарим за использование нашего бота и надеемся увидеть Вас в числе подписчиков снова\\!`,
+          `*Срок действия Вашей подписки закончился, и Вы были переключены на уровень \\"${icon}${SUBSCRIPTIONS.FREE.title}\\"*\n\nБлагодарим за использование нашего бота\\! Вы можете возобновить подписку в любой момент, воспользовавшись командой\n/subscription, или купить токены 🪙: /profile\\.\n\nP\\.S\\. А ещё можно получить запросы бесплатно через реферальную программу /profile\\!`,
           {
             parse_mode: 'MarkdownV2',
             reply_markup: mainKeyboard,
@@ -78,6 +73,12 @@ cron.schedule('0 21 * * *', async () => {
       if (!user.yookassaPaymentMethodId) {
         throw new Error(
           `yookassaPaymentMethodId is not set: ${user.yookassaPaymentMethodId}`,
+        );
+      }
+
+      if (!isValidSubscriptionDuration(subscriptionDuration)) {
+        throw new Error(
+          `telegramId: ${user.telegramId} userName: @${user.userName} subscriptionDuration for ${newSubscriptionLevel} is invalid or not set: ${subscriptionDuration}`,
         );
       }
 
