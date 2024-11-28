@@ -146,6 +146,7 @@ export const settingsChangeChatMode = async (
     const activeModel = AiModelsLabels[user.selectedModel];
     user.chatMode = chatMode;
     await user.save();
+    ctx.session.isNotifiedAboutChatMode = false;
 
     if (chatMode === 'dialogue') {
       const chat = await Chat.create({

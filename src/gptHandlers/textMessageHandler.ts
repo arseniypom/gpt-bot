@@ -1,4 +1,9 @@
-import { MyContext, SubscriptionLevels, UserStages } from '../types/types';
+import {
+  ChatModeLabel,
+  MyContext,
+  SubscriptionLevels,
+  UserStages,
+} from '../types/types';
 import { User as TelegramUser } from '@grammyjs/types';
 import { AiModels } from '../types/types';
 import User from '../../db/User';
@@ -37,14 +42,28 @@ export const handleTextMessage = async (ctx: MyContext) => {
       return;
     }
 
-    const responseMessage = await ctx.reply('Загрузка...');
     const user = await User.findOne({ telegramId });
     if (!user) {
-      await responseMessage.editText(
-        'Пожалуйста, начните новый чат с помощью команды /start',
-      );
+      await ctx.reply('Пожалуйста, начните новый чат с помощью команды /start');
       return;
     }
+
+    if (!ctx.session.isNotifiedAboutChatMode) {
+      const chatModeLabel = ChatModeLabel[user.chatMode];
+      const description =
+        user.chatMode === 'basic'
+          ? 'Бот не запоминает историю чата'
+          : 'Бот запоминает историю чата и может вести диалог';
+      await ctx.reply(
+        `*Режим чата: ${chatModeLabel}*\n_→ ${description}_\nСменить режим: /settings`,
+        {
+          parse_mode: 'MarkdownV2',
+        },
+      );
+      ctx.session.isNotifiedAboutChatMode = true;
+    }
+
+    const responseMessage = await ctx.reply('⏳ Загрузка...');
 
     if (!chatId) {
       const latestChat = await Chat.findOne({ userId: user._id }).sort({

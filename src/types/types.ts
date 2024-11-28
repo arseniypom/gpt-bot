@@ -12,6 +12,7 @@ export interface SessionData {
   packageName?: TokenPackageName;
   subscriptionLevel?: Exclude<SubscriptionLevel, 'FREE'>;
   user?: Pick<IUser, 'telegramId' | 'firstName' | 'userName'>;
+  isNotifiedAboutChatMode?: boolean;
 }
 
 export type MyContext = HydrateFlavor<
@@ -25,6 +26,11 @@ export interface ChatMessage {
 }
 
 export type ChatMode = 'basic' | 'dialogue';
+
+export enum ChatModeLabel {
+  basic = 'Обычный',
+  dialogue = 'Диалог',
+}
 
 export enum AiModels {
   GPT_4O_MINI = 'gpt-4o-mini-2024-07-18',

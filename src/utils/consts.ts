@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { IUser } from '../../db/User';
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
-import { AiModel, AiModelsLabels, ChatMode } from '../types/types';
+import { AiModel, AiModelsLabels, ChatMode, ChatModeLabel } from '../types/types';
 import { TOKEN_PACKAGES } from '../bot-token-packages';
 import { getBotUrl, getChannelTelegramName } from './utilFunctions';
 
@@ -95,7 +95,7 @@ export const PROMPT_MESSAGE_BASE = `
 4. Вежливыми – всегда обращайся на Вы.
 
 ### Основные функции:
-Ты можешь:
+Ты умеешь много всего, например:
 - Перевести текст на любой язык
 - Написать пост, статью, письмо или краткое изложение
 - Решить учебные задачи и предоставить обучающие материалы
@@ -448,7 +448,7 @@ export const getSettingsMessage = (
   const modelLabel = activeModel.replace(/-/g, '\\-');
   return `
 *Текущие настройки ⚙️*
-→ Режим: ${chatMode === 'basic' ? 'Обычный' : 'Диалог'}
+→ Режим: ${ChatModeLabel[chatMode]}
 → Модель: ${modelLabel} ${
     activeModel === AiModelsLabels.GPT_4O_MINI
       ? '\\(Базовые запросы\\)'
