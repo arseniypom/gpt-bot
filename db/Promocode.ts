@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const promocodeSchema = new mongoose.Schema({
-  code: { type: String, unique: true },
+  code: { type: String, unique: true, required: true },
   validUntil: { type: Date },
   timesUsed: { type: Number, default: 0 },
   timesUsedLimit: { type: Number },

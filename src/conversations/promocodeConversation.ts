@@ -51,6 +51,10 @@ export async function promocodeConversation(
       await ctx.reply('Пожалуйста, начните новый чат с помощью команды /start');
       return;
     }
+    if (user.usedPromocodes.includes(promocode.code)) {
+      await ctx.reply('Промокод уже применен 🚫');
+      return;
+    }
 
     const date = await conversation.external(() => new Date());
     if (promocode.tokenAmount) {
