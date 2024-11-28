@@ -96,6 +96,10 @@ export async function imageConversation(
             updatedAt: date,
             imageGenerationLeftThisMonth:
               user!.imageGenerationLeftThisMonth - 1,
+            stats: {
+              ...user!.stats,
+              imgGensMade: user!.stats.imgGensMade + 1,
+            },
           },
         ),
       );
@@ -106,6 +110,10 @@ export async function imageConversation(
           {
             updatedAt: date,
             tokensBalance: user!.tokensBalance - IMAGE_GENERATION_COST,
+            stats: {
+              ...user!.stats,
+              imgGensMade: user!.stats.imgGensMade + 1,
+            },
           },
         ),
       );
