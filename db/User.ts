@@ -10,6 +10,7 @@ import {
   UserStage,
   UserStages,
   ReferralProgram,
+  UserStats,
 } from '../src/types/types';
 import { SUBSCRIPTIONS } from '../src/bot-subscriptions';
 import dayjs from 'dayjs';
@@ -37,6 +38,7 @@ export interface IUser {
   tokensBalance: number;
   userStage: UserStage;
   isBlockedBot: boolean;
+  stats: UserStats;
   basicReqsMade: number;
   proReqsMade: number;
   imgGensMade: number;
@@ -131,6 +133,14 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   isBlockedBot: {
     type: Boolean,
     default: false,
+  },
+  stats: {
+    type: Object,
+    default: {
+      basicReqsMade: 0,
+      proReqsMade: 0,
+      imgGensMade: 0,
+    },
   },
   basicReqsMade: {
     type: Number,
