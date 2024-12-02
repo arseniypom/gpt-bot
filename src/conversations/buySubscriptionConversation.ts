@@ -12,6 +12,7 @@ import {
   YOOKASSA_PAYMENT_MESSAGE_SUBSCRIPTION_POSTFIX,
 } from '../utils/consts';
 import { isValidSubscriptionDuration } from '../types/typeguards';
+import User from '../../db/User';
 
 const cancelKeyboard = new InlineKeyboard()
   .text('← Назад', 'backToSubscriptions')
@@ -58,6 +59,16 @@ export async function buySubscriptionConversation(
       isEmailValid = true;
     }
   } while (!isEmailValid);
+
+  const user = await conversation.external(() =>
+    User.findOne({ telegramId: id }),
+  );
+  if (!user) {
+    await ctx.reply('Пожалуйста, начните новый чат с помощью команды /start');
+    return;
+  }
+  user.email = email;
+  await user.save();
 
   // Creating payment
   try {

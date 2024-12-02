@@ -1,8 +1,9 @@
 import cron from 'node-cron';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
+import { Document, Types } from 'mongoose';
 import bot from '../../bot';
-import User from '../../db/User';
+import User, { IUser } from '../../db/User';
 import { logError, setUserBlocked } from '../utils/utilFunctions';
 import { SubscriptionLevels } from '../types/types';
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
@@ -42,23 +43,8 @@ cron.schedule('0 21 * * *', async () => {
       };
 
       if (newSubscriptionLevel === SubscriptionLevels.FREE) {
-        user.subscriptionLevel = SubscriptionLevels.FREE;
-        user.subscriptionExpiry = null;
-        if (SUBSCRIPTIONS.FREE.basicRequestsPerWeek) {
-          user.basicRequestsLeftThisWeek =
-            SUBSCRIPTIONS.FREE.basicRequestsPerWeek;
-          user.weeklyRequestsExpiry = dayjs().add(7, 'day').toDate();
-        }
-        user.basicRequestsLeftToday = 0;
-        user.proRequestsLeftThisMonth = 0;
-        user.imageGenerationLeftThisMonth = 0;
-        user.yookassaPaymentMethodId = null;
-
-        user.subscriptionDuration = null;
-        user.newSubscriptionLevel = null;
-        user.lastUnsubscribeDate = new Date();
-        user.updatedAt = new Date();
-        await user.save();
+        const downgradedUser = await downgradeSubscription(user);
+        await downgradedUser.save();
         await bot.api.sendMessage(
           user.telegramId,
           `*Срок действия Вашей подписки закончился, и Вы были переключены на уровень \\"${icon}${SUBSCRIPTIONS.FREE.title}\\"*\n\nБлагодарим за использование нашего бота\\! Вы можете возобновить подписку в любой момент, воспользовавшись командой\n/subscription, или купить токены 🪙: /profile\\.\n\nP\\.S\\. А ещё можно получить запросы бесплатно через реферальную программу /profile\\!`,
@@ -82,12 +68,31 @@ cron.schedule('0 21 * * *', async () => {
         );
       }
 
+      if (!user.email) {
+        throw new Error(
+          `telegramId: ${user.telegramId} userName: @${user.userName} email is not set`,
+        );
+      }
+
       try {
         const createPayload: ICreatePayment = {
           amount: amountObj,
           capture: true,
           payment_method_id: user.yookassaPaymentMethodId,
           description,
+          receipt: {
+            customer: {
+              email: user.email,
+            },
+            items: [
+              {
+                description: subscriptionData.description,
+                quantity: 1,
+                amount: amountObj,
+                vat_code: 1,
+              },
+            ],
+          },
         };
 
         const idempotenceKey = uuidv4();
@@ -197,6 +202,8 @@ cron.schedule('0 21 * * *', async () => {
             break;
         }
       } catch (error) {
+        const downgradedUser = await downgradeSubscription(user);
+        await downgradedUser.save();
         await bot.api.sendMessage(
           user.telegramId,
           `Не смогли продлить вашу подписку 🙁\n\nПожалуйста, проверьте платежные данные ипопробуйте оформить её ещё раз /subscription или обратитесь в поддержку /support`,
@@ -220,7 +227,7 @@ cron.schedule('0 21 * * *', async () => {
       /block/.test(error.description)
     ) {
       await setUserBlocked(error.payload.chat_id as number);
-      return
+      return;
     }
     logError({
       message: 'Error in subscription expiry check cron job',
@@ -228,3 +235,30 @@ cron.schedule('0 21 * * *', async () => {
     });
   }
 });
+
+const downgradeSubscription = async (
+  user: Document<unknown, {}, IUser> &
+    IUser & {
+      _id: Types.ObjectId;
+    } & {
+      __v?: number;
+    },
+) => {
+  user.subscriptionLevel = SubscriptionLevels.FREE;
+  user.subscriptionExpiry = null;
+  if (SUBSCRIPTIONS.FREE.basicRequestsPerWeek) {
+    user.basicRequestsLeftThisWeek = SUBSCRIPTIONS.FREE.basicRequestsPerWeek;
+    user.weeklyRequestsExpiry = dayjs().add(7, 'day').toDate();
+  }
+  user.basicRequestsLeftToday = 0;
+  user.proRequestsLeftThisMonth = 0;
+  user.imageGenerationLeftThisMonth = 0;
+  user.yookassaPaymentMethodId = null;
+
+  user.subscriptionDuration = null;
+  user.newSubscriptionLevel = null;
+  user.lastUnsubscribeDate = new Date();
+  user.updatedAt = new Date();
+
+  return user;
+};
