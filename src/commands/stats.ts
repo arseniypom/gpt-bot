@@ -22,15 +22,17 @@ export const getStats = async (ctx: MyContext) => {
   }
   try {
     const totalUsers = await User.countDocuments();
-
-    const users = await User.find();
     const blockedUsers = await User.countDocuments({ isBlockedBot: true });
+    const paidUsers = await User.countDocuments({ subscriptionLevel: { $ne: 'FREE' } });
 
     let message = `👥 Total users: ${totalUsers}\n`;
-    message += `🚫 Blocked users: ${blockedUsers}\n`;
-    message += `✅ Active users: ${totalUsers - blockedUsers}\n\n`;
+    message += `💸: ${paidUsers}\n`;
+    message += `✅: ${totalUsers - blockedUsers}\n`;
+    message += `🚫: ${blockedUsers}\n\n`;
 
-    for (const user of users) {
+    const lastFiveUsers = await User.find().sort({ createdAt: -1 }).limit(5);
+
+    for (const user of lastFiveUsers) {
       let username;
       if (user.userName) {
         username = `@${user.userName}`;
@@ -43,7 +45,6 @@ export const getStats = async (ctx: MyContext) => {
       const chats = await Chat.find({ userId: user._id });
 
       let messageCount = 0;
-
       for (const chat of chats) {
         const count = await Message.countDocuments({ chatId: chat._id });
         messageCount += count;
