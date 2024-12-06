@@ -40,6 +40,7 @@ export interface IUser {
   isBlockedBot: boolean;
   stats: UserStats;
   referralProgram: ReferralProgram;
+  adCampaignCode: string | null;
   usedPromocodes: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -148,6 +149,9 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
       type: [Number],
       default: [],
     },
+  },
+  adCampaignCode: {
+    type: String,
   },
   usedPromocodes: {
     type: [String],

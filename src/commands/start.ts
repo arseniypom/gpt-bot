@@ -20,6 +20,7 @@ import {
 } from '../types/types';
 import User from '../../db/User';
 import Chat from '../../db/Chat';
+import AdCampaign from '../../db/AdCampaign';
 import {
   CallbackQueryContext,
   InlineKeyboard,
@@ -129,7 +130,8 @@ export const startStep1 = async (ctx: MyContext) => {
   }
 
   const { id, first_name, username } = ctx.from as TelegramUser;
-  const referrerPrefix = ctx.message?.text?.split(' ')[1];
+  const prefix = ctx.message?.text?.split(' ')[1];
+  const prefixType = prefix?.split('_')[0];
 
   try {
     let user = await User.findOne({ telegramId: id });
@@ -138,8 +140,8 @@ export const startStep1 = async (ctx: MyContext) => {
         invitedBy: null,
         invitedUserIds: [],
       };
-      if (referrerPrefix) {
-        const referrerId = Number(referrerPrefix.split('_')[1]);
+      if (prefix && prefixType === 'ref') {
+        const referrerId = Number(prefix.split('_')[1]);
         const referrerUser = await User.findOne({ telegramId: referrerId });
         if (
           referrerUser &&
@@ -152,12 +154,23 @@ export const startStep1 = async (ctx: MyContext) => {
 
         referralProgramData.invitedBy = referrerId;
       }
+      let adCampaignCode = null;
+      if (prefix && prefixType === 'ad') {
+        adCampaignCode = prefix.split('_')[1];
+        const adCampaign = await AdCampaign.findOne({ adCode: adCampaignCode });
+        if (adCampaign) {
+          adCampaign.stats.registeredUsers += 1;
+          await adCampaign.save();
+        }
+      }
+
       user = await User.create({
         telegramId: id,
         firstName: first_name,
         userName: username,
         tokensBalance: referralProgramData.invitedBy ? 12 : 0,
         referralProgram: referralProgramData,
+        adCampaignCode,
       });
 
       const chat = await Chat.create({

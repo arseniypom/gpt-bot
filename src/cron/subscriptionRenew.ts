@@ -13,6 +13,7 @@ import SubscriptionTransaction from '../../db/SubscriptionTransaction';
 import { mainKeyboard } from '../commands/start';
 import { isValidSubscriptionDuration } from '../types/typeguards';
 import { GrammyError } from 'grammy';
+import AdCampaign from '../../db/AdCampaign';
 
 // Schedule the task to run every day at 21:00 UTC
 cron.schedule('0 21 * * *', async () => {
@@ -123,7 +124,16 @@ cron.schedule('0 21 * * *', async () => {
                 .add(subscriptionDuration.months, 'month')
                 .toDate();
             }
-
+            // Check if user has ad campaign code and update its stats
+            if (user.adCampaignCode) {
+              const adCampaign = await AdCampaign.findOne({
+                adCode: user.adCampaignCode,
+              });
+              if (adCampaign) {
+                adCampaign.stats.subsBought += 1;
+                await adCampaign.save();
+              }
+            }
             if (subscriptionData.basicRequestsPerDay) {
               user.basicRequestsLeftToday =
                 subscriptionData.basicRequestsPerDay || 0;

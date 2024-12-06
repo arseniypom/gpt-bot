@@ -9,7 +9,8 @@
     "start:local": "nodemon --exec ts-node bot.ts",
     "start:dev": "NODE_ENV=development node dist/bot.js",
     "start:prod": "NODE_ENV=production node dist/bot.js",
-    "add-promo": "ts-node add-promo-base.ts"
+    "add-promo": "ts-node add-promo-base.ts",
+    "add-campaign": "ts-node add-ad-campaign-base.ts"
   },
   "author": "",
   "license": "ISC",
