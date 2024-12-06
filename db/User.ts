@@ -39,9 +39,6 @@ export interface IUser {
   userStage: UserStage;
   isBlockedBot: boolean;
   stats: UserStats;
-  basicReqsMade: number;
-  proReqsMade: number;
-  imgGensMade: number;
   referralProgram: ReferralProgram;
   usedPromocodes: string[];
   createdAt: Date;
@@ -141,18 +138,6 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
       proReqsMade: 0,
       imgGensMade: 0,
     },
-  },
-  basicReqsMade: {
-    type: Number,
-    default: 0,
-  },
-  proReqsMade: {
-    type: Number,
-    default: 0,
-  },
-  imgGensMade: {
-    type: Number,
-    default: 0,
   },
   referralProgram: {
     invitedBy: {
