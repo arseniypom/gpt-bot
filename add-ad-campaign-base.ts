@@ -8,8 +8,8 @@ async function addAdCampaignToDB() {
     console.log('Mongoose connected');
 
     await AdCampaign.create({
-      source: 'https://t.me/real_education_family',
-      adCode: '1',
+      source: 'https://t.me/test',
+      adCode: '000',
     });
 
     console.log('Ad campaign added successfully');

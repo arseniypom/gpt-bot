@@ -156,10 +156,12 @@ export const startStep1 = async (ctx: MyContext) => {
       }
       let adCampaignCode = null;
       if (prefix && prefixType === 'ad') {
-        adCampaignCode = prefix.split('_')[1];
-        const adCampaign = await AdCampaign.findOne({ adCode: adCampaignCode });
+        const code = prefix.split('_')[1];
+        
+        const adCampaign = await AdCampaign.findOne({ adCode: code });
         if (adCampaign) {
           adCampaign.stats.registeredUsers += 1;
+          adCampaignCode = code;
           await adCampaign.save();
         }
       }
