@@ -7,9 +7,13 @@ async function addAdCampaignToDB() {
     await mongoose.connect(process.env.MONGO_DB_URI_DEV!);
     console.log('Mongoose connected');
 
+    const code = '01';
+
     await AdCampaign.create({
-      source: 'https://t.me/test',
-      adCode: '000',
+      name: 'Miro',
+      source: 'https://...',
+      adCode: code,
+      link: `${process.env.BOT_URL_DEV}?start=ad_${code}`,
     });
 
     console.log('Ad campaign added successfully');
@@ -22,4 +26,3 @@ async function addAdCampaignToDB() {
 }
 
 addAdCampaignToDB();
-
