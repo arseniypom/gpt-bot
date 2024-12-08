@@ -5,6 +5,7 @@ import Chat from '../../db/Chat';
 import Message from '../../db/Message';
 import logger from '../utils/logger';
 import { logError } from '../utils/utilFunctions';
+import AdCampaign from '../../db/AdCampaign';
 
 const ADMIN_TELEGRAM_ID = process.env.ADMIN_TELEGRAM_ID;
 
@@ -23,12 +24,14 @@ export const getStats = async (ctx: MyContext) => {
   try {
     const totalUsers = await User.countDocuments();
     const blockedUsers = await User.countDocuments({ isBlockedBot: true });
-    const paidUsers = await User.countDocuments({ subscriptionLevel: { $ne: 'FREE' } });
+    const paidUsers = await User.countDocuments({
+      subscriptionLevel: { $ne: 'FREE' },
+    });
 
     let message = `👥 Total users: ${totalUsers}\n`;
-    message += `💸: ${paidUsers}\n`;
-    message += `✅: ${totalUsers - blockedUsers}\n`;
-    message += `🚫: ${blockedUsers}\n\n`;
+    message += `💸: ${paidUsers} | ✅: ${
+      totalUsers - blockedUsers
+    } | 🚫: ${blockedUsers}\n\n`;
 
     const lastFiveUsers = await User.find().sort({ createdAt: -1 }).limit(5);
 
@@ -53,11 +56,16 @@ export const getStats = async (ctx: MyContext) => {
       message += `👤${isBlocked} ${username} | ${messageCount}\n`;
     }
 
+    const adCampaigns = await AdCampaign.find();
+    message += `\n📊 Ad Campaigns:\n`;
+    for (const campaign of adCampaigns) {
+      message += `📢 ${campaign.name}:\n`;
+      message += `  - Reg: ${campaign.stats.registeredUsers} | Tok: ${campaign.stats.tokensBought} | Trial: ${campaign.stats.trialsBought} | Sub: ${campaign.stats.subsBought}\n`;
+    }
+
     await ctx.reply(message, {
       reply_markup: {
-        inline_keyboard: [
-          [{ text: '✖︎', callback_data: 'hide' }],
-        ],
+        inline_keyboard: [[{ text: '✖︎', callback_data: 'hide' }]],
       },
     });
   } catch (error) {
