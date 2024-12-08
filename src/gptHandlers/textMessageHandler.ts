@@ -207,6 +207,7 @@ export const handleTextMessage = async (ctx: MyContext) => {
       }
       user.stats.basicReqsMade += 1;
     }
+    user.markModified('stats');
     // if (
     //   user.subscriptionLevel === 'FREE' &&
     //   user.userStage === UserStages.SUBSCRIBED_TO_CHANNEL
