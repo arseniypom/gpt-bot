@@ -64,36 +64,41 @@ export const checkUserInDB = async (
       return;
     }
 
-    const isChannelMember = await checkIsChannelMember(id);
+    // Temporary disable channel check
+    // const isChannelMember = await checkIsChannelMember(id);
 
-    if (isChannelMember) {
-      await next();
-      return;
-    }
+    // if (isChannelMember) {
+    //   await next();
+    //   return;
+    // }
 
-    if (
-      ctx.callbackQuery?.data === 'checkChannelJoin' ||
-      ctx.callbackQuery?.data === 'checkChannelJoinAndGoToStep6' ||
-      ctx.callbackQuery?.data === 'checkChannelJoinAndBuyTrial'
-    ) {
-      await ctx.answerCallbackQuery({
-        text: 'Не нашли Вас в числе подписчиков 🤔 Пожалуйста, подпишитесь и нажмите на кнопку снова',
-        show_alert: true,
-      });
-      return;
-    }
-    if (ctx.callbackQuery) {
-      await ctx.answerCallbackQuery();
-    }
-
-    await ctx.reply(
-      `Чтобы пользоваться ботом, Вам необходимо подписаться на канал [Кухня ИИ](https://t.me/${channelTelegramName}) 🔗\n\n_🔐 Это сделано для защиты от спама и вредоносных ботов, чтобы обеспечить пользователям комфортный бесперебойный доступ к ChatGPT_\\.\n\nПожалуйста, подпишитесь и нажмите на кнопку "✅ Я подписался\\(лась\\) на канал"`,
-      {
-        parse_mode: 'MarkdownV2',
-        reply_markup: subscribeToChannelKeyboard,
-      },
-    );
+    await next();
     return;
+
+
+    // if (
+    //   ctx.callbackQuery?.data === 'checkChannelJoin' ||
+    //   ctx.callbackQuery?.data === 'checkChannelJoinAndGoToStep6' ||
+    //   ctx.callbackQuery?.data === 'checkChannelJoinAndBuyTrial'
+    // ) {
+    //   await ctx.answerCallbackQuery({
+    //     text: 'Не нашли Вас в числе подписчиков 🤔 Пожалуйста, подпишитесь и нажмите на кнопку снова',
+    //     show_alert: true,
+    //   });
+    //   return;
+    // }
+    // if (ctx.callbackQuery) {
+    //   await ctx.answerCallbackQuery();
+    // }
+
+    // await ctx.reply(
+    //   `Чтобы пользоваться ботом, Вам необходимо подписаться на канал [Кухня ИИ](https://t.me/${channelTelegramName}) 🔗\n\n_🔐 Это сделано для защиты от спама и вредоносных ботов, чтобы обеспечить пользователям комфортный бесперебойный доступ к ChatGPT_\\.\n\nПожалуйста, подпишитесь и нажмите на кнопку "✅ Я подписался\\(лась\\) на канал"`,
+    //   {
+    //     parse_mode: 'MarkdownV2',
+    //     reply_markup: subscribeToChannelKeyboard,
+    //   },
+    // );
+    // return;
   } catch (error) {
     logError({
       message: 'Middleware: Error checking user channel membership',
