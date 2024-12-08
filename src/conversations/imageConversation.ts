@@ -2,7 +2,11 @@ import { InlineKeyboard } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import { generateImage } from '../utils/gpt';
 import { logError } from '../utils/utilFunctions';
-import { type MyConversation, type MyContext, SubscriptionLevels } from '../types/types';
+import {
+  type MyConversation,
+  type MyContext,
+  SubscriptionLevels,
+} from '../types/types';
 import User from '../../db/User';
 import {
   BUTTON_LABELS,
@@ -119,6 +123,16 @@ export async function imageConversation(
       );
     }
   } catch (error) {
+    if (
+      (error as any).status === 400 &&
+      (error as any).code === 'content_policy_violation'
+    ) {
+      console.log('safety');
+      await ctx.reply(
+        `❌ Система безопасности DALL-E отклонила Ваш запрос. Скорее всего, текст содержал ненормативную лексику, описание жестокости или иных недопустимых материалов. Если Вы считаете, что это ошибка, напишите в поддержку /support, прикрепив текст запроса.`,
+      );
+      return;
+    }
     await ctx.reply(
       `Произошла ошибка при генерации изображения. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
