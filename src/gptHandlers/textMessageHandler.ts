@@ -207,9 +207,17 @@ export const handleTextMessage = async (ctx: MyContext) => {
       }
       user.stats.basicReqsMade += 1;
     }
+    // if (
+    //   user.subscriptionLevel === 'FREE' &&
+    //   user.userStage === UserStages.SUBSCRIBED_TO_CHANNEL
+    // ) {
+    //   user.userStage = UserStages.USED_FREE_REQUESTS;
+    // }
+    // Temporary disable channel check
     if (
-      user.subscriptionLevel === 'FREE' &&
-      user.userStage === UserStages.SUBSCRIBED_TO_CHANNEL
+      user.subscriptionLevel === SubscriptionLevels.FREE &&
+      (user.userStage === UserStages.REGISTERED ||
+        user.userStage === UserStages.SUBSCRIBED_TO_CHANNEL)
     ) {
       user.userStage = UserStages.USED_FREE_REQUESTS;
     }
