@@ -30,7 +30,7 @@ cron.schedule('0 22 * * *', async () => {
             subscriptionData.basicRequestsPerDay || 0;
         }
         if (subscriptionData.basicRequestsPerWeek) {
-          if (dayjs().isSame(user.weeklyRequestsExpiry, 'day')) {
+          if (dayjs().isSame(user.weeklyRequestsExpiry, 'day') || dayjs().isAfter(user.weeklyRequestsExpiry, 'day')) {
             user.basicRequestsLeftThisWeek =
               subscriptionData.basicRequestsPerWeek;
             user.weeklyRequestsExpiry = dayjs().add(7, 'day').toDate();
