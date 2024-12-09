@@ -4,16 +4,24 @@ import AdCampaign from './db/AdCampaign';
 
 async function addAdCampaignToDB() {
   try {
-    await mongoose.connect(process.env.MONGO_DB_URI_DEV!);
+    const mode = 'dev';
+
+    await mongoose.connect(
+      mode === 'dev'
+        ? process.env.MONGO_DB_URI_DEV!
+        : process.env.MONGO_DB_URI_PROD!,
+    );
     console.log('Mongoose connected');
 
     const code = '01';
 
     await AdCampaign.create({
-      name: 'Miro',
+      name: 'Test',
       source: 'https://...',
       adCode: code,
-      link: `${process.env.BOT_URL_DEV}?start=ad_${code}`,
+      link: `${
+        mode === 'dev' ? process.env.BOT_URL_DEV : process.env.BOT_URL_PROD
+      }?start=ad_${code}`,
     });
 
     console.log('Ad campaign added successfully');
