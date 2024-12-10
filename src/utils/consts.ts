@@ -29,11 +29,7 @@ export const COMMANDS = [
   },
   {
     command: 'profile',
-    description: '👤 Профиль и подписка',
-  },
-  {
-    command: 'balance',
-    description: '🪙 Баланс и покупка токенов',
+    description: '👤 Профиль и баланс',
   },
   {
     command: 'settings',
