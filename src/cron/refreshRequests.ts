@@ -11,7 +11,7 @@ const BATCH_SIZE = 100;
 const BATCH_DELAY_MS = 1000;
 
 // Schedule the task to run every day at 22:00 UTC
-cron.schedule('00 12 * * *', async () => {
+cron.schedule('07 12 * * *', async () => {
   console.log('Current time:', dayjs().format('HH:mm'));
   console.log('running refresh requests cron job');
 
@@ -57,6 +57,13 @@ cron.schedule('00 12 * * *', async () => {
                 /block/.test(error.description)
               ) {
                 await setUserBlocked(error.payload.chat_id as number);
+              } else {
+                logError({
+                  message: 'Failed to send message to user',
+                  error,
+                  telegramId: user.telegramId,
+                  username: user.userName,
+                });
               }
             }
 

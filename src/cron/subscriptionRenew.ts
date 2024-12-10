@@ -214,14 +214,24 @@ cron.schedule('0 21 * * *', async () => {
       } catch (error) {
         const downgradedUser = await downgradeSubscription(user);
         await downgradedUser.save();
-        await bot.api.sendMessage(
-          user.telegramId,
-          `Не смогли продлить вашу подписку 🙁\n\nПожалуйста, проверьте платежные данные ипопробуйте оформить её ещё раз /subscription или обратитесь в поддержку /support`,
-          {
-            parse_mode: 'MarkdownV2',
-            reply_markup: mainKeyboard,
-          },
-        );
+        try {
+          await bot.api.sendMessage(
+            user.telegramId,
+            `Не смогли продлить вашу подписку 🙁\n\nПожалуйста, проверьте платежные данные ипопробуйте оформить её ещё раз /subscription или обратитесь в поддержку /support`,
+            {
+              parse_mode: 'MarkdownV2',
+              reply_markup: mainKeyboard,
+            },
+          );
+        } catch (error) {
+          if (
+            error instanceof GrammyError &&
+            error.error_code === 403 &&
+            /block/.test(error.description)
+          ) {
+            await setUserBlocked(error.payload.chat_id as number);
+          }
+        }
         logError({
           message: 'Failed to renew subscription',
           error,
@@ -231,14 +241,6 @@ cron.schedule('0 21 * * *', async () => {
       }
     }
   } catch (error) {
-    if (
-      error instanceof GrammyError &&
-      error.error_code === 403 &&
-      /block/.test(error.description)
-    ) {
-      await setUserBlocked(error.payload.chat_id as number);
-      return;
-    }
     logError({
       message: 'Error in subscription expiry check cron job',
       error,
