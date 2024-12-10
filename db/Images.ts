@@ -4,6 +4,7 @@ const imagesSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   image: { type: String },
   prompt: { type: String, required: true },
+  revisedPrompt: { type: String },
   createdAt: {
     type: Date,
     default: () => Date.now(),

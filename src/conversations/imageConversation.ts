@@ -82,9 +82,9 @@ export async function imageConversation(
     const user = await conversation.external(() =>
       User.findOne({ telegramId: id }),
     );
-    let imageUrl;
+    let imageData;
     try {
-      imageUrl = await generateImage(
+      imageData = await generateImage(
         message.text,
         conversation.session.imageQuality,
       );
@@ -106,15 +106,12 @@ export async function imageConversation(
       }
       throw error;
     }
-    if (!imageUrl) {
+    if (!imageData.url) {
       throw new Error('Image generation failed: no image URL');
     }
-    const urlKeyboard = new InlineKeyboard().url(
-      'Картинка в полном разрешении',
-      imageUrl,
-    );
-    await ctx.replyWithPhoto(imageUrl, {
-      reply_markup: urlKeyboard,
+    await ctx.replyWithPhoto(imageData.url);
+    await ctx.replyWithDocument(imageData.url, {
+      caption: 'Изображение без сжатия (максимальное разрешение) 📎',
     });
     await responseMessage.editText('Готово!');
 
@@ -154,7 +151,7 @@ export async function imageConversation(
       Images.create({
         userId: user!._id,
         prompt: message.text,
-        image: imageUrl,
+        revisedPrompt: imageData.revisedPrompt,
       }),
     );
   } catch (error) {
