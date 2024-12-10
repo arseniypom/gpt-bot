@@ -15,6 +15,7 @@ import {
   SUPPORT_MESSAGE_POSTFIX,
 } from '../utils/consts';
 import { getTopupAndManageSubscriptionKeyboard } from '../commands/topup';
+import Images from '../../db/Images';
 
 const cancelKeyboard = new InlineKeyboard().text(
   '❌ Отменить',
@@ -78,19 +79,45 @@ export async function imageConversation(
 
     const responseMessage = await ctx.reply('Генерация изображения...');
 
-    const imageUrl = await generateImage(
-      message.text,
-      conversation.session.imageQuality,
-    );
-    if (!imageUrl) {
-      throw new Error('Image generation failed: no image URL');
-    }
-    await ctx.replyWithPhoto(imageUrl);
-    await responseMessage.editText('Готово!');
-
     const user = await conversation.external(() =>
       User.findOne({ telegramId: id }),
     );
+    let imageUrl;
+    try {
+      imageUrl = await generateImage(
+        message.text,
+        conversation.session.imageQuality,
+      );
+    } catch (error) {
+      if (
+        (error as any).status === 400 &&
+        (error as any).code === 'content_policy_violation'
+      ) {
+        await responseMessage.editText(
+          '❌ Система безопасности DALL-E отклонила Ваш запрос. Скорее всего, текст содержал ненормативную лексику, описание жестокости или иных недопустимых материалов. Если Вы считаете, что это ошибка, напишите в поддержку /support, прикрепив текст запроса.',
+        );
+        await conversation.external(() =>
+          Images.create({
+            userId: user!._id,
+            prompt: message.text,
+          }),
+        );
+        return;
+      }
+      throw error;
+    }
+    if (!imageUrl) {
+      throw new Error('Image generation failed: no image URL');
+    }
+    const urlKeyboard = new InlineKeyboard().url(
+      'Картинка в полном разрешении',
+      imageUrl,
+    );
+    await ctx.replyWithPhoto(imageUrl, {
+      reply_markup: urlKeyboard,
+    });
+    await responseMessage.editText('Готово!');
+
     const date = await conversation.external(() => new Date());
     if (user!.imageGenerationLeftThisMonth > 0) {
       await conversation.external(() =>
@@ -122,17 +149,15 @@ export async function imageConversation(
         ),
       );
     }
+
+    await conversation.external(() =>
+      Images.create({
+        userId: user!._id,
+        prompt: message.text,
+        image: imageUrl,
+      }),
+    );
   } catch (error) {
-    if (
-      (error as any).status === 400 &&
-      (error as any).code === 'content_policy_violation'
-    ) {
-      console.log('safety');
-      await ctx.reply(
-        `❌ Система безопасности DALL-E отклонила Ваш запрос. Скорее всего, текст содержал ненормативную лексику, описание жестокости или иных недопустимых материалов. Если Вы считаете, что это ошибка, напишите в поддержку /support, прикрепив текст запроса.`,
-      );
-      return;
-    }
     await ctx.reply(
       `Произошла ошибка при генерации изображения. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
