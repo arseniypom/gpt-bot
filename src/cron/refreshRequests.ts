@@ -11,7 +11,7 @@ const BATCH_SIZE = 100;
 const BATCH_DELAY_MS = 1000;
 
 // Schedule the task to run every day at 22:00 UTC
-cron.schedule('30 09 * * *', async () => {
+cron.schedule('17 13 * * *', async () => {
   console.log('Current time:', dayjs().format('HH:mm'));
   console.log('running refresh requests cron job');
 
@@ -21,25 +21,31 @@ cron.schedule('30 09 * * *', async () => {
     console.log('totalUsers', totalUsers);
 
     let processedUsers = 0;
+    let usersUpdated = 0;
+    let basicRequestsPerDayUpdated = 0;
+    let basicRequestsPerWeekUpdated = 0;
 
     while (processedUsers < totalUsers) {
+      console.log('processedUsers', processedUsers);
+      console.log('-------------------------');
+
       const batch = users.slice(processedUsers, processedUsers + BATCH_SIZE);
-      let usersUpdated = 0;
+      console.log('batch.length', batch.length);
+      console.log('-------------------------');
 
       for (const user of batch) {
         const subscriptionData = SUBSCRIPTIONS[user.subscriptionLevel];
+        if (processedUsers % 100 === 0) {
+          console.log('processedUsers % 100 === 0', processedUsers);
+          console.log('-------------------------');
+        }
         if (subscriptionData.basicRequestsPerDay) {
           user.basicRequestsLeftToday =
             subscriptionData.basicRequestsPerDay || 0;
           usersUpdated++;
+          basicRequestsPerDayUpdated++;
         }
         if (subscriptionData.basicRequestsPerWeek) {
-          console.log(
-            user.telegramId,
-            dayjs().isSame(user.weeklyRequestsExpiry, 'day'),
-            dayjs().isAfter(user.weeklyRequestsExpiry, 'day'),
-          );
-
           if (
             dayjs().isSame(user.weeklyRequestsExpiry, 'day') ||
             dayjs().isAfter(user.weeklyRequestsExpiry, 'day')
@@ -56,19 +62,25 @@ cron.schedule('30 09 * * *', async () => {
               },
             );
             usersUpdated++;
+            basicRequestsPerWeekUpdated++;
           }
         }
         await user.save();
       }
 
       processedUsers += BATCH_SIZE;
-      console.log(`Updated ${usersUpdated} users`);
       console.log(`Processed ${processedUsers} of ${totalUsers} users`);
 
       if (processedUsers < totalUsers) {
         await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
       }
     }
+
+    console.log(`Updated ${usersUpdated} users`);
+    console.log('-------------------------');
+    console.log('basicRequestsPerDayUpdated', basicRequestsPerDayUpdated);
+    console.log('basicRequestsPerWeekUpdated', basicRequestsPerWeekUpdated);
+    console.log('-------------------------');
   } catch (error) {
     if (
       error instanceof GrammyError &&
