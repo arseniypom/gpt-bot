@@ -1,5 +1,5 @@
 export { initiateAiModelChange } from './changeAiModel';
-export { getStats } from './stats';
+export { getStats, refreshStats } from './stats';
 export { topup } from './topup';
 export { createNewChat } from './createNewChat';
 export {

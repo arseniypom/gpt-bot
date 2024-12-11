@@ -36,6 +36,7 @@ import {
   checkChannelJoinAndGoToStep6,
   startStep7,
   getStats,
+  refreshStats,
   topup,
   createNewChat,
   subscription,
@@ -321,6 +322,7 @@ bot.callbackQuery('hide', async (ctx) => {
 bot.callbackQuery('void', async (ctx) => {
   await ctx.answerCallbackQuery();
 });
+bot.callbackQuery('refreshStats', refreshStats);
 
 // User commands
 bot.command('start', startStep1);
