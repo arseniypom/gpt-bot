@@ -20,6 +20,7 @@ export const getStats = async (ctx: MyContext) => {
     return;
   }
   try {
+    const responseMessage = await ctx.reply('🔍 Loading...');
     const totalUsers = await User.countDocuments();
     const blockedUsers = await User.countDocuments({ isBlockedBot: true });
     const paidUsers = await User.countDocuments({
@@ -46,7 +47,28 @@ export const getStats = async (ctx: MyContext) => {
       { $limit: 7 },
     ]);
 
+    message += `\nTop 7\n`;
     for (const user of topUsers) {
+      let username;
+      if (user.userName) {
+        username = `@${user.userName}`;
+      } else if (user.firstName) {
+        username = user.firstName;
+      } else {
+        username = user.id;
+      }
+
+      const { basicReqsMade, proReqsMade, imgGensMade } = user.stats;
+      const isBlocked = user.isBlockedBot ? '🚫' : '';
+      message += `👤${isBlocked}: ${basicReqsMade}, ${proReqsMade}, ${imgGensMade} ${username}\n`;
+    }
+
+    const lastRegisteredUsers = await User.find()
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    message += `\nLast 5\n`;
+    for (const user of lastRegisteredUsers) {
       let username;
       if (user.userName) {
         username = `@${user.userName}`;
@@ -85,7 +107,7 @@ export const getStats = async (ctx: MyContext) => {
       message += `  Reg: ${registeredUsers} Tok: ${tokensBought} Trial: ${trialsBought} Sub: ${subsBought}\n`;
     }
 
-    await ctx.reply(message, {
+    await responseMessage.editText(message, {
       reply_markup: {
         inline_keyboard: [[{ text: '⨯', callback_data: 'hide' }]],
       },
