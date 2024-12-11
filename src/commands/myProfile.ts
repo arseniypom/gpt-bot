@@ -11,14 +11,14 @@ export const profileAddSubscriptionKeyboard = new InlineKeyboard()
   .row()
   .text(BUTTON_LABELS.buyTokens, 'topup')
   .row()
-  .text('🎁 Бесплатные запросы', 'referralProgram');
+  .text('⚡ Бесплатные запросы', 'referralProgram');
 
 const profileManageSubscriptionKeyboard = new InlineKeyboard()
   .text(BUTTON_LABELS.buyTokens, 'topup')
   .row()
   .text('🔄 Управление подпиской', 'subscriptionManage')
   .row()
-  .text('🎁 Бесплатные запросы', 'referralProgram');
+  .text('⚡ Бесплатные запросы', 'referralProgram');
 
 export const myProfile = async (
   ctx: MyContext | CallbackQueryContext<MyContext>,
