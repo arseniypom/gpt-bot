@@ -56,7 +56,7 @@ export const checkIsChannelMember = async (tgId: number) => {
 
 export const mainKeyboard = new Keyboard()
   .text(BUTTON_LABELS.profile)
-  .text(BUTTON_LABELS.settings)
+  .text(BUTTON_LABELS.settingsNew)
   .row()
   .text(BUTTON_LABELS.subscribe)
   .row()
@@ -69,7 +69,7 @@ export const mainKeyboard = new Keyboard()
 
 export const mainSubscribedUserKeyboard = new Keyboard()
   .text(BUTTON_LABELS.profile)
-  .text(BUTTON_LABELS.settings)
+  .text(BUTTON_LABELS.settingsNew)
   .row()
   .text(BUTTON_LABELS.buyTokens)
   .row()

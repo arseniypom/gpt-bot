@@ -13,7 +13,7 @@ export const getSettingsKeyboardv2 = (
 ) => {
   const aiModelsBtns = Object.entries(AiModelsLabels).map(([name, label]) => {
     const isActive = activeModel === label;
-    const labelText = isActive ? `☑️ ${label}` : `${label}`;
+    const labelText = isActive ? `✅ ${label}` : `${label}`;
     return [labelText, name];
   });
   const chatModesBtns = [
@@ -21,7 +21,7 @@ export const getSettingsKeyboardv2 = (
     ['dialogue', 'Диалог'],
   ].map(([name, label]) => {
     const isActive = activeChatMode === name;
-    const labelText = isActive ? `☑️ ${label}` : `${label}`;
+    const labelText = isActive ? `✅ ${label}` : `${label}`;
     return [labelText, name];
   });
   const aiModelsRow = aiModelsBtns.map(([label, data]) =>
@@ -31,9 +31,11 @@ export const getSettingsKeyboardv2 = (
     InlineKeyboard.text(label, data),
   );
   return InlineKeyboard.from([
+    [InlineKeyboard.text('ИИ-модель:', 'void')],
     [...aiModelsRow],
+    [InlineKeyboard.text('Режим чата:', 'void')],
     [...chatModesRow],
-    [InlineKeyboard.text('Начать новый чат', 'newChat')],
+    [InlineKeyboard.text('🔄 Начать новый чат', 'newChat')],
   ]);
 };
 

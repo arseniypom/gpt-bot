@@ -318,6 +318,9 @@ bot.callbackQuery('hide', async (ctx) => {
   await ctx.answerCallbackQuery();
   await ctx.callbackQuery.message?.delete();
 });
+bot.callbackQuery('void', async (ctx) => {
+  await ctx.answerCallbackQuery();
+});
 
 // User commands
 bot.command('start', startStep1);
@@ -368,7 +371,7 @@ bot.hears(BUTTON_LABELS.subscribe, subscription);
 bot.hears(BUTTON_LABELS.buyTokens, topup);
 bot.hears(BUTTON_LABELS.profile, myProfile);
 bot.hears(BUTTON_LABELS.image, generateImage);
-bot.hears(BUTTON_LABELS.settings, settings);
+bot.hears([BUTTON_LABELS.settings, BUTTON_LABELS.settingsNew], settings);
 bot.hears(BUTTON_LABELS.help, help);
 bot.hears(BUTTON_LABELS.support, support);
 
