@@ -1,8 +1,6 @@
 import 'dotenv/config';
 import { MyContext } from '../types/types';
 import User from '../../db/User';
-import Chat from '../../db/Chat';
-import Message from '../../db/Message';
 import logger from '../utils/logger';
 import { logError } from '../utils/utilFunctions';
 import AdCampaign from '../../db/AdCampaign';
@@ -28,14 +26,27 @@ export const getStats = async (ctx: MyContext) => {
       subscriptionLevel: { $ne: 'FREE' },
     });
 
-    let message = `👥 Total users: ${totalUsers}\n`;
-    message += `💸: ${paidUsers} | ✅: ${
+    let message = `👥 Total users: ${totalUsers}\n💸: ${paidUsers}\n✅: ${
       totalUsers - blockedUsers
     } | 🚫: ${blockedUsers}\n\n`;
 
-    const lastFiveUsers = await User.find().sort({ createdAt: -1 }).limit(5);
+    const topUsers = await User.aggregate([
+      {
+        $addFields: {
+          totalReqs: {
+            $add: [
+              '$stats.basicReqsMade',
+              '$stats.proReqsMade',
+              '$stats.imgGensMade',
+            ],
+          },
+        },
+      },
+      { $sort: { totalReqs: -1 } },
+      { $limit: 7 },
+    ]);
 
-    for (const user of lastFiveUsers) {
+    for (const user of topUsers) {
       let username;
       if (user.userName) {
         username = `@${user.userName}`;
@@ -45,27 +56,38 @@ export const getStats = async (ctx: MyContext) => {
         username = user.id;
       }
 
-      const chats = await Chat.find({ userId: user._id });
-
-      let messageCount = 0;
-      for (const chat of chats) {
-        const count = await Message.countDocuments({ chatId: chat._id });
-        messageCount += count;
-      }
+      const { basicReqsMade, proReqsMade, imgGensMade } = user.stats;
       const isBlocked = user.isBlockedBot ? '🚫' : '';
-      message += `👤${isBlocked} ${username} | ${messageCount}\n`;
+      message += `👤${isBlocked}: ${basicReqsMade}, ${proReqsMade}, ${imgGensMade} ${username}\n`;
     }
 
     const adCampaigns = await AdCampaign.find();
-    message += `\n📊 Ad Campaigns:\n`;
+    message += `\n📊 Ads:\n`;
+
+    adCampaigns.sort(
+      (a, b) => b.stats.registeredUsers - a.stats.registeredUsers,
+    );
+
     for (const campaign of adCampaigns) {
-      message += `📢 ${campaign.name}:\n`;
-      message += `  - Reg: ${campaign.stats.registeredUsers} | Tok: ${campaign.stats.tokensBought} | Trial: ${campaign.stats.trialsBought} | Sub: ${campaign.stats.subsBought}\n`;
+      const { registeredUsers, tokensBought, trialsBought, subsBought } =
+        campaign.stats;
+
+      if (
+        registeredUsers === 0 &&
+        tokensBought === 0 &&
+        trialsBought === 0 &&
+        subsBought === 0
+      ) {
+        continue;
+      }
+
+      message += `→ ${campaign.name}:\n`;
+      message += `  Reg: ${registeredUsers} Tok: ${tokensBought} Trial: ${trialsBought} Sub: ${subsBought}\n`;
     }
 
     await ctx.reply(message, {
       reply_markup: {
-        inline_keyboard: [[{ text: '✖︎', callback_data: 'hide' }]],
+        inline_keyboard: [[{ text: '⨯', callback_data: 'hide' }]],
       },
     });
   } catch (error) {
