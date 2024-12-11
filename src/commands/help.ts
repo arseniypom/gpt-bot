@@ -17,19 +17,19 @@ import { getSubscriptionLevelsKeyboard } from './subscription';
 import User from '../../db/User';
 
 const helpMainKeyboard = new InlineKeyboard()
-  .text('Как открыть меню?', 'helpFindMenu')
+  .text('Как открыть меню с кнопками?', 'helpFindMenu')
   .row()
-  .text('Как пользоваться ботом?', 'helpHowToUseBot')
+  .text('Как отправить запрос в ИИ и сгенерировать изображение?', 'helpHowToUseBot')
   .row()
   .text('Что такое запросы?', 'helpRequests')
   .row()
-  .text('Какие есть ИИ-модели?', 'helpModels')
+  .text('Какие есть ИИ?', 'helpModels')
   .row()
-  .text('Что дает подписка?', 'helpSubscription')
+  .text('Что даёт подписка?', 'helpSubscription')
   .row()
-  .text('Что такое токены?', 'helpTokens')
+  .text('Что такое токены и как купить?', 'helpTokens')
   .row()
-  .text('Какие есть режимы чата?', 'helpChatModes');
+  .text('Режимы чата: Обычный и Диалог', 'helpChatModes');
 
 const helpBackKeyboard = new InlineKeyboard().text('← Назад', 'helpBack');
 const helpBackAndSubscriptionModelsKeyboard = new InlineKeyboard()
