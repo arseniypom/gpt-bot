@@ -7,6 +7,7 @@ async function addAdCampaignToDB() {
     const mode = 'dev';
 
     await mongoose.connect(
+      // @ts-ignore
       mode === 'dev'
         ? process.env.MONGO_DB_URI_DEV!
         : process.env.MONGO_DB_URI_PROD!,
@@ -20,6 +21,7 @@ async function addAdCampaignToDB() {
       source: 'https://...',
       adCode: code,
       link: `${
+        // @ts-ignore
         mode === 'dev' ? process.env.BOT_URL_DEV : process.env.BOT_URL_PROD
       }?start=ad_${code}`,
     });
