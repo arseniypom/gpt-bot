@@ -98,7 +98,9 @@ const step3Keyboard = new InlineKeyboard()
 const step4Keyboard = new InlineKeyboard()
   .text('Класс, попробую Оптимум!', `${SubscriptionLevels.OPTIMUM_TRIAL}-step5`)
   .row()
-  .text('Я подумаю, продолжить', 'startStep5')
+  // Temporarily skipped step5
+  // .text('Я подумаю, продолжить', 'startStep5')
+  .text('Я подумаю, продолжить', 'startStep6')
   .row()
   .text('Пропустить знакомство', 'startSkip');
 
