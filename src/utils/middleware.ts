@@ -15,7 +15,7 @@ if (!channelTelegramName) {
 }
 
 const subscribeToChannelKeyboard = new InlineKeyboard()
-  .url('Ссылка на канал', `https://t.me/${channelTelegramName}`)
+  .url('Перейти в канал', `https://t.me/${channelTelegramName}`)
   .row()
   .text('✅ Я подписался(лась) на канал', 'checkChannelJoin');
 

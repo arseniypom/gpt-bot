@@ -81,17 +81,17 @@ export const mainSubscribedUserKeyboard = new Keyboard()
   .persistent();
 
 const step1Keyboard = new InlineKeyboard()
-  .text('С чем ты можешь мне помочь?', 'startStep2')
+  .text('Знакомство ☃️', 'startStep2')
   .row()
   .text('Пропустить знакомство', 'startSkip');
 
 const step2Keyboard = new InlineKeyboard()
-  .text('А как ты все это делаешь?', 'startStep3')
+  .text('Далее', 'startStep3')
   .row()
   .text('Пропустить знакомство', 'startSkip');
 
 const step3Keyboard = new InlineKeyboard()
-  .text('И я могу пользоваться этим бесплатно?', 'startStep4')
+  .text('И это бесплатно?', 'startStep4')
   .row()
   .text('Пропустить знакомство', 'startSkip');
 
@@ -103,16 +103,16 @@ const step4Keyboard = new InlineKeyboard()
   .text('Пропустить знакомство', 'startSkip');
 
 const step5Keyboard = new InlineKeyboard()
-  .url('Ссылка на канал', `https://t.me/${channelTelegramName}`)
+  .url('Перейти в канал', `https://t.me/${channelTelegramName}`)
   .row()
-  .text('✅ Я подписался(лась) на канал', 'checkChannelJoinAndGoToStep6')
+  .text('✅ Я подписался(лась)', 'checkChannelJoinAndGoToStep6')
   .row()
   .text('Подпишусь позже', 'startStep6')
   .row()
   .text('Пропустить знакомство', 'startSkip');
 
 const step5buyTrialKeyboard = new InlineKeyboard()
-  .url('Ссылка на канал', `https://t.me/${channelTelegramName}`)
+  .url('Перейти в канал', `https://t.me/${channelTelegramName}`)
   .row()
   .text('✅ Я подписался(лась) на канал', 'checkChannelJoinAndBuyTrial')
 
@@ -258,8 +258,7 @@ export const startStep5 = async (ctx: CallbackQueryContext<MyContext>) => {
 
 export const startStep6 = async (ctx: CallbackQueryContext<MyContext>) => {
   await ctx.answerCallbackQuery();
-  await ctx.replyWithPhoto(new InputFile('src/images/keyboard-help-img.jpg'), {
-    caption: START_MESSAGE_STEP_6,
+  await ctx.reply(START_MESSAGE_STEP_6, {
     parse_mode: 'MarkdownV2',
     reply_markup: step6Keyboard,
   });
