@@ -16,7 +16,7 @@ export const profileAddSubscriptionKeyboard = new InlineKeyboard()
 const profileManageSubscriptionKeyboard = new InlineKeyboard()
   .text(BUTTON_LABELS.buyTokens, 'topup')
   .row()
-  .text('🔄 Управление подпиской', 'subscriptionManage')
+  .text('🛠️ Управление подпиской', 'subscriptionManage')
   .row()
   .text('⚡ Бесплатные запросы', 'referralProgram');
 

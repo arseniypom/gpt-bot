@@ -18,7 +18,7 @@ export const initiateTopupKeyboard = new InlineKeyboard().text(
 export const topupAndManageSubscriptionKeyboard = new InlineKeyboard()
   .text(BUTTON_LABELS.buyTokens, 'topup')
   .row()
-  .text('🔄 Управление подпиской', 'subscriptionManage');
+  .text('🛠️ Управление подпиской', 'subscriptionManage');
 export const getTopupAndManageSubscriptionKeyboard = (
   subscriptionLevel: SubscriptionLevel,
 ) => {
@@ -29,7 +29,7 @@ export const getTopupAndManageSubscriptionKeyboard = (
   if (subscriptionLevel === 'FREE') {
     keyboard.text('🎉 Подключить подписку', 'subscription');
   } else {
-    keyboard.text('🔄 Управление подпиской', 'subscriptionManage');
+    keyboard.text('🛠️ Управление подпиской', 'subscriptionManage');
   }
 
   return keyboard;
