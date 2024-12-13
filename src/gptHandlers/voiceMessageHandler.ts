@@ -1,5 +1,7 @@
 import axios from 'axios';
+import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
 import ffmpeg from 'fluent-ffmpeg';
+ffmpeg.setFfmpegPath(ffmpegPath);
 import fs from 'fs';
 import path from 'path';
 import diskusage from 'diskusage';

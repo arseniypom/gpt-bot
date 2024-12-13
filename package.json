@@ -25,6 +25,7 @@
     "typescript-eslint": "^8.7.0"
   },
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@grammyjs/conversations": "^1.2.0",
     "@grammyjs/hydrate": "^1.4.1",
     "@grammyjs/ratelimiter": "^1.2.0",
