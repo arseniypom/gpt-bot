@@ -4,7 +4,6 @@ import ffmpeg from 'fluent-ffmpeg';
 ffmpeg.setFfmpegPath(ffmpegPath);
 import fs from 'fs';
 import path from 'path';
-import diskusage from 'diskusage';
 import { Document, Types } from 'mongoose';
 import {
   User as TelegramUser,
@@ -109,27 +108,14 @@ export const handleVoiceMessage = async ({
       error,
     });
   } finally {
-    try {
-      if (fs.existsSync(convertedFilePath)) {
-        fs.unlink(convertedFilePath, (err) => {
-          if (err) console.error('Error deleting converted file:', err);
-        });
-      }
-
-      const { free } = diskusage.checkSync(__dirname);
-      const freeSpaceInGB = free / (1024 * 1024 * 1024);
-
-      if (freeSpaceInGB < 5) {
-        if (fs.existsSync(localFilePath)) {
-          fs.unlink(localFilePath, (err) => {
-            if (err) console.error('Error deleting local file:', err);
-          });
-        }
-      }
-    } catch (err) {
-      logError({
-        message: 'Error checking disk space',
-        error: err,
+    if (fs.existsSync(convertedFilePath)) {
+      fs.unlink(convertedFilePath, (err) => {
+        if (err) console.error('Error deleting converted file:', err);
+      });
+    }
+    if (fs.existsSync(localFilePath)) {
+      fs.unlink(localFilePath, (err) => {
+        if (err) console.error('Error deleting local file:', err);
       });
     }
   }
