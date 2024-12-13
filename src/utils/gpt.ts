@@ -1,11 +1,18 @@
 import OpenAI from 'openai';
 import 'dotenv/config';
+import fs from 'fs';
+import { Document, Types } from 'mongoose';
+import { Message } from 'grammy/types';
+import { MessageXFragment } from '@grammyjs/hydrate/out/data/message';
+import { IUser } from '../../db/User';
 import { IMessage } from '../../db/Message';
 import {
   AiModel,
   AiModels,
+  AiRequestMode,
   ChatMode,
   ImageGenerationQuality,
+  SubscriptionLevels,
 } from '../types/types';
 import { isValidAiModel } from '../types/typeguards';
 import {
@@ -13,11 +20,16 @@ import {
   PROMPT_MESSAGE_BASE,
   PROMPT_MESSAGE_DIALOG_MODE_POSTFIX,
   PROMPT_MESSAGE_BASIC_MODE_POSTFIX,
+  BASIC_REQUEST_COST,
+  getNoBalanceMessage,
+  PRO_REQUEST_COST,
+  VOICE_ADDITIONAL_COST,
 } from './consts';
+import { getTopupAndChangeModelKeyboard } from '../commands/topup';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export const answerWithChatGPT = async ({
+export const getResponseFromOpenAIGpt = async ({
   chatHistory,
   telegramId,
   chatMode,
@@ -86,3 +98,77 @@ export const generateImage = async (
   };
 };
 
+export const transcribeVoice = async (path: string): Promise<string> => {
+  const transcription = await openai.audio.transcriptions.create({
+    file: fs.createReadStream(path),
+    model: 'whisper-1',
+  });
+
+  return transcription.text;
+};
+
+export const checkUserHasSufficientBalance = async ({
+  user,
+  responseMessage,
+  mode,
+}: {
+  user: Document<unknown, {}, IUser> &
+    IUser & {
+      _id: Types.ObjectId;
+    } & {
+      __v: number;
+    };
+  responseMessage: Message.CommonMessage & MessageXFragment;
+  mode: AiRequestMode;
+}) => {
+  let hasSufficientBalance = true;
+
+  if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
+    const cost =
+      mode === 'voice'
+        ? PRO_REQUEST_COST + VOICE_ADDITIONAL_COST
+        : PRO_REQUEST_COST;
+    if (user.proRequestsLeftThisMonth === 0 && user.tokensBalance - cost < 0) {
+      await responseMessage.editText(
+        getNoBalanceMessage({
+          reqType: user.selectedModel,
+          canActivateTrial: user.canActivateTrial,
+          isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
+          mode,
+        }),
+        {
+          reply_markup: getTopupAndChangeModelKeyboard(user.subscriptionLevel),
+          parse_mode: 'MarkdownV2',
+        },
+      );
+      hasSufficientBalance = false;
+    }
+  } else if (AiModels[user.selectedModel] === AiModels.GPT_4O_MINI) {
+    const cost =
+      mode === 'voice'
+        ? BASIC_REQUEST_COST + VOICE_ADDITIONAL_COST
+        : BASIC_REQUEST_COST;
+    if (
+      user.basicRequestsLeftThisWeek === 0 &&
+      user.basicRequestsLeftToday === 0 &&
+      user.tokensBalance - cost < 0
+    ) {
+      await responseMessage.editText(
+        getNoBalanceMessage({
+          reqType: user.selectedModel,
+          canActivateTrial: user.canActivateTrial,
+          isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
+          mode,
+        }),
+        {
+          reply_markup: getTopupAndChangeModelKeyboard(user.subscriptionLevel),
+          parse_mode: 'MarkdownV2',
+        },
+      );
+      hasSufficientBalance = false;
+    }
+  } else {
+    throw new Error('Invalid model: ' + user.selectedModel);
+  }
+  return hasSufficientBalance;
+};

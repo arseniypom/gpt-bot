@@ -50,6 +50,8 @@ export enum ImageGenerationQuality {
   HD = 'hd',
 }
 
+export type AiRequestMode = 'text' | 'voice';
+
 export type PackageName =
   | 'req1'
   | 'req2'

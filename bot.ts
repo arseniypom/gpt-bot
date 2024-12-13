@@ -72,7 +72,7 @@ import {
   setUserBlocked,
 } from './src/utils/utilFunctions';
 import { TOKEN_PACKAGES } from './src/bot-token-packages';
-import { handleTextMessage } from './src/gptHandlers/textMessageHandler';
+import { answerWithGPT } from './src/gptHandlers/answerWithGPT';
 
 const BOT_API_KEY = getBotApiKey();
 
@@ -377,8 +377,14 @@ bot.hears([BUTTON_LABELS.settings, BUTTON_LABELS.settingsNew], settings);
 bot.hears(BUTTON_LABELS.help, help);
 bot.hears(BUTTON_LABELS.support, support);
 
+// Voice message handler
+bot.on('message:voice', async (ctx) => {
+  await answerWithGPT(ctx, 'voice');
+});
 // Text message handler
-bot.on('message:text', handleTextMessage);
+bot.on('message:text', async (ctx) => {
+  await answerWithGPT(ctx, 'text');
+});
 
 // Updated catch handler
 bot.catch(async (err) => {
