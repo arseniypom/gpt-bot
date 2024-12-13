@@ -1,13 +1,20 @@
 import dayjs from 'dayjs';
 import { IUser } from '../../db/User';
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
-import { AiModel, AiModelsLabels, ChatMode, ChatModeLabel } from '../types/types';
+import {
+  AiModel,
+  AiModelsLabels,
+  AiRequestMode,
+  ChatMode,
+  ChatModeLabel,
+} from '../types/types';
 import { TOKEN_PACKAGES } from '../bot-token-packages';
 import { getBotUrl, getChannelTelegramName } from './utilFunctions';
 
 export const BASIC_REQUEST_COST = 1.5;
 export const PRO_REQUEST_COST = 3;
 export const IMAGE_GENERATION_COST = 10;
+export const VOICE_ADDITIONAL_COST = 0.5;
 
 export const MAX_BOT_MESSAGE_LENGTH = 4000;
 export const MAX_HISTORY_LENGTH_FREE = 5;
@@ -62,6 +69,18 @@ export const BUTTON_LABELS = {
   image: '🖼️ Сгенерировать изображение',
   help: 'ℹ️ Информация',
   support: '🆘 Поддержка',
+};
+
+export const COSTS_LABELS = {
+  basicRequest: BASIC_REQUEST_COST.toString().replace(/\./g, '\\.'),
+  basicVoiceRequest: `${(BASIC_REQUEST_COST + VOICE_ADDITIONAL_COST)
+    .toString()
+    .replace(/\./g, '\\.')}`,
+  proRequest: PRO_REQUEST_COST.toString().replace(/\./g, '\\.'),
+  proVoiceRequest: `${(PRO_REQUEST_COST + VOICE_ADDITIONAL_COST)
+    .toString()
+    .replace(/\./g, '\\.')}`,
+  imageGeneration: IMAGE_GENERATION_COST.toString().replace(/\./g, '\\.'),
 };
 
 export const PROMPT_MESSAGE = `
@@ -245,7 +264,7 @@ export const HELP_MESSAGE_HOW_TO_USE_BOT = `
 export const HELP_MESSAGE_REQUESTS = `
 *⭐ Запросы*
 
-Запрос к ИИ\\-боту – это любое текстовое сообщение, отправленное в чат\\. Нажатия кнопок и команды запросами не считаются\\.
+Запрос к ИИ\\-боту – это любое текстовое сообщение, отправленное в чат\\. Не считаются запросами нажатия кнопок и команды\\.
 
 Каждое сообщение\\-запрос потребляет либо 1 запрос, либо 1\\.5\\-10 токенов с Вашего баланса в зависимости от ИИ\\-модели\\.
 ИИ\\-модели делятся на *базовые* и *PRO*\\.
@@ -273,13 +292,20 @@ export const HELP_MESSAGE_MODELS = `
 export const HELP_MESSAGE_TOKENS = `
 *🪙 Токены*
 
-Токены — это внутренняя валюта, которую можно тратить на доп\\. запросы вне подписки:
+Токены – это внутренняя валюта, которую можно тратить на доп\\. запросы вне подписки:
 
-1 __базовый__ запрос \\= 1\\.5 токена
-1 __PRO__ запрос \\= 3 токена
-1 __генерация изображения__ \\= 10 токенов
+*Базовые запросы \\(GPT\\-4o mini\\):*
+  1 текстовый запрос \\= ${COSTS_LABELS.basicRequest} токена
+  1 голосовой запрос \\= ${COSTS_LABELS.basicVoiceRequest} токена
 
-Купить токены: /topup
+*PRO запросы \\(GPT\\-4o\\):*
+  1 текстовый запрос \\= ${COSTS_LABELS.proRequest} токена
+  1 голосовой запрос \\= ${COSTS_LABELS.proVoiceRequest} токена
+
+*Генерация изображений:*
+  1 генерация \\= ${COSTS_LABELS.imageGeneration} токенов
+
+→ Купить токены: /topup
 
 _P\\.S\\. Мы говорили, что подписка выгоднее, чем токены? 👀_
 /subscription
@@ -325,24 +351,28 @@ export const SUBSCRIPTIONS_MESSAGE = `
 *${SUBSCRIPTIONS.START.icon} ${SUBSCRIPTIONS.START.title}*  \\| ${SUBSCRIPTIONS.START.price}₽
 – ${SUBSCRIPTIONS.START.basicRequestsPerDay} базовых запросов / день
 – ${SUBSCRIPTIONS.START.imageGenerationPerMonth} генераций изображений / месяц
+– Возможность отправлять голосовые сообщения
 – _Стандартный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_START_OPTIMUM} сообщений)
 
 *${SUBSCRIPTIONS.OPTIMUM.icon} ${SUBSCRIPTIONS.OPTIMUM.title}*  \\| ${SUBSCRIPTIONS.OPTIMUM.price}₽
 – ${SUBSCRIPTIONS.OPTIMUM.basicRequestsPerDay} базовых запросов / день
 – ${SUBSCRIPTIONS.OPTIMUM.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.OPTIMUM.imageGenerationPerMonth} генераций изображений / месяц
+– Возможность отправлять голосовые сообщения
 – _Стандартный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_START_OPTIMUM} сообщений)
 
 *${SUBSCRIPTIONS.PREMIUM.icon} ${SUBSCRIPTIONS.PREMIUM.title}*  \\| ${SUBSCRIPTIONS.PREMIUM.price}₽
 – ${SUBSCRIPTIONS.PREMIUM.basicRequestsPerDay} базовых запросов / день
 – ${SUBSCRIPTIONS.PREMIUM.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.PREMIUM.imageGenerationPerMonth} генераций изображений / месяц
+– Возможность отправлять голосовые сообщения
 – _Расширенный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений)
 
 *${SUBSCRIPTIONS.ULTRA.icon} ${SUBSCRIPTIONS.ULTRA.title}*  \\| ${SUBSCRIPTIONS.ULTRA.price}₽
 – ${SUBSCRIPTIONS.ULTRA.basicRequestsPerDay} базовых запросов / день
 – ${SUBSCRIPTIONS.ULTRA.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.ULTRA.imageGenerationPerMonth} генераций изображений / месяц
+– Возможность отправлять голосовые сообщения
 – _Расширенный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений)
 
 __Базовые__ запросы – это запросы к GPT-4o mini
@@ -360,24 +390,28 @@ export const SUBSCRIPTIONS_MESSAGE_WITH_TRIAL = `
 *${SUBSCRIPTIONS.START.icon} ${SUBSCRIPTIONS.START.title}*  \\| ${SUBSCRIPTIONS.START.price}₽
 – ${SUBSCRIPTIONS.START.basicRequestsPerDay} базовых запросов / день
 – ${SUBSCRIPTIONS.START.imageGenerationPerMonth} генераций изображений / месяц
+– Возможность отправлять голосовые сообщения
 – _Стандартный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_START_OPTIMUM} сообщений)
 
 *${SUBSCRIPTIONS.OPTIMUM.icon} ${SUBSCRIPTIONS.OPTIMUM.title}*  \\| ~${SUBSCRIPTIONS.OPTIMUM.price}₽~ *${SUBSCRIPTIONS.OPTIMUM_TRIAL.price}₽* на 3 дня 🌟
 – ${SUBSCRIPTIONS.OPTIMUM.basicRequestsPerDay} базовых запросов / день
 – ${SUBSCRIPTIONS.OPTIMUM.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.OPTIMUM.imageGenerationPerMonth} генераций изображений / месяц
+– Возможность отправлять голосовые сообщения
 – _Стандартный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_START_OPTIMUM} сообщений)
 
 *${SUBSCRIPTIONS.PREMIUM.icon} ${SUBSCRIPTIONS.PREMIUM.title}*  \\| ${SUBSCRIPTIONS.PREMIUM.price}₽
 – ${SUBSCRIPTIONS.PREMIUM.basicRequestsPerDay} базовых запросов / день
 – ${SUBSCRIPTIONS.PREMIUM.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.PREMIUM.imageGenerationPerMonth} генераций изображений / месяц
+– Возможность отправлять голосовые сообщения
 – _Расширенный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений)
 
 *${SUBSCRIPTIONS.ULTRA.icon} ${SUBSCRIPTIONS.ULTRA.title}*  \\| ${SUBSCRIPTIONS.ULTRA.price}₽
 – ${SUBSCRIPTIONS.ULTRA.basicRequestsPerDay} базовых запросов / день
 – ${SUBSCRIPTIONS.ULTRA.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.ULTRA.imageGenerationPerMonth} генераций изображений / месяц
+– Возможность отправлять голосовые сообщения
 – _Расширенный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений)
 
 __Базовые__ запросы – это запросы к GPT-4o mini
@@ -393,33 +427,46 @@ export const getNoBalanceMessage = ({
   reqType,
   canActivateTrial,
   isFreeUser,
+  mode,
 }: {
   reqType: AiModel | 'image';
   canActivateTrial: boolean;
   isFreeUser: boolean;
+  mode?: AiRequestMode;
 }) => {
-  const requestPurpose =
-    reqType === 'image'
-      ? 'генерации изображений'
-      : `обращения к ${AiModelsLabels[reqType].replace(/-/g, '\\-')}`;
+  let title = '';
+  if (reqType === 'image') {
+    title = '✖︎ Нет доступных запросов для генерации изображений ✖︎';
+  } else {
+    if (mode === 'voice') {
+      title = `✖︎ Нет доступных голосовых запросов к модели ${AiModelsLabels[
+        reqType
+      ].replace(/-/g, '\\-')} ✖︎`;
+    } else {
+      title = `✖︎ Нет доступных запросов к модели ${AiModelsLabels[
+        reqType
+      ].replace(/-/g, '\\-')} ✖︎`;
+    }
+  }
 
   const offer = canActivateTrial
-    ? `*Стандартная подписка ChatGPT стоит от 2000₽ в месяц, а у нас Вы можете попробовать её всего за ${SUBSCRIPTIONS.OPTIMUM_TRIAL.price}₽\\!*\nЖмите "🎉 Подключить подписку" ↓`
-    : `*Стандартная подписка ChatGPT стоит от 2000₽ в месяц, а у нас – всего от ${SUBSCRIPTIONS.START.price}₽ в месяц\\!*`;
+    ? `*Подписка ChatGPT стоит от 2000₽ в месяц, а у нас Вы можете попробовать её всего за ${SUBSCRIPTIONS.OPTIMUM_TRIAL.price}₽\\!*`
+    : `*Подписка ChatGPT стоит от 2000₽ в месяц, а у нас – всего от ${SUBSCRIPTIONS.START.price}₽ в месяц\\!*`;
   const freeUserOfferMessagePostfix = `
 ${offer}
 
 С подпиской я буду гораздо эффективнее:
 → Доступ к продвинутым моделям
+→ Голосовые запросы \\(оправляйте голосовые сообщения вместо набора текста\\!\\)
 → Генерация изображений
 → Расширенная память в диалоге
 → Приоритет в получении ответов
-💎 Кроме того, платные пользователи первыми получают доступ к новым функциям\\!
+💎 А ещё платные пользователи первыми получают доступ к новым функциям\\!
   `;
 
   return `
-*✖︎ Нет доступных запросов для ${requestPurpose} ✖︎*
-Чтобы продолжить использовать модель, ${
+*${title}*
+Чтобы продолжить, ${
     isFreeUser
       ? 'подключите подписку или пополните баланс токенов 🪙'
       : 'пополните баланс токенов или переключитесь на другой уровень подписки ↓'
@@ -472,33 +519,18 @@ export const getProfileMessage = (user: IUser) => {
       : '';
 
   // Paid user
-  const expirationDate = dayjs(user.subscriptionExpiry)
-    .format('DD.MM.YYYY')
-    .replace(/\./g, '\\.');
-  const isNewSubscriptionLevelShown =
-    user.newSubscriptionLevel &&
-    user.newSubscriptionLevel !== user.subscriptionLevel;
-  const newSubscriptionLevelTitle =
-    user.newSubscriptionLevel && SUBSCRIPTIONS[user.newSubscriptionLevel].title;
   const currSubscriptionData = SUBSCRIPTIONS[user.subscriptionLevel];
-  const subscriptionExpiryMessage = user.subscriptionExpiry
-    ? `\n_Действует до ${expirationDate}_`
-    : '';
   const requestsLeftMessage = !isFreeSubscription
-    ? `\n*Остаток запросов по подписке*
+    ? `\n*Остаток запросов:*
 ⭐️ Базовые: ${user.basicRequestsLeftToday}/${currSubscriptionData.basicRequestsPerDay} на сегодня
 🌟 PRO: ${user.proRequestsLeftThisMonth}/${currSubscriptionData.proRequestsPerMonth} на мес\\.
 🖼️ Генерация изображений: ${user.imageGenerationLeftThisMonth}/${currSubscriptionData.imageGenerationPerMonth} на мес\\.\n`
     : '';
 
   return `
-*Уровень подписки: ${SUBSCRIPTIONS[user.subscriptionLevel].icon} ${
+*Уровень подписки:* ${SUBSCRIPTIONS[user.subscriptionLevel].icon} ${
     SUBSCRIPTIONS[user.subscriptionLevel].title
-  }*${trialMessage}${subscriptionExpiryMessage}${
-    isNewSubscriptionLevelShown
-      ? `\n_После будет переключен на ${newSubscriptionLevelTitle}_`
-      : ''
-  }${freeRequestsMessage}
+  }${trialMessage}${freeRequestsMessage}
 ${requestsLeftMessage}
 *Баланс токенов:* 🪙 ${user.tokensBalance.toString().replace(/\./g, '\\.')}
 
@@ -510,8 +542,17 @@ export const getManageSubscriptionMessage = (user: IUser) => {
   const expirationDate = dayjs(user.subscriptionExpiry)
     .format('DD.MM.YYYY')
     .replace(/\./g, '\\.');
-  const price = SUBSCRIPTIONS[user.subscriptionLevel].price;
-  const displayPrice = price ? `${price}₽` : 'Бесплатно';
+  const currSubscriptionData = SUBSCRIPTIONS[user.subscriptionLevel];
+
+  const displayPrice = currSubscriptionData.price
+    ? `${currSubscriptionData.price}₽`
+    : 'Бесплатно';
+
+  const isNewSubscriptionLevelShown =
+    user.newSubscriptionLevel &&
+    user.newSubscriptionLevel !== user.subscriptionLevel;
+  const newSubscriptionLevelTitle =
+    user.newSubscriptionLevel && SUBSCRIPTIONS[user.newSubscriptionLevel].title;
 
   return `
 *Уровень подписки*: ${SUBSCRIPTIONS[user.subscriptionLevel].icon} ${
@@ -519,10 +560,11 @@ export const getManageSubscriptionMessage = (user: IUser) => {
   }
 *Описание*: ${SUBSCRIPTIONS[user.subscriptionLevel].description}
 *Стоимость*: ${displayPrice}
+${user.subscriptionExpiry ? `*Действует до*: ${expirationDate}\n` : ''}
 ${
-  user.subscriptionExpiry
-    ? `*Действует до*: ${expirationDate}\n\n_После окончания действия подписка будет автоматически продлена_`
-    : ''
+  isNewSubscriptionLevelShown
+    ? `_После окончания действия уровень подписки будет переключен на ${newSubscriptionLevelTitle}\\._`
+    : '_После окончания действия подписка будет автоматически продлена на месяц\\._'
 }
   `;
 };
