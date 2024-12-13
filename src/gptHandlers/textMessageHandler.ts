@@ -139,6 +139,8 @@ export const handleTextMessage = async (ctx: MyContext) => {
       userId: user._id,
       role: 'user',
       content: userMessageText,
+      model: user.selectedModel,
+      chatMode: user.chatMode,
     });
 
     let history: IMessage[] = [];
@@ -186,6 +188,8 @@ export const handleTextMessage = async (ctx: MyContext) => {
       userId: user._id,
       role: 'assistant',
       content: answer,
+      model: user.selectedModel,
+      chatMode: user.chatMode,
     });
 
     await chat.save();
