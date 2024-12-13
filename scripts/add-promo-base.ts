@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import dayjs from 'dayjs';
 import mongoose from 'mongoose';
-import Promocode from './db/Promocode';
+import Promocode from '../db/Promocode';
 
 async function addPromocodeToDB() {
   try {

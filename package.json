@@ -9,8 +9,9 @@
     "start:local": "nodemon --exec ts-node bot.ts",
     "start:dev": "NODE_ENV=development node dist/bot.js",
     "start:prod": "NODE_ENV=production node dist/bot.js",
-    "add-promo": "ts-node add-promo-base.ts",
-    "add-campaign": "ts-node add-ad-campaign-base.ts"
+    "add-promo": "ts-node scripts/add-promo-base.ts",
+    "add-campaign": "ts-node scripts/add-ad-campaign-base.ts",
+    "send-msg": "ts-node scripts/send-msg-to-users.ts"
   },
   "author": "",
   "license": "ISC",

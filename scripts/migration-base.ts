@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import User from './db/User';
+import User from '../db/User';
 
 export async function migrateDB() {
   try {

@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import AdCampaign from './db/AdCampaign';
+import AdCampaign from '../db/AdCampaign';
 
 async function addAdCampaignToDB() {
   try {
