@@ -43,6 +43,7 @@ export enum AiModelsLabels {
 }
 
 export type AiModel = keyof typeof AiModels;
+export type AiModelLabel = keyof typeof AiModelsLabels;
 
 export enum ImageGenerationQuality {
   STANDARD = 'standard',
