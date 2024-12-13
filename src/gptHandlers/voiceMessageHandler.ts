@@ -60,14 +60,17 @@ export const handleVoiceMessage = async ({
 
   const token = getBotApiKey();
   const url = `https://api.telegram.org/file/bot${token}/${filePath}`;
+
+  const voicesDir = path.join(__dirname, '../../voices');
+  if (!fs.existsSync(voicesDir)) {
+    fs.mkdirSync(voicesDir, { recursive: true });
+  }
   const localFilePath = path.join(
-    __dirname,
-    '../../storage/voices',
+    voicesDir,
     `${telegramId}_${voice?.file_id}.oga`,
   );
   const convertedFilePath = path.join(
-    __dirname,
-    '../../storage/voices',
+    voicesDir,
     `${telegramId}_${voice?.file_id}.mp3`,
   );
 
