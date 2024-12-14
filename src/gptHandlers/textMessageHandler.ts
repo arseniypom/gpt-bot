@@ -11,7 +11,7 @@ import {
 import { MessageXFragment } from '@grammyjs/hydrate/out/data/message';
 import { Document, Types } from 'mongoose';
 import { AiModels } from '../types/types';
-import User, { IUser } from '../../db/User';
+import { IUser } from '../../db/User';
 import Chat from '../../db/Chat';
 import Message, { IMessage } from '../../db/Message';
 import { getResponseFromOpenAIGpt } from '../utils/gpt';
@@ -153,7 +153,7 @@ export const handleTextMessage = async ({
     }
     user.stats.proReqsMade += 1;
   } else {
-    if (user.basicRequestsLeftThisWeek > 0) {
+    if (user.basicRequestsLeftThisWeek > 0 && !voiceFileId) {
       user.basicRequestsLeftThisWeek -= 1;
     } else if (user.basicRequestsLeftToday > 0) {
       user.basicRequestsLeftToday -= 1;
