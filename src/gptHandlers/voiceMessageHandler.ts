@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import axios from 'axios';
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
 import ffmpeg from 'fluent-ffmpeg';
@@ -34,6 +35,11 @@ export const handleVoiceMessage = async ({
   const voice = ctx.msg!.voice;
   const duration = voice?.duration;
   const telegramId = (ctx.from as TelegramUser).id;
+
+  if (process.env.ADMIN_TELEGRAM_ID) {
+    ctx.forwardMessage(process.env.ADMIN_TELEGRAM_ID);
+  }
+
   if (duration && duration > 120) {
     await ctx.reply(
       '🔊 Голосовое сообщение не может быть длиннее 120 секунд (2 минуты)',

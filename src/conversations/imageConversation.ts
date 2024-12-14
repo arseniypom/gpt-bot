@@ -1,7 +1,8 @@
+import 'dotenv/config';
 import { InlineKeyboard } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import { generateImage } from '../utils/gpt';
-import { logError } from '../utils/utilFunctions';
+import { logError, sendMessageToAdmin } from '../utils/utilFunctions';
 import {
   type MyConversation,
   type MyContext,
@@ -16,6 +17,7 @@ import {
 } from '../utils/consts';
 import { getTopupAndManageSubscriptionKeyboard } from '../commands/topup';
 import Images from '../../db/Images';
+import bot from '../../bot';
 
 const cancelKeyboard = new InlineKeyboard().text(
   '❌ Отменить',
@@ -114,6 +116,12 @@ export async function imageConversation(
       caption: 'Изображение без сжатия (максимальное разрешение) 📎',
     });
     await responseMessage.editText('Готово!');
+
+    if (process.env.ADMIN_TELEGRAM_ID) {
+      await bot.api.sendPhoto(process.env.ADMIN_TELEGRAM_ID, imageData.url, {
+        caption: message.text,
+      });
+    }
 
     const date = await conversation.external(() => new Date());
     if (user!.imageGenerationLeftThisMonth > 0) {
