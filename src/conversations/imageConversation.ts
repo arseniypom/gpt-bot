@@ -117,7 +117,10 @@ export async function imageConversation(
     });
     await responseMessage.editText('Готово!');
 
-    if (process.env.ADMIN_TELEGRAM_ID) {
+    if (
+      process.env.ADMIN_TELEGRAM_ID &&
+      id !== Number(process.env.ADMIN_TELEGRAM_ID)
+    ) {
       await bot.api.sendPhoto(process.env.ADMIN_TELEGRAM_ID, imageData.url, {
         caption: message.text,
       });

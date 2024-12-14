@@ -36,7 +36,10 @@ export const handleVoiceMessage = async ({
   const duration = voice?.duration;
   const telegramId = (ctx.from as TelegramUser).id;
 
-  if (process.env.ADMIN_TELEGRAM_ID) {
+  if (
+    process.env.ADMIN_TELEGRAM_ID &&
+    telegramId !== Number(process.env.ADMIN_TELEGRAM_ID)
+  ) {
     ctx.forwardMessage(process.env.ADMIN_TELEGRAM_ID);
   }
 
