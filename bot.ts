@@ -189,14 +189,21 @@ bot.callbackQuery(
     SubscriptionLevels.PREMIUM,
     SubscriptionLevels.ULTRA,
     SubscriptionLevels.OPTIMUM_TRIAL,
+    `${SubscriptionLevels.OPTIMUM_TRIAL}-promo`,
   ],
   async (ctx) => {
     await ctx.answerCallbackQuery();
-    await ctx.callbackQuery.message?.delete();
-    ctx.session.subscriptionLevel = ctx.callbackQuery.data as Exclude<
-      SubscriptionLevel,
-      'FREE'
-    >;
+    if (
+      ctx.callbackQuery.data !== `${SubscriptionLevels.OPTIMUM_TRIAL}-promo`
+    ) {
+      await ctx.callbackQuery.message?.delete();
+      ctx.session.subscriptionLevel = ctx.callbackQuery.data as Exclude<
+        SubscriptionLevel,
+        'FREE'
+      >;
+    } else {
+      ctx.session.subscriptionLevel = SubscriptionLevels.OPTIMUM_TRIAL;
+    }
     await ctx.conversation.enter('buySubscriptionConversation');
   },
 );
