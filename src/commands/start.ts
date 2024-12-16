@@ -4,7 +4,7 @@ import { logError } from '../utils/utilFunctions';
 import {
   BUTTON_LABELS,
   START_MESSAGE_STEP_1,
-  START_MESSAGE_STEP_2,
+  START_MESSAGE_STEP_2v2,
   START_MESSAGE_STEP_3,
   START_MESSAGE_STEP_4,
   START_MESSAGE_STEP_5,
@@ -86,7 +86,9 @@ const step1Keyboard = new InlineKeyboard()
   .text('Пропустить знакомство', 'startSkip');
 
 const step2Keyboard = new InlineKeyboard()
-  .text('Далее', 'startStep3')
+  // Temporarily skipped step3
+  // .text('Далее', 'startStep3')
+  .text('Далее', 'startStep4')
   .row()
   .text('Пропустить знакомство', 'startSkip');
 
@@ -218,7 +220,7 @@ export const startStep1 = async (ctx: MyContext) => {
 
 export const startStep2 = async (ctx: CallbackQueryContext<MyContext>) => {
   await ctx.answerCallbackQuery();
-  await ctx.reply(START_MESSAGE_STEP_2, {
+  await ctx.reply(START_MESSAGE_STEP_2v2, {
     parse_mode: 'MarkdownV2',
     reply_markup: step2Keyboard,
   });

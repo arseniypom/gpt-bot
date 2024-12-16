@@ -1,6 +1,9 @@
 import User from '../../db/User';
 import { AiRequestMode, ChatModeLabel, MyContext } from '../types/types';
-import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
+import {
+  FIRST_REQUEST_GIFT_MESSAGE,
+  SUPPORT_MESSAGE_POSTFIX,
+} from '../utils/consts';
 import { checkUserHasSufficientBalance } from '../utils/gpt';
 import { logError } from '../utils/utilFunctions';
 import { handleTextMessage } from './textMessageHandler';
@@ -15,7 +18,17 @@ export const answerWithGPT = async (ctx: MyContext, mode: AiRequestMode) => {
       return;
     }
 
-    if (!ctx.session.isNotifiedAboutChatMode) {
+    if (
+      user.stats.basicReqsMade === 0 &&
+      user.stats.proReqsMade === 0 &&
+      user.stats.imgGensMade === 0
+    ) {
+      user.tokensBalance += 20;
+      await user.save();
+      await ctx.reply(FIRST_REQUEST_GIFT_MESSAGE, {
+        parse_mode: 'MarkdownV2',
+      });
+    } else if (!ctx.session.isNotifiedAboutChatMode) {
       const chatModeLabel = ChatModeLabel[user.chatMode];
       const description =
         user.chatMode === 'basic'

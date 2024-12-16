@@ -1,9 +1,4 @@
-import {
-  ChatModeLabel,
-  MyContext,
-  SubscriptionLevels,
-  UserStages,
-} from '../types/types';
+import { MyContext, SubscriptionLevels, UserStages } from '../types/types';
 import {
   User as TelegramUser,
   Message as TelegramMessage,
@@ -79,7 +74,7 @@ export const handleTextMessage = async ({
     );
     return;
   }
-  
+
   const userMessage = await Message.create({
     chatId: chat._id,
     userId: user._id,
