@@ -34,7 +34,7 @@ export enum ChatModeLabel {
 
 export enum AiModels {
   GPT_4O_MINI = 'gpt-4o-mini-2024-07-18',
-  GPT_4O = 'gpt-4o-2024-08-06',
+  GPT_4O = 'gpt-4o-2024-11-20',
 }
 
 export enum AiModelsLabels {
