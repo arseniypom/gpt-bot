@@ -59,7 +59,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   },
   chatMode: {
     type: String,
-    default: 'basic',
+    default: 'dialogue',
     required: true,
   },
   basicRequestsLeftThisWeek: {
