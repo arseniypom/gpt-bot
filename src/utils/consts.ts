@@ -238,6 +238,7 @@ export const START_MESSAGE_STEP_4 = `
 
 *Оптимум подписка – это:*
 \\+ прием голосовых сообщений
+\\+ анализ изображений
 \\+ 50 базовых запросов __в день__
 \\+ 50 PRO запросов
 \\+ 20 генераций изображений
@@ -405,6 +406,7 @@ export const SUBSCRIPTIONS_MESSAGE = `
 – ${SUBSCRIPTIONS.OPTIMUM.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.OPTIMUM.imageGenerationPerMonth} генераций изображений / месяц
 – Возможность отправлять голосовые сообщения
+– Анализ изображений (безлимит)
 – _Стандартный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_START_OPTIMUM} сообщений)
 
 *${SUBSCRIPTIONS.PREMIUM.icon} ${SUBSCRIPTIONS.PREMIUM.title}*  \\| ${SUBSCRIPTIONS.PREMIUM.price}₽
@@ -412,6 +414,7 @@ export const SUBSCRIPTIONS_MESSAGE = `
 – ${SUBSCRIPTIONS.PREMIUM.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.PREMIUM.imageGenerationPerMonth} генераций изображений / месяц
 – Возможность отправлять голосовые сообщения
+– Анализ изображений (безлимит)
 – _Расширенный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений)
 
 *${SUBSCRIPTIONS.ULTRA.icon} ${SUBSCRIPTIONS.ULTRA.title}*  \\| ${SUBSCRIPTIONS.ULTRA.price}₽
@@ -419,6 +422,7 @@ export const SUBSCRIPTIONS_MESSAGE = `
 – ${SUBSCRIPTIONS.ULTRA.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.ULTRA.imageGenerationPerMonth} генераций изображений / месяц
 – Возможность отправлять голосовые сообщения
+– Анализ изображений (безлимит)
 – _Расширенный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений)
 
 __Базовые__ запросы – это запросы к GPT-4o mini
@@ -444,6 +448,7 @@ export const SUBSCRIPTIONS_MESSAGE_WITH_TRIAL = `
 – ${SUBSCRIPTIONS.OPTIMUM.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.OPTIMUM.imageGenerationPerMonth} генераций изображений / месяц
 – Возможность отправлять голосовые сообщения
+– Анализ изображений (безлимит)
 – _Стандартный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_START_OPTIMUM} сообщений)
 
 *${SUBSCRIPTIONS.PREMIUM.icon} ${SUBSCRIPTIONS.PREMIUM.title}*  \\| ${SUBSCRIPTIONS.PREMIUM.price}₽
@@ -451,6 +456,7 @@ export const SUBSCRIPTIONS_MESSAGE_WITH_TRIAL = `
 – ${SUBSCRIPTIONS.PREMIUM.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.PREMIUM.imageGenerationPerMonth} генераций изображений / месяц
 – Возможность отправлять голосовые сообщения
+– Анализ изображений (безлимит)
 – _Расширенный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений)
 
 *${SUBSCRIPTIONS.ULTRA.icon} ${SUBSCRIPTIONS.ULTRA.title}*  \\| ${SUBSCRIPTIONS.ULTRA.price}₽
@@ -458,6 +464,7 @@ export const SUBSCRIPTIONS_MESSAGE_WITH_TRIAL = `
 – ${SUBSCRIPTIONS.ULTRA.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.ULTRA.imageGenerationPerMonth} генераций изображений / месяц
 – Возможность отправлять голосовые сообщения
+– Анализ изображений (безлимит)
 – _Расширенный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений)
 
 __Базовые__ запросы – это запросы к GPT-4o mini
