@@ -7,17 +7,17 @@ import { MessageXFragment } from '@grammyjs/hydrate/out/data/message';
 import { Document, Types } from 'mongoose';
 import { AiModels } from '../types/types';
 import { IUser } from '../../db/User';
-import Chat from '../../db/Chat';
-import Message, { IMessage } from '../../db/Message';
-import { getResponseFromOpenAIGpt } from '../utils/gpt';
+import Message from '../../db/Message';
+import {
+  getLatestChat,
+  getMessagesHistory,
+  getResponseFromOpenAIGpt,
+} from '../utils/gpt';
 import {
   BASIC_REQUEST_COST,
   PRO_REQUEST_COST,
   VOICE_ADDITIONAL_COST,
   MAX_BOT_MESSAGE_LENGTH,
-  MAX_HISTORY_LENGTH_FREE,
-  MAX_HISTORY_LENGTH_START_OPTIMUM,
-  MAX_HISTORY_LENGTH_PREMIUM_ULTRA,
   MAX_USER_MESSAGE_LENGTH,
   SUPPORT_MESSAGE_POSTFIX,
 } from '../utils/consts';
@@ -40,8 +40,6 @@ export const handleTextMessage = async ({
   messageText: string;
   voiceFileId?: string;
 }) => {
-  let chatId = ctx.session.chatId;
-  let chatObj;
   const telegramId = (ctx.from as TelegramUser).id;
 
   if (messageText!.length > MAX_USER_MESSAGE_LENGTH && !voiceFileId) {
@@ -51,23 +49,7 @@ export const handleTextMessage = async ({
     return;
   }
 
-  if (!chatId) {
-    const latestChat = await Chat.findOne({ userId: user._id }).sort({
-      createdAt: -1,
-    });
-    if (latestChat) {
-      chatObj = latestChat;
-      chatId = latestChat._id.toString();
-      ctx.session.chatId = chatId;
-    } else {
-      await responseMessage.editText(
-        'Пожалуйста, начните новый чат с помощью команды /start',
-      );
-      return;
-    }
-  }
-
-  const chat = chatObj || (await Chat.findById(chatId));
+  const chat = await getLatestChat({ user, ctx, responseMessage });
   if (!chat) {
     await ctx.reply(
       'Чат не найден. Пожалуйста, начните новый чат с помощью команды /start',
@@ -85,31 +67,11 @@ export const handleTextMessage = async ({
     chatMode: user.chatMode,
   });
 
-  let history: IMessage[] = [];
-  // Choose max history length based on user's subscription level
-  if (user.chatMode === 'dialogue') {
-    let maxHistoryLength;
-    switch (user.subscriptionLevel) {
-      case SubscriptionLevels.START:
-      case SubscriptionLevels.OPTIMUM:
-      case SubscriptionLevels.OPTIMUM_TRIAL:
-        maxHistoryLength = MAX_HISTORY_LENGTH_START_OPTIMUM;
-        break;
-      case SubscriptionLevels.PREMIUM:
-      case SubscriptionLevels.ULTRA:
-        maxHistoryLength = MAX_HISTORY_LENGTH_PREMIUM_ULTRA;
-        break;
-      default:
-        maxHistoryLength = MAX_HISTORY_LENGTH_FREE;
-        break;
-    }
-    const messages = await Message.find({ chatId: chat._id })
-      .sort({ createdAt: 1 })
-      .lean();
-    history = messages.slice(-maxHistoryLength);
-  } else {
-    history = [userMessage.toJSON()];
-  }
+  const history = await getMessagesHistory({
+    user,
+    chatId: chat._id,
+    userMessage,
+  });
 
   const selectedModelName = user.selectedModel;
   const answer = await getResponseFromOpenAIGpt({

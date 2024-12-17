@@ -2,16 +2,17 @@ import OpenAI from 'openai';
 import 'dotenv/config';
 import fs from 'fs';
 import { Document, Types } from 'mongoose';
-import { Message } from 'grammy/types';
+import { Message as TelegramMessage } from '@grammyjs/types';
 import { MessageXFragment } from '@grammyjs/hydrate/out/data/message';
 import { IUser } from '../../db/User';
-import { IMessage } from '../../db/Message';
+import Message, { IMessage } from '../../db/Message';
 import {
   AiModel,
   AiModels,
   AiRequestMode,
   ChatMode,
   ImageGenerationQuality,
+  MyContext,
   SubscriptionLevels,
 } from '../types/types';
 import { isValidAiModel } from '../types/typeguards';
@@ -24,8 +25,14 @@ import {
   getNoBalanceMessage,
   PRO_REQUEST_COST,
   VOICE_ADDITIONAL_COST,
+  MAX_HISTORY_LENGTH_START_OPTIMUM,
+  MAX_HISTORY_LENGTH_PREMIUM_ULTRA,
+  MAX_HISTORY_LENGTH_FREE,
+  getPromptImagePostfix,
+  IMAGE_ANALYSIS_COST,
 } from './consts';
 import { getTopupAndChangeModelKeyboard } from '../commands/topup';
+import Chat from '../../db/Chat';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -107,6 +114,46 @@ export const transcribeVoice = async (path: string): Promise<string> => {
   return transcription.text;
 };
 
+export const getVisionResponseFromOpenAIGpt = async ({
+  imageUrl,
+  telegramId,
+  caption,
+}: {
+  imageUrl: string;
+  telegramId: number;
+  caption?: string;
+}) => {
+  const prompt =
+    PROMPT_MESSAGE_BASE + PROMPT_MESSAGE_BASE + getPromptImagePostfix(caption);
+  try {
+    const response = await openai.chat.completions.create({
+      model: AiModels.GPT_4O,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: prompt,
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: imageUrl,
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    return response.choices[0].message.content;
+  } catch (error) {
+    const err = error as Error;
+    throw err;
+  }
+};
+
 export const checkUserHasSufficientBalance = async ({
   user,
   responseMessage,
@@ -118,7 +165,7 @@ export const checkUserHasSufficientBalance = async ({
     } & {
       __v: number;
     };
-  responseMessage: Message.CommonMessage & MessageXFragment;
+  responseMessage: TelegramMessage.CommonMessage & MessageXFragment;
   mode: AiRequestMode;
 }) => {
   let hasSufficientBalance = true;
@@ -173,51 +220,27 @@ export const checkUserHasSufficientBalance = async ({
       break;
 
     case 'text':
-      if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
-        if (
-          user.proRequestsLeftThisMonth === 0 &&
-          user.tokensBalance - PRO_REQUEST_COST < 0
-        ) {
-          await responseMessage.editText(
-            getNoBalanceMessage({
-              reqType: user.selectedModel,
-              canActivateTrial: user.canActivateTrial,
-              isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
-              mode,
-            }),
-            {
-              reply_markup: getTopupAndChangeModelKeyboard(
-                user.subscriptionLevel,
-              ),
-              parse_mode: 'MarkdownV2',
-            },
-          );
-          hasSufficientBalance = false;
-        }
-      } else if (AiModels[user.selectedModel] === AiModels.GPT_4O_MINI) {
-        if (
-          user.basicRequestsLeftThisWeek === 0 &&
-          user.basicRequestsLeftToday === 0 &&
-          user.tokensBalance - BASIC_REQUEST_COST < 0
-        ) {
-          await responseMessage.editText(
-            getNoBalanceMessage({
-              reqType: user.selectedModel,
-              canActivateTrial: user.canActivateTrial,
-              isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
-              mode,
-            }),
-            {
-              reply_markup: getTopupAndChangeModelKeyboard(
-                user.subscriptionLevel,
-              ),
-              parse_mode: 'MarkdownV2',
-            },
-          );
-          hasSufficientBalance = false;
-        }
-      } else {
-        throw new Error('Invalid model: ' + user.selectedModel);
+    case 'image':
+      if (
+        (user.subscriptionLevel === SubscriptionLevels.FREE ||
+          user.subscriptionLevel === SubscriptionLevels.START) &&
+        user.tokensBalance - IMAGE_ANALYSIS_COST < 0
+      ) {
+        await responseMessage.editText(
+          getNoBalanceMessage({
+            reqType: user.selectedModel,
+            canActivateTrial: user.canActivateTrial,
+            isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
+            mode,
+          }),
+          {
+            reply_markup: getTopupAndChangeModelKeyboard(
+              user.subscriptionLevel,
+            ),
+            parse_mode: 'MarkdownV2',
+          },
+        );
+        hasSufficientBalance = false;
       }
       break;
     default:
@@ -225,4 +248,80 @@ export const checkUserHasSufficientBalance = async ({
   }
 
   return hasSufficientBalance;
+};
+
+export const getMessagesHistory = async ({
+  user,
+  chatId,
+  userMessage,
+}: {
+  user: Document<unknown, {}, IUser> &
+    IUser & {
+      _id: Types.ObjectId;
+    } & {
+      __v: number;
+    };
+  chatId: Types.ObjectId;
+  userMessage: Document<unknown, {}, IMessage> & IMessage;
+}) => {
+  let history: IMessage[] = [];
+  // Choose max history length based on user's subscription level
+  if (user.chatMode === 'dialogue') {
+    let maxHistoryLength;
+    switch (user.subscriptionLevel) {
+      case SubscriptionLevels.START:
+      case SubscriptionLevels.OPTIMUM:
+      case SubscriptionLevels.OPTIMUM_TRIAL:
+        maxHistoryLength = MAX_HISTORY_LENGTH_START_OPTIMUM;
+        break;
+      case SubscriptionLevels.PREMIUM:
+      case SubscriptionLevels.ULTRA:
+        maxHistoryLength = MAX_HISTORY_LENGTH_PREMIUM_ULTRA;
+        break;
+      default:
+        maxHistoryLength = MAX_HISTORY_LENGTH_FREE;
+        break;
+    }
+    const messages = await Message.find({ chatId })
+      .sort({ createdAt: 1 })
+      .lean();
+    history = messages.slice(-maxHistoryLength);
+  } else {
+    history = [userMessage.toJSON()];
+  }
+
+  return history;
+};
+
+export const getLatestChat = async ({
+  ctx,
+  user,
+  responseMessage,
+}: {
+  ctx: MyContext;
+  user: Document<unknown, {}, IUser> & IUser;
+  responseMessage: TelegramMessage.CommonMessage & MessageXFragment;
+}) => {
+  let chatId = ctx.session.chatId;
+  let chatObj;
+
+  if (!chatId) {
+    const latestChat = await Chat.findOne({ userId: user._id }).sort({
+      createdAt: -1,
+    });
+    if (latestChat) {
+      chatObj = latestChat;
+      chatId = latestChat._id.toString();
+      ctx.session.chatId = chatId;
+    } else {
+      await responseMessage.editText(
+        'Пожалуйста, начните новый чат с помощью команды /start',
+      );
+      return;
+    }
+  }
+
+  const chat = chatObj || (await Chat.findById(chatId));
+
+  return chat;
 };

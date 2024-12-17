@@ -384,6 +384,11 @@ bot.hears([BUTTON_LABELS.settings, BUTTON_LABELS.settingsNew], settings);
 bot.hears(BUTTON_LABELS.help, help);
 bot.hears(BUTTON_LABELS.support, support);
 
+// Image message handler
+bot.on('message:photo', async (ctx) => {
+  await answerWithGPT(ctx, 'image');
+});
+
 // Voice message handler
 bot.on('message:voice', async (ctx) => {
   await answerWithGPT(ctx, 'voice');

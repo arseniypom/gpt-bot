@@ -6,6 +6,7 @@ import {
 } from '../utils/consts';
 import { checkUserHasSufficientBalance } from '../utils/gpt';
 import { logError } from '../utils/utilFunctions';
+import { handleImageMessage } from './imageMessageHandler';
 import { handleTextMessage } from './textMessageHandler';
 import { handleVoiceMessage } from './voiceMessageHandler';
 
@@ -28,6 +29,16 @@ export const answerWithGPT = async (ctx: MyContext, mode: AiRequestMode) => {
       await ctx.reply(FIRST_REQUEST_GIFT_MESSAGE, {
         parse_mode: 'MarkdownV2',
       });
+    } else if (mode === 'image') {
+      if (!ctx.session.isNotifiedAboutImageMode) {
+        await ctx.reply(
+          `*Режим обработки изображений*\n_→ В этом режиме бот анализирует изображение и выполняет задачу, подписанную Вами в сообщении с фото\\. В настоящий момент при обработке изображений доступен только режим "Обычный", в котором бот не запоминает историю чата\\._`,
+          {
+            parse_mode: 'MarkdownV2',
+          },
+        );
+        ctx.session.isNotifiedAboutImageMode = true;
+      }
     } else if (!ctx.session.isNotifiedAboutChatMode) {
       const chatModeLabel = ChatModeLabel[user.chatMode];
       const description =
@@ -64,6 +75,8 @@ export const answerWithGPT = async (ctx: MyContext, mode: AiRequestMode) => {
       });
     } else if (mode === 'voice') {
       await handleVoiceMessage({ user, ctx, responseMessage });
+    } else if (mode === 'image') {
+      await handleImageMessage({ user, ctx, responseMessage });
     }
   } catch (error) {
     await ctx.reply(

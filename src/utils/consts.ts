@@ -7,6 +7,7 @@ import {
   AiRequestMode,
   ChatMode,
   ChatModeLabel,
+  SubscriptionLevels,
 } from '../types/types';
 import { TOKEN_PACKAGES } from '../bot-token-packages';
 import { getBotUrl, getChannelTelegramName } from './utilFunctions';
@@ -14,6 +15,7 @@ import { getBotUrl, getChannelTelegramName } from './utilFunctions';
 export const BASIC_REQUEST_COST = 1.5;
 export const PRO_REQUEST_COST = 3;
 export const IMAGE_GENERATION_COST = 10;
+export const IMAGE_ANALYSIS_COST = 4;
 export const VOICE_ADDITIONAL_COST = 0.5;
 
 export const MAX_BOT_MESSAGE_LENGTH = 4000;
@@ -81,6 +83,7 @@ export const COSTS_LABELS = {
     .toString()
     .replace(/\./g, '\\.')}`,
   imageGeneration: IMAGE_GENERATION_COST.toString().replace(/\./g, '\\.'),
+  imageAnalysis: IMAGE_ANALYSIS_COST.toString().replace(/\./g, '\\.'),
 };
 
 export const PROMPT_MESSAGE = `
@@ -112,6 +115,7 @@ export const PROMPT_MESSAGE_BASE = `
 
 ### Основные функции:
 Ты умеешь много всего, например:
+– Анализировать изображения и выполнять задачи, указанные на них
 – Принимать голосовые сообщения и отвечать на них
 - Перевести текст на любой язык
 - Написать пост, статью, письмо или краткое изложение
@@ -119,7 +123,7 @@ export const PROMPT_MESSAGE_BASE = `
 - Создать контент-план, сценарий, историю и другой креативный контент
 - Провести анализ, расчёты и исследования
 - Разработать меню на неделю под любые запросы
-- Сгенерировать изображение через модель DALL-E 3 по текстовому запросу
+- Сгенерировать изображение через модель DALL-E 3 по текстовому запросу (команда /image)
 И многое другое.
 
 ### Форматирование ответов:
@@ -144,6 +148,15 @@ export const PROMPT_MESSAGE_DIALOG_MODE_POSTFIX = `
 export const PROMPT_MESSAGE_BASIC_MODE_POSTFIX = `
 ### Удержание контекста:
 Ты не запоминаешь контекст диалога, каждое сообщение воспринимается как новый чат. Если пользователь предположительно задает вопросы исходя из контекста предыдущих сообщений, уточни, что ты не запоминаешь контекст и каждый вопрос ты воспринимаешь как новый. А для переключения режима диалога нужно использовать команду /settings или кнопку "⚙️ Настройки" в меню.
+`;
+
+export const getPromptImagePostfix = (caption: string | undefined) => `
+### Работа с изображениями от пользователя:
+Проанализируй изображение, отправленное пользователем, и выполни задачу: ${
+  caption ||
+  'самостоятельно поставь себе задачу исходя из контекста изображения и начни свой ответ со слов "Я проанализировал изображение и постараюсь ...", пример: "Я проанализировал изображение и постараюсь решить уравнение, представленное на изображении"'
+}.
+ВАЖНО: ты не запоминаешь контекст диалога, каждое сообщение воспринимается как новый чат. Если для анализа изображения требуется больше информации, то задай пользователю уточняющие вопросы и предложи заново отправить изображение, добавив в описание ответы.
 `;
 
 export const START_MESSAGE_V2_old = `
@@ -335,6 +348,9 @@ export const HELP_MESSAGE_TOKENS = `
 *Генерация изображений:*
   1 генерация \\= ${COSTS_LABELS.imageGeneration} токенов
 
+*Анализ изображения:*
+  1 изображение \\= ${COSTS_LABELS.imageAnalysis} токена
+
 → Купить токены: /topup
 
 _P\\.S\\. Мы говорили, что подписка выгоднее, чем токены? 👀_
@@ -472,6 +488,8 @@ export const getNoBalanceMessage = ({
       title = `✖︎ Нет доступных голосовых запросов к модели ${AiModelsLabels[
         reqType
       ].replace(/-/g, '\\-')} ✖︎`;
+    } else if (mode === 'image') {
+      title = `✖︎ Анализ изображений недоступен ✖︎`;
     } else {
       title = `✖︎ Нет доступных запросов к модели ${AiModelsLabels[
         reqType
@@ -535,6 +553,9 @@ _Подробнее про режимы и модели: /help_
 
 export const getProfileMessage = (user: IUser) => {
   const isFreeSubscription = user.subscriptionLevel === 'FREE';
+  const isImageAnalysisAvailable =
+    user.subscriptionLevel !== SubscriptionLevels.FREE &&
+    user.subscriptionLevel !== SubscriptionLevels.START;
 
   // Free user
   const weeklyRequestsExpirationDate = dayjs(user.weeklyRequestsExpiry)
@@ -552,9 +573,17 @@ export const getProfileMessage = (user: IUser) => {
   const currSubscriptionData = SUBSCRIPTIONS[user.subscriptionLevel];
   const requestsLeftMessage = !isFreeSubscription
     ? `\n*Остаток запросов:*
-⭐️ Базовые: ${user.basicRequestsLeftToday}/${currSubscriptionData.basicRequestsPerDay} на сегодня
-🌟 PRO: ${user.proRequestsLeftThisMonth}/${currSubscriptionData.proRequestsPerMonth} на мес\\.
-🖼️ Генерация изображений: ${user.imageGenerationLeftThisMonth}/${currSubscriptionData.imageGenerationPerMonth} на мес\\.\n`
+⭐️ Базовые: ${user.basicRequestsLeftToday}/${
+        currSubscriptionData.basicRequestsPerDay
+      } на сегодня
+🌟 PRO: ${user.proRequestsLeftThisMonth}/${
+        currSubscriptionData.proRequestsPerMonth
+      } на мес\\.
+🖼️ Генерация изображений: ${user.imageGenerationLeftThisMonth}/${
+        currSubscriptionData.imageGenerationPerMonth
+      } на мес\\.${
+        isImageAnalysisAvailable ? '\n🕵️ Анализ изображений: безлимит\n' : '\n'
+      }`
     : '';
 
   return `

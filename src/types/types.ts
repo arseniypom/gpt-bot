@@ -13,6 +13,7 @@ export interface SessionData {
   subscriptionLevel?: Exclude<SubscriptionLevel, 'FREE'>;
   user?: Pick<IUser, 'telegramId' | 'firstName' | 'userName'>;
   isNotifiedAboutChatMode?: boolean;
+  isNotifiedAboutImageMode?: boolean;
 }
 
 export type MyContext = HydrateFlavor<
@@ -50,7 +51,7 @@ export enum ImageGenerationQuality {
   HD = 'hd',
 }
 
-export type AiRequestMode = 'text' | 'voice';
+export type AiRequestMode = 'text' | 'voice' | 'image';
 
 export type PackageName =
   | 'req1'
