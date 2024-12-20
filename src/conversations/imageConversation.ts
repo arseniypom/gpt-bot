@@ -2,26 +2,46 @@ import 'dotenv/config';
 import { InlineKeyboard } from 'grammy';
 import { User as TelegramUser } from '@grammyjs/types';
 import { generateImage } from '../utils/gpt';
-import { logError, sendMessageToAdmin } from '../utils/utilFunctions';
+import { logError } from '../utils/utilFunctions';
 import {
   type MyConversation,
   type MyContext,
+  ImageGenerationQuality,
   SubscriptionLevels,
+  ImageGenerationSizes,
 } from '../types/types';
 import User from '../../db/User';
 import {
   BUTTON_LABELS,
-  getNoBalanceMessage,
+  getHDGenerationNotAvailableMessage,
   IMAGE_GENERATION_COST,
+  INLINE_BUTTON_LABELS,
   SUPPORT_MESSAGE_POSTFIX,
 } from '../utils/consts';
-import { getTopupAndManageSubscriptionKeyboard } from '../commands/topup';
 import Images from '../../db/Images';
 import bot from '../../bot';
 
 const cancelKeyboard = new InlineKeyboard().text(
   '❌ Отменить',
   'cancelImageGeneration',
+);
+
+const addSubscriptionKeyboard = new InlineKeyboard().text(
+  INLINE_BUTTON_LABELS.subscription,
+  'subscription',
+);
+
+const addSubscriptionKeyboardWithTrial = new InlineKeyboard()
+  .text(
+    INLINE_BUTTON_LABELS.subscriptionTrial,
+    `${SubscriptionLevels.OPTIMUM_TRIAL}-no-delete`,
+  )
+  .row()
+  .text(INLINE_BUTTON_LABELS.allLevels, 'subscription');
+
+const manageSubscriptionKeyboard = new InlineKeyboard().text(
+  INLINE_BUTTON_LABELS.subscriptionManage,
+  'subscriptionManage',
 );
 
 export async function imageConversation(
@@ -37,24 +57,39 @@ export async function imageConversation(
       await ctx.reply('Пожалуйста, начните новый чат с помощью команды /start');
       return;
     }
+
+    const isHDGenerationAvailableForUser =
+      userObj.subscriptionLevel !== SubscriptionLevels.FREE &&
+      userObj.subscriptionLevel !== SubscriptionLevels.START;
+
     if (
-      userObj.imageGenerationLeftThisMonth === 0 &&
-      userObj.tokensBalance - IMAGE_GENERATION_COST < 0
+      conversation.session.imageQuality === ImageGenerationQuality.HD &&
+      !isHDGenerationAvailableForUser
     ) {
+      let keyboard;
+      if (userObj.canActivateTrial) {
+        keyboard = addSubscriptionKeyboardWithTrial;
+      } else if (userObj.subscriptionLevel === SubscriptionLevels.FREE) {
+        keyboard = addSubscriptionKeyboard;
+      } else {
+        keyboard = manageSubscriptionKeyboard;
+      }
       await ctx.reply(
-        getNoBalanceMessage({
-          reqType: 'image',
+        getHDGenerationNotAvailableMessage({
           canActivateTrial: userObj.canActivateTrial,
           isFreeUser: userObj.subscriptionLevel === SubscriptionLevels.FREE,
         }),
         {
-          reply_markup: getTopupAndManageSubscriptionKeyboard(
-            userObj.subscriptionLevel,
-          ),
           parse_mode: 'MarkdownV2',
+          reply_markup: keyboard,
         },
       );
       return;
+    }
+
+    let size = ImageGenerationSizes.SQUARE;
+    if (conversation.session.imageQuality === ImageGenerationQuality.HD) {
+      size = ImageGenerationSizes.HORIZONTAL;
     }
 
     await ctx.reply('Опишите, что должно быть на изображении?', {
@@ -89,6 +124,7 @@ export async function imageConversation(
       imageData = await generateImage(
         message.text,
         conversation.session.imageQuality,
+        size,
       );
     } catch (error) {
       if (

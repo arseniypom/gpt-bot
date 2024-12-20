@@ -171,7 +171,7 @@ bot.callbackQuery(Object.values(ImageGenerationQuality), async (ctx) => {
     return;
   }
   ctx.session.imageQuality = quality;
-  await ctx.callbackQuery.message?.editText(`Выбрано качество: ${quality}`);
+  await ctx.callbackQuery.message?.editText(`Качество: ${quality}`);
 
   await ctx.conversation.enter('imageConversation');
 });
@@ -189,12 +189,12 @@ bot.callbackQuery(
     SubscriptionLevels.PREMIUM,
     SubscriptionLevels.ULTRA,
     SubscriptionLevels.OPTIMUM_TRIAL,
-    `${SubscriptionLevels.OPTIMUM_TRIAL}-promo`,
+    `${SubscriptionLevels.OPTIMUM_TRIAL}-no-delete`,
   ],
   async (ctx) => {
     await ctx.answerCallbackQuery();
     if (
-      ctx.callbackQuery.data !== `${SubscriptionLevels.OPTIMUM_TRIAL}-promo`
+      ctx.callbackQuery.data !== `${SubscriptionLevels.OPTIMUM_TRIAL}-no-delete`
     ) {
       await ctx.callbackQuery.message?.delete();
       ctx.session.subscriptionLevel = ctx.callbackQuery.data as Exclude<
@@ -386,7 +386,7 @@ bot.hears(BUTTON_LABELS.support, support);
 
 // Image message handler
 bot.on('message:photo', async (ctx) => {
-  await answerWithGPT(ctx, 'image');
+  await answerWithGPT(ctx, 'imageVision');
 });
 
 // Voice message handler

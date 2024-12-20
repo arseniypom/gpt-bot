@@ -12,6 +12,8 @@ import {
   AiRequestMode,
   ChatMode,
   ImageGenerationQuality,
+  ImageGenerationSizes,
+  imageQualityMap,
   MyContext,
   SubscriptionLevels,
 } from '../types/types';
@@ -90,13 +92,14 @@ export const getResponseFromOpenAIGpt = async ({
 export const generateImage = async (
   prompt: string,
   quality: ImageGenerationQuality = ImageGenerationQuality.STANDARD,
+  size: ImageGenerationSizes = ImageGenerationSizes.SQUARE,
 ): Promise<{ url?: string; revisedPrompt?: string }> => {
   const response = await openai.images.generate({
     model: 'dall-e-3',
-    quality: quality,
+    quality: imageQualityMap[quality],
     prompt,
     n: 1,
-    size: '1024x1024',
+    size,
   });
 
   return {
@@ -220,7 +223,7 @@ export const checkUserHasSufficientBalance = async ({
       break;
 
     case 'text':
-    case 'image':
+    case 'imageVision':
       if (
         (user.subscriptionLevel === SubscriptionLevels.FREE ||
           user.subscriptionLevel === SubscriptionLevels.START) &&

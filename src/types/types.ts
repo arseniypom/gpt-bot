@@ -47,11 +47,26 @@ export type AiModel = keyof typeof AiModels;
 export type AiModelLabel = keyof typeof AiModelsLabels;
 
 export enum ImageGenerationQuality {
-  STANDARD = 'standard',
-  HD = 'hd',
+  STANDARD = 'Standard',
+  HD = 'HD',
 }
 
-export type AiRequestMode = 'text' | 'voice' | 'image';
+type DallEQualityParam = 'standard' | 'hd';
+export const imageQualityMap: Record<
+  ImageGenerationQuality,
+  DallEQualityParam
+> = {
+  [ImageGenerationQuality.STANDARD]: 'standard',
+  [ImageGenerationQuality.HD]: 'hd',
+};
+
+export enum ImageGenerationSizes {
+  SQUARE = '1024x1024',
+  VERTICAL = '1024x1792',
+  HORIZONTAL = '1792x1024',
+}
+
+export type AiRequestMode = 'text' | 'voice' | 'imageVision';
 
 export type PackageName =
   | 'req1'
