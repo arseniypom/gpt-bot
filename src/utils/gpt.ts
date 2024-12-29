@@ -222,6 +222,54 @@ export const checkUserHasSufficientBalance = async ({
       break;
 
     case 'text':
+      if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
+        if (
+          user.proRequestsLeftThisMonth === 0 &&
+          user.tokensBalance - PRO_REQUEST_COST < 0
+        ) {
+          await responseMessage.editText(
+            getNoBalanceMessage({
+              reqType: user.selectedModel,
+              canActivateTrial: user.canActivateTrial,
+              isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
+              mode,
+            }),
+            {
+              reply_markup: getTopupAndChangeModelKeyboard(
+                user.subscriptionLevel,
+              ),
+              parse_mode: 'MarkdownV2',
+            },
+          );
+          hasSufficientBalance = false;
+        }
+      } else if (AiModels[user.selectedModel] === AiModels.GPT_4O_MINI) {
+        if (
+          user.basicRequestsLeftThisWeek === 0 &&
+          user.basicRequestsLeftToday === 0 &&
+          user.tokensBalance - BASIC_REQUEST_COST < 0
+        ) {
+          await responseMessage.editText(
+            getNoBalanceMessage({
+              reqType: user.selectedModel,
+              canActivateTrial: user.canActivateTrial,
+              isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
+              mode,
+            }),
+            {
+              reply_markup: getTopupAndChangeModelKeyboard(
+                user.subscriptionLevel,
+              ),
+              parse_mode: 'MarkdownV2',
+            },
+          );
+          hasSufficientBalance = false;
+        }
+      } else {
+        throw new Error('Invalid model: ' + user.selectedModel);
+      }
+      break;
+
     case 'imageVision':
       if (
         (user.subscriptionLevel === SubscriptionLevels.FREE ||
