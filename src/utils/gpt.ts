@@ -126,7 +126,7 @@ export const getVisionResponseFromOpenAIGpt = async ({
   telegramId: number;
   caption?: string;
 }) => {
-  const prompt = getPromptImagePostfix(caption);
+  const prompt = PROMPT_MESSAGE_BASE + getPromptImagePostfix(caption);
   try {
     const response = await openai.chat.completions.create({
       model: AiModels.GPT_4O,
