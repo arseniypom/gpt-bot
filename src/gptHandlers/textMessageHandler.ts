@@ -1,3 +1,4 @@
+import { GrammyError } from 'grammy';
 import { MyContext, SubscriptionLevels, UserStages } from '../types/types';
 import {
   User as TelegramUser,
@@ -12,6 +13,7 @@ import {
   getLatestChat,
   getMessagesHistory,
   getResponseFromOpenAIGpt,
+  sanitizeGptAnswer,
 } from '../utils/gpt';
 import {
   BASIC_REQUEST_COST,
@@ -88,11 +90,13 @@ export const handleTextMessage = async ({
     return;
   }
 
+  const sanitizedAnswer = sanitizeGptAnswer(answer);
+
   await Message.create({
     chatId: chat._id,
     userId: user._id,
     role: 'assistant',
-    content: answer,
+    content: sanitizedAnswer,
     model: user.selectedModel,
     chatMode: user.chatMode,
   });
@@ -140,15 +144,30 @@ export const handleTextMessage = async ({
   user.updatedAt = new Date();
   await user.save();
 
-  if (answer.length > MAX_BOT_MESSAGE_LENGTH) {
+  if (sanitizedAnswer.length > MAX_BOT_MESSAGE_LENGTH) {
     const chunks =
-      answer.match(new RegExp(`[^]{1,${MAX_BOT_MESSAGE_LENGTH}}`, 'g')) || [];
+      sanitizedAnswer.match(
+        new RegExp(`[^]{1,${MAX_BOT_MESSAGE_LENGTH}}`, 'g'),
+      ) || [];
     await responseMessage.editText(chunks[0]!);
     for (let i = 1; i < chunks.length; i++) {
       await new Promise((resolve) => setTimeout(resolve, 500));
       await ctx.reply(chunks[i]);
     }
   } else {
-    await responseMessage.editText(answer);
+    try {
+      await responseMessage.editText(sanitizedAnswer, {
+        parse_mode: 'MarkdownV2',
+      });
+    } catch (error) {
+      if (
+        error instanceof GrammyError &&
+        error.description.includes("can't parse entities")
+      ) {
+        await responseMessage.editText(sanitizedAnswer);
+      } else {
+        throw error;
+      }
+    }
   }
 };

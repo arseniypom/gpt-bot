@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { GrammyError } from 'grammy';
 import { Document, Types } from 'mongoose';
 import { Message as TelegramMessage } from '@grammyjs/types';
 import { MessageXFragment } from '@grammyjs/hydrate/out/data/message';
@@ -10,7 +11,10 @@ import {
   sendMessageToAdmin,
 } from '../utils/utilFunctions';
 import axios from 'axios';
-import { getVisionResponseFromOpenAIGpt } from '../utils/gpt';
+import {
+  getVisionResponseFromOpenAIGpt,
+  sanitizeGptAnswer,
+} from '../utils/gpt';
 import { IMAGE_ANALYSIS_COST, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 
 export const handleImageMessage = async ({
@@ -43,19 +47,21 @@ export const handleImageMessage = async ({
     caption: ctx.message?.caption,
   });
 
-  if (
-    process.env.ADMIN_TELEGRAM_ID &&
-    ctx.from!.id !== Number(process.env.ADMIN_TELEGRAM_ID)
-  ) {
-    ctx.forwardMessage(process.env.ADMIN_TELEGRAM_ID);
-    await sendMessageToAdmin(responseFromGpt || 'null');
-  }
-
   if (!responseFromGpt) {
     await responseMessage.editText(
       `Произошла ошибка при обработке изображения или генерации ответа. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     return;
+  }
+
+  const sanitizedAnswer = sanitizeGptAnswer(responseFromGpt);
+
+  if (
+    process.env.ADMIN_TELEGRAM_ID &&
+    ctx.from!.id !== Number(process.env.ADMIN_TELEGRAM_ID)
+  ) {
+    ctx.forwardMessage(process.env.ADMIN_TELEGRAM_ID);
+    await sendMessageToAdmin(sanitizedAnswer || 'null');
   }
 
   if (
@@ -66,5 +72,18 @@ export const handleImageMessage = async ({
     await user.save();
   }
 
-  await responseMessage.editText(responseFromGpt);
+  try {
+    await responseMessage.editText(sanitizedAnswer, {
+      parse_mode: 'MarkdownV2',
+    });
+  } catch (error) {
+    if (
+      error instanceof GrammyError &&
+      error.description.includes("can't parse entities")
+    ) {
+      await responseMessage.editText(sanitizedAnswer);
+    } else {
+      throw error;
+    }
+  }
 };

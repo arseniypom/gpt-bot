@@ -1,3 +1,4 @@
+import telegramifyMarkdown from 'telegramify-markdown';
 import OpenAI from 'openai';
 import 'dotenv/config';
 import fs from 'fs';
@@ -374,4 +375,10 @@ export const getLatestChat = async ({
   const chat = chatObj || (await Chat.findById(chatId));
 
   return chat;
+};
+
+export const sanitizeGptAnswer = (answer: string) => {
+  const answerWithFixedHeaders = answer.replace(/\*\*/g, '*');
+  const sanitizedAnswer = telegramifyMarkdown(answerWithFixedHeaders, 'remove');
+  return sanitizedAnswer;
 };
