@@ -76,21 +76,21 @@ export const handleTextMessage = async ({
   });
 
   const selectedModelName = user.selectedModel;
-  const answer = await getResponseFromOpenAIGpt({
+  const responseFromGpt = await getResponseFromOpenAIGpt({
     chatHistory: history,
     telegramId,
     chatMode: user.chatMode,
     modelName: selectedModelName,
   });
 
-  if (!answer) {
+  if (!responseFromGpt) {
     await responseMessage.editText(
       `Произошла ошибка при генерации ответа. ${SUPPORT_MESSAGE_POSTFIX}`,
     );
     return;
   }
 
-  const sanitizedAnswer = sanitizeGptAnswer(answer);
+  const sanitizedAnswer = sanitizeGptAnswer(responseFromGpt);
 
   await Message.create({
     chatId: chat._id,
@@ -164,7 +164,7 @@ export const handleTextMessage = async ({
         error instanceof GrammyError &&
         error.description.includes("can't parse entities")
       ) {
-        await responseMessage.editText(sanitizedAnswer);
+        await responseMessage.editText(responseFromGpt);
       } else {
         throw error;
       }

@@ -81,7 +81,7 @@ export const handleImageMessage = async ({
       error instanceof GrammyError &&
       error.description.includes("can't parse entities")
     ) {
-      await responseMessage.editText(sanitizedAnswer);
+      await responseMessage.editText(responseFromGpt);
     } else {
       throw error;
     }
