@@ -378,7 +378,6 @@ export const getLatestChat = async ({
 };
 
 export const sanitizeGptAnswer = (answer: string) => {
-  const answerWithFixedHeaders = answer.replace(/\*\*/g, '*');
-  const sanitizedAnswer = telegramifyMarkdown(answerWithFixedHeaders, 'remove');
+  const sanitizedAnswer = telegramifyMarkdown(answer, 'remove');
   return sanitizedAnswer;
 };
