@@ -378,6 +378,7 @@ export const getLatestChat = async ({
 };
 
 export const sanitizeGptAnswer = (answer: string) => {
-  const sanitizedAnswer = telegramifyMarkdown(answer, 'remove');
+  const answerCopy = answer;
+  const sanitizedAnswer = telegramifyMarkdown(answerCopy, 'remove');
   return sanitizedAnswer;
 };
