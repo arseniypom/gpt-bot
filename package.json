@@ -40,7 +40,7 @@
     "mongoose": "^8.6.3",
     "node-cron": "^3.0.3",
     "nodemon": "^3.1.5",
-    "openai": "^4.62.0",
+    "openai": "4.85.1",
     "telegramify-markdown": "^1.2.2",
     "ts-node": "^10.9.2",
     "uuid": "^10.0.0",
