@@ -5,12 +5,12 @@ import fs from 'fs';
 import { Document, Types } from 'mongoose';
 import { Message as TelegramMessage } from '@grammyjs/types';
 import { MessageXFragment } from '@grammyjs/hydrate/out/data/message';
+import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { IUser } from '../../db/User';
 import Message, { IMessage } from '../../db/Message';
 import {
   AiModel,
   AiModels,
-  AiRequestMode,
   ChatMode,
   ImageGenerationQuality,
   ImageGenerationSizes,
@@ -24,15 +24,14 @@ import {
   PROMPT_MESSAGE_BASE,
   PROMPT_MESSAGE_DIALOG_MODE_POSTFIX,
   PROMPT_MESSAGE_BASIC_MODE_POSTFIX,
-  BASIC_REQUEST_COST,
   getNoBalanceMessage,
-  PRO_REQUEST_COST,
   VOICE_ADDITIONAL_COST,
   MAX_HISTORY_LENGTH_START_OPTIMUM,
   MAX_HISTORY_LENGTH_PREMIUM_ULTRA,
   MAX_HISTORY_LENGTH_FREE,
   getPromptImagePostfix,
   IMAGE_ANALYSIS_COST,
+  modelSettings,
 } from './consts';
 import { getTopupAndChangeModelKeyboard } from '../commands/topup';
 import Chat from '../../db/Chat';
@@ -51,7 +50,7 @@ export const getResponseFromOpenAIGpt = async ({
   modelName?: AiModel;
 }): Promise<string | null> => {
   const formattedHistoryMessages = chatHistory.map((msg) => ({
-    role: msg.role as 'system' | 'user' | 'assistant',
+    role: msg.role as 'system' | 'user' | 'assistant' | 'developer',
     content: [{ type: 'text', text: msg.content }] as [
       { type: 'text'; text: string },
     ],
@@ -74,12 +73,18 @@ export const getResponseFromOpenAIGpt = async ({
   }
 
   try {
+    const messages: ChatCompletionMessageParam[] = [];
+    if (AiModels[modelName] !== AiModels.O1) {
+      messages.push({
+        role: 'system',
+        content: [{ type: 'text', text: prompt }],
+      });
+    }
+    messages.push(...formattedHistoryMessages);
+
     const response = await openai.chat.completions.create({
       model: AiModels[modelName],
-      messages: [
-        { role: 'system', content: [{ type: 'text', text: prompt }] },
-        ...formattedHistoryMessages,
-      ],
+      messages,
       user: telegramId.toString(),
     });
 
@@ -163,142 +168,115 @@ export const checkUserHasSufficientBalance = async ({
   mode,
 }: {
   user: Document<unknown, {}, IUser> &
-    IUser & {
-      _id: Types.ObjectId;
-    } & {
-      __v: number;
-    };
+    IUser & { _id: Types.ObjectId } & { __v: number };
   responseMessage: TelegramMessage.CommonMessage & MessageXFragment;
-  mode: AiRequestMode;
+  mode: 'voice' | 'text' | 'imageVision';
 }) => {
-  let hasSufficientBalance = true;
-
-  switch (mode) {
-    case 'voice':
-      if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
-        if (
-          user.proRequestsLeftThisMonth === 0 &&
-          user.tokensBalance - PRO_REQUEST_COST + VOICE_ADDITIONAL_COST < 0
-        ) {
-          await responseMessage.editText(
-            getNoBalanceMessage({
-              reqType: user.selectedModel,
-              canActivateTrial: user.canActivateTrial,
-              isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
-              mode,
-            }),
-            {
-              reply_markup: getTopupAndChangeModelKeyboard(
-                user.subscriptionLevel,
-              ),
-              parse_mode: 'MarkdownV2',
-            },
-          );
-          hasSufficientBalance = false;
-        }
-      } else if (AiModels[user.selectedModel] === AiModels.GPT_4O_MINI) {
-        if (
-          user.basicRequestsLeftToday === 0 &&
-          user.tokensBalance - BASIC_REQUEST_COST + VOICE_ADDITIONAL_COST < 0
-        ) {
-          await responseMessage.editText(
-            getNoBalanceMessage({
-              reqType: user.selectedModel,
-              canActivateTrial: user.canActivateTrial,
-              isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
-              mode,
-            }),
-            {
-              reply_markup: getTopupAndChangeModelKeyboard(
-                user.subscriptionLevel,
-              ),
-              parse_mode: 'MarkdownV2',
-            },
-          );
-          hasSufficientBalance = false;
-        }
-      } else {
-        throw new Error('Invalid model: ' + user.selectedModel);
-      }
-      break;
-
-    case 'text':
-      if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
-        if (
-          user.proRequestsLeftThisMonth === 0 &&
-          user.tokensBalance - PRO_REQUEST_COST < 0
-        ) {
-          await responseMessage.editText(
-            getNoBalanceMessage({
-              reqType: user.selectedModel,
-              canActivateTrial: user.canActivateTrial,
-              isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
-              mode,
-            }),
-            {
-              reply_markup: getTopupAndChangeModelKeyboard(
-                user.subscriptionLevel,
-              ),
-              parse_mode: 'MarkdownV2',
-            },
-          );
-          hasSufficientBalance = false;
-        }
-      } else if (AiModels[user.selectedModel] === AiModels.GPT_4O_MINI) {
-        if (
-          user.basicRequestsLeftThisWeek === 0 &&
-          user.basicRequestsLeftToday === 0 &&
-          user.tokensBalance - BASIC_REQUEST_COST < 0
-        ) {
-          await responseMessage.editText(
-            getNoBalanceMessage({
-              reqType: user.selectedModel,
-              canActivateTrial: user.canActivateTrial,
-              isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
-              mode,
-            }),
-            {
-              reply_markup: getTopupAndChangeModelKeyboard(
-                user.subscriptionLevel,
-              ),
-              parse_mode: 'MarkdownV2',
-            },
-          );
-          hasSufficientBalance = false;
-        }
-      } else {
-        throw new Error('Invalid model: ' + user.selectedModel);
-      }
-      break;
-
-    case 'imageVision':
-      if (
-        (user.subscriptionLevel === SubscriptionLevels.FREE ||
-          user.subscriptionLevel === SubscriptionLevels.START) &&
-        user.tokensBalance - IMAGE_ANALYSIS_COST < 0
-      ) {
-        await responseMessage.editText(
-          getNoBalanceMessage({
-            reqType: user.selectedModel,
-            canActivateTrial: user.canActivateTrial,
-            isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
-            mode,
-          }),
-          {
-            reply_markup: getTopupAndChangeModelKeyboard(
-              user.subscriptionLevel,
-            ),
-            parse_mode: 'MarkdownV2',
-          },
-        );
-        hasSufficientBalance = false;
-      }
-      break;
-    default:
-      break;
+  if (mode === 'imageVision') {
+    if (
+      (user.subscriptionLevel === SubscriptionLevels.FREE ||
+        user.subscriptionLevel === SubscriptionLevels.START) &&
+      user.tokensBalance < IMAGE_ANALYSIS_COST
+    ) {
+      await responseMessage.editText(
+        getNoBalanceMessage({
+          reqType: user.selectedModel,
+          canActivateTrial: user.canActivateTrial,
+          isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
+          mode,
+        }),
+        {
+          reply_markup: getTopupAndChangeModelKeyboard(user.subscriptionLevel),
+          parse_mode: 'MarkdownV2',
+        },
+      );
+      return false;
+    }
+    return true;
   }
 
-  return hasSufficientBalance;
+  const settings = modelSettings[user.selectedModel];
+  if (!settings) {
+    throw new Error('Invalid model: ' + user.selectedModel);
+  }
+
+  const additionalCost = mode === 'voice' ? VOICE_ADDITIONAL_COST : 0;
+  const totalCost = (settings.cost ?? 0) + additionalCost;
+
+  let hasSufficient = false;
+  for (const limitKey of settings.limitPriority) {
+    if (limitKey === 'tokens') {
+      // Only check tokens if cost is defined
+      if (
+        typeof settings.cost !== 'undefined' &&
+        user.tokensBalance >= totalCost
+      ) {
+        hasSufficient = true;
+        break;
+      }
+    } else {
+      if (user[limitKey] > 0) {
+        hasSufficient = true;
+        break;
+      }
+    }
+  }
+
+  if (!hasSufficient) {
+    await responseMessage.editText(
+      getNoBalanceMessage({
+        reqType: user.selectedModel,
+        canActivateTrial: user.canActivateTrial,
+        isFreeUser: user.subscriptionLevel === SubscriptionLevels.FREE,
+        mode,
+      }),
+      {
+        reply_markup: getTopupAndChangeModelKeyboard(user.subscriptionLevel),
+        parse_mode: 'MarkdownV2',
+      },
+    );
+  }
+  return hasSufficient;
+};
+
+export const deductUserBalance = (
+  user: Document<unknown, {}, IUser> &
+    IUser & { _id: Types.ObjectId } & { __v: number },
+  mode: 'voice' | 'text',
+) => {
+  const settings = modelSettings[user.selectedModel as AiModel];
+  if (!settings) {
+    throw new Error('Invalid model: ' + user.selectedModel);
+  }
+
+  const additionalCost = mode === 'voice' ? VOICE_ADDITIONAL_COST : 0;
+  const totalCost = (settings.cost ?? 0) + additionalCost;
+
+  let deducted = false;
+  for (const limitKey of settings.limitPriority) {
+    if (limitKey === 'tokens') {
+      if (
+        typeof settings.cost !== 'undefined' &&
+        user.tokensBalance >= totalCost
+      ) {
+        user.tokensBalance -= totalCost;
+        deducted = true;
+        break;
+      }
+    } else {
+      if (user[limitKey] > 0) {
+        user[limitKey] = user[limitKey] - 1;
+        deducted = true;
+        break;
+      }
+    }
+  }
+
+  if (!deducted) {
+    throw new Error('Insufficient balance at deduction time');
+  }
+
+  user.stats[settings.statsKey] += 1;
 };
 
 export const getMessagesHistory = async ({

@@ -22,7 +22,7 @@ export type MyContext = HydrateFlavor<
 export type MyConversation = Conversation<MyContext>;
 
 export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: 'system' | 'user' | 'assistant' | 'developer';
   content: string;
 }
 
@@ -36,11 +36,13 @@ export enum ChatModeLabel {
 export enum AiModels {
   GPT_4O_MINI = 'gpt-4o-mini-2024-07-18',
   GPT_4O = 'gpt-4o-2024-11-20',
+  O1 = 'o1-mini-2024-09-12',
 }
 
 export enum AiModelsLabels {
   GPT_4O_MINI = 'GPT-4o-mini',
   GPT_4O = 'GPT-4o',
+  O1 = 'o1 (NEW)',
 }
 
 export type AiModel = keyof typeof AiModels;
@@ -160,5 +162,6 @@ export interface ReferralProgram {
 export interface UserStats {
   basicReqsMade: number;
   proReqsMade: number;
+  o1ReqsMade: number;
   imgGensMade: number;
 }

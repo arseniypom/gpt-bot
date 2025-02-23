@@ -26,6 +26,39 @@ export const MAX_HISTORY_LENGTH_PREMIUM_ULTRA = 30;
 export const DEFAULT_AI_MODEL = 'GPT_4O_MINI';
 export const MAX_USER_MESSAGE_LENGTH = 3000;
 
+export const modelSettings: Record<
+  AiModel,
+  {
+    cost?: number;
+    limitPriority: (
+      | 'basicRequestsLeftThisWeek'
+      | 'basicRequestsLeftToday'
+      | 'proRequestsLeftThisMonth'
+      | 'tokens'
+    )[];
+    statsKey: keyof IUser['stats'];
+  }
+> = {
+  GPT_4O_MINI: {
+    cost: BASIC_REQUEST_COST,
+    limitPriority: [
+      'basicRequestsLeftThisWeek',
+      'basicRequestsLeftToday',
+      'tokens',
+    ],
+    statsKey: 'basicReqsMade',
+  },
+  GPT_4O: {
+    cost: PRO_REQUEST_COST,
+    limitPriority: ['proRequestsLeftThisMonth', 'tokens'],
+    statsKey: 'proReqsMade',
+  },
+  O1: {
+    limitPriority: ['proRequestsLeftThisMonth'],
+    statsKey: 'o1ReqsMade',
+  },
+};
+
 const channelTelegramName = getChannelTelegramName();
 if (!channelTelegramName) {
   throw new Error('Env var CHANNEL_TELEGRAM_NAME_* is not defined');
@@ -508,21 +541,33 @@ export const getNoBalanceMessage = ({
   isFreeUser: boolean;
   mode?: AiRequestMode;
 }) => {
-  let title = '';
+  const modelLabel =
+    reqType !== 'image' && AiModelsLabels[reqType].replace(/[-()]/g, '\\$&');
+
+  let title;
   if (reqType === 'image') {
     title = '✖︎ Нет доступных запросов для генерации изображений ✖︎';
   } else {
     if (mode === 'voice') {
-      title = `✖︎ Нет доступных голосовых запросов к модели ${AiModelsLabels[
-        reqType
-      ].replace(/-/g, '\\-')} ✖︎`;
+      title = `✖︎ Нет доступных голосовых запросов к модели ${modelLabel} ✖︎`;
     } else if (mode === 'imageVision') {
       title = `✖︎ Анализ изображений недоступен ✖︎`;
     } else {
-      title = `✖︎ Нет доступных запросов к модели ${AiModelsLabels[
-        reqType
-      ].replace(/-/g, '\\-')} ✖︎`;
+      title = `✖︎ Нет доступных запросов к модели ${modelLabel} ✖︎`;
     }
+  }
+
+  let callToAction;
+  if (isFreeUser) {
+    callToAction =
+      reqType === 'O1'
+        ? 'подключите подписку 🚀'
+        : 'подключите подписку или пополните баланс токенов 🪙';
+  } else {
+    callToAction =
+      reqType === 'O1'
+        ? 'переключитесь на другой уровень подписки ↓'
+        : 'пополните баланс токенов или переключитесь на другой уровень подписки ↓';
   }
 
   const offer = canActivateTrial
@@ -542,11 +587,7 @@ ${offer}
 
   return `
 *${title}*
-Чтобы продолжить, ${
-    isFreeUser
-      ? 'подключите подписку или пополните баланс токенов 🪙'
-      : 'пополните баланс токенов или переключитесь на другой уровень подписки ↓'
-  }
+Чтобы продолжить, ${callToAction}
 ${isFreeUser ? freeUserOfferMessagePostfix : ''}
   `;
 };
@@ -600,7 +641,7 @@ export const getSettingsMessage = (
   return `
 *Текущие настройки ⚙️*
 → Режим: *${ChatModeLabel[chatMode]}*
-→ ИИ\\-модель: *${modelLabel}* ${
+→ ИИ\\-модель: *${modelLabel.replace(/[()]/g, '\\$&')}* ${
     activeModel === AiModelsLabels.GPT_4O_MINI
       ? '\\(Базовые запросы\\)'
       : '\\(PRO запросы\\)'
