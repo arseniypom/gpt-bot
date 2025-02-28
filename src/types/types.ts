@@ -33,6 +33,13 @@ export enum ChatModeLabel {
   dialogue = 'Диалог',
 }
 
+export type AssistantRole = 'general' | 'translator';
+
+export enum AssistantRoleLabels {
+  general = 'Обычный',
+  translator = 'ИИ-переводчик',
+}
+
 export enum AiModels {
   GPT_4O_MINI = 'gpt-4o-mini-2024-07-18',
   GPT_4O = 'gpt-4o-2024-11-20',

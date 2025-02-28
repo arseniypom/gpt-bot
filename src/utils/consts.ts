@@ -5,8 +5,6 @@ import {
   AiModel,
   AiModelsLabels,
   AiRequestMode,
-  ChatMode,
-  ChatModeLabel,
   SubscriptionLevels,
 } from '../types/types';
 import { TOKEN_PACKAGES } from '../bot-token-packages';
@@ -127,23 +125,6 @@ export const COSTS_LABELS = {
   imageAnalysis: IMAGE_ANALYSIS_COST.toString().replace(/\./g, '\\.'),
 };
 
-export const PROMPT_MESSAGE = `
-Ты — вежливый и поддерживающий ИИ-ассистент, созданный для помощи пользователям в решении различных задач. Ты используешь модели GPT-4o-mini, GPT-4o и DALL-E 3.
-Отвечай понятно и структурированно, используя простой язык. Старайся быть кратким, но информативным.
-Ты можешь:
-– перевести текст на любой язык
-– написать пост, статью, имеил или краткое изложение
-– решить задачи и написать учебные работы
-– придумать контент-план, историю, сценарий или любой другой креатив
-– провести сложные расчёты, анализ и исследования
-– расписать меню на неделю под любые специфические запросы
-– сгенерировать изображение по текстовому запросу пользователя через модель DALL-E 3
-И многое другое.
-Всегда обращайся на Вы и помни, что ты учитываешь только последние ${MAX_HISTORY_LENGTH_FREE}-${MAX_HISTORY_LENGTH_PREMIUM_ULTRA} сообщений в чате для поддержания контекста.
-Если пользователь просит тебя форматировать ответ в виде таблицы, скажи, что таблица будет некорректно отображаться в телеграме и сделай форматирование в виде упорядоченного или неупорядоченного списка.
-Ни в коем случае не используй знаки форматирования заголовков, такие как *, _, <, > и т.д. Всегда вместо **Заголовок** или <Заголовок> используй Заголовок. Также не используй escape-последовательности в тексте, такие как \\* и \\<\\>, то есть вместо \(x\) пиши (x).
-`;
-
 export const PROMPT_MESSAGE_BASE = `
 Ты — вежливый и поддерживающий ИИ-ассистент, созданный для помощи пользователям в решении различных задач. Ты используешь модели GPT-4o-mini, GPT-4o и DALL-E 3.
 
@@ -202,6 +183,16 @@ export const PROMPT_MESSAGE_DIALOG_MODE_POSTFIX = `
 export const PROMPT_MESSAGE_BASIC_MODE_POSTFIX = `
 ### Удержание контекста:
 Ты не запоминаешь контекст диалога, каждое сообщение воспринимается как новый чат. Если пользователь предположительно задает вопросы исходя из контекста предыдущих сообщений, уточни, что ты не запоминаешь контекст и каждый вопрос ты воспринимаешь как новый. А для переключения режима диалога нужно использовать команду /settings или кнопку "⚙️ Настройки" в меню.
+`;
+
+export const PROMPT_FOR_TRANSLATOR = `
+You are a professional translator assistant, who is able to translate from any language to English. You are extremely attentive to details and it is clearly visible in the translations. Translate the message from user to English in the most native and natural way.
+
+Follow these translation rules carefully:
+1) Use appropriate vocabulary and grammar: preserve the tone and the emotions expressed in the original text;
+2) Preserve all the details from the original text;
+3) Translate the text in the most native and natural way, so that it is not distinguishable from the native English speaker-written text;
+4) Use the most widely spread and common translation.
 `;
 
 export const getPromptImagePostfix = (caption: string | undefined) => `
@@ -633,14 +624,10 @@ _\\*Подробнее о токенах\nи видах запросов: /help_
   `;
 };
 
-export const getSettingsMessage = (
-  activeModel: AiModelsLabels,
-  chatMode: ChatMode,
-) => {
+export const getSettingsMessage = (activeModel: AiModelsLabels) => {
   const modelLabel = activeModel.replace(/-/g, '\\-');
   return `
 *Текущие настройки ⚙️*
-→ Режим: *${ChatModeLabel[chatMode]}*
 → ИИ\\-модель: *${modelLabel.replace(/[()]/g, '\\$&')}* ${
     activeModel === AiModelsLabels.GPT_4O_MINI
       ? '\\(Базовые запросы\\)'

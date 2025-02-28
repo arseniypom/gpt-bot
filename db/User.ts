@@ -11,6 +11,7 @@ import {
   UserStages,
   ReferralProgram,
   UserStats,
+  AssistantRole,
 } from '../src/types/types';
 import { SUBSCRIPTIONS } from '../src/bot-subscriptions';
 import dayjs from 'dayjs';
@@ -22,6 +23,7 @@ export interface IUser {
   email?: string;
   selectedModel: AiModel;
   chatMode: ChatMode;
+  assistantRole: AssistantRole;
   basicRequestsLeftThisWeek: number;
   basicRequestsLeftToday: number;
   proRequestsLeftThisMonth: number;
@@ -60,7 +62,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   chatMode: {
     type: String,
     default: 'dialogue',
-    required: true,
+  },
+  assistantRole: {
+    type: String,
+    default: 'general',
   },
   basicRequestsLeftThisWeek: {
     type: Number,

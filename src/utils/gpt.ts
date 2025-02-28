@@ -11,7 +11,7 @@ import Message, { IMessage } from '../../db/Message';
 import {
   AiModel,
   AiModels,
-  ChatMode,
+  AssistantRole,
   ImageGenerationQuality,
   ImageGenerationSizes,
   imageQualityMap,
@@ -23,7 +23,7 @@ import {
   DEFAULT_AI_MODEL,
   PROMPT_MESSAGE_BASE,
   PROMPT_MESSAGE_DIALOG_MODE_POSTFIX,
-  PROMPT_MESSAGE_BASIC_MODE_POSTFIX,
+  PROMPT_FOR_TRANSLATOR,
   getNoBalanceMessage,
   VOICE_ADDITIONAL_COST,
   MAX_HISTORY_LENGTH_START_OPTIMUM,
@@ -41,12 +41,12 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export const getResponseFromOpenAIGpt = async ({
   chatHistory,
   telegramId,
-  chatMode,
+  assistantRole,
   modelName = DEFAULT_AI_MODEL,
 }: {
   chatHistory: IMessage[];
   telegramId: number;
-  chatMode: ChatMode;
+  assistantRole: AssistantRole;
   modelName?: AiModel;
 }): Promise<string | null> => {
   const formattedHistoryMessages = chatHistory.map((msg) => ({
@@ -60,21 +60,24 @@ export const getResponseFromOpenAIGpt = async ({
     throw new Error('Invalid model name');
   }
 
-  let prompt = PROMPT_MESSAGE_BASE;
-  switch (chatMode) {
-    case 'dialogue':
-      prompt += PROMPT_MESSAGE_DIALOG_MODE_POSTFIX;
-      break;
-    case 'basic':
-      prompt += PROMPT_MESSAGE_BASIC_MODE_POSTFIX;
+  let prompt;
+  switch (assistantRole) {
+    case 'translator':
+      prompt = PROMPT_FOR_TRANSLATOR;
       break;
     default:
+      prompt = PROMPT_MESSAGE_BASE + PROMPT_MESSAGE_DIALOG_MODE_POSTFIX;
       break;
   }
 
   try {
     const messages: ChatCompletionMessageParam[] = [];
-    if (AiModels[modelName] !== AiModels.O1) {
+    if (AiModels[modelName] === AiModels.O1) {
+      messages.push({
+        role: 'user',
+        content: [{ type: 'text', text: prompt }],
+      });
+    } else {
       messages.push({
         role: 'system',
         content: [{ type: 'text', text: prompt }],
@@ -295,29 +298,23 @@ export const getMessagesHistory = async ({
 }) => {
   let history: IMessage[] = [];
   // Choose max history length based on user's subscription level
-  if (user.chatMode === 'dialogue') {
-    let maxHistoryLength;
-    switch (user.subscriptionLevel) {
-      case SubscriptionLevels.START:
-      case SubscriptionLevels.OPTIMUM:
-      case SubscriptionLevels.OPTIMUM_TRIAL:
-        maxHistoryLength = MAX_HISTORY_LENGTH_START_OPTIMUM;
-        break;
-      case SubscriptionLevels.PREMIUM:
-      case SubscriptionLevels.ULTRA:
-        maxHistoryLength = MAX_HISTORY_LENGTH_PREMIUM_ULTRA;
-        break;
-      default:
-        maxHistoryLength = MAX_HISTORY_LENGTH_FREE;
-        break;
-    }
-    const messages = await Message.find({ chatId })
-      .sort({ createdAt: 1 })
-      .lean();
-    history = messages.slice(-maxHistoryLength);
-  } else {
-    history = [userMessage.toJSON()];
+  let maxHistoryLength;
+  switch (user.subscriptionLevel) {
+    case SubscriptionLevels.START:
+    case SubscriptionLevels.OPTIMUM:
+    case SubscriptionLevels.OPTIMUM_TRIAL:
+      maxHistoryLength = MAX_HISTORY_LENGTH_START_OPTIMUM;
+      break;
+    case SubscriptionLevels.PREMIUM:
+    case SubscriptionLevels.ULTRA:
+      maxHistoryLength = MAX_HISTORY_LENGTH_PREMIUM_ULTRA;
+      break;
+    default:
+      maxHistoryLength = MAX_HISTORY_LENGTH_FREE;
+      break;
   }
+  const messages = await Message.find({ chatId }).sort({ createdAt: 1 }).lean();
+  history = messages.slice(-maxHistoryLength);
 
   return history;
 };

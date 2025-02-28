@@ -28,8 +28,6 @@ const helpMainKeyboard = new InlineKeyboard()
   .text('Что даёт подписка?', 'helpSubscription')
   .row()
   .text('Что такое "токены"?', 'helpTokens')
-  .row()
-  .text('Режимы чата: Обычный и Диалог', 'helpChatModes');
 
 const helpBackKeyboard = new InlineKeyboard().text('← Назад', 'helpBack');
 const helpBackAndSubscriptionModelsKeyboard = new InlineKeyboard()

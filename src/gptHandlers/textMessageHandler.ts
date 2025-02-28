@@ -79,7 +79,7 @@ export const handleTextMessage = async ({
   const responseFromGpt = await getResponseFromOpenAIGpt({
     chatHistory: history,
     telegramId,
-    chatMode: user.chatMode,
+    assistantRole: user.assistantRole,
     modelName: selectedModelName,
   });
 
@@ -98,7 +98,6 @@ export const handleTextMessage = async ({
     role: 'assistant',
     content: sanitizedAnswer,
     model: user.selectedModel,
-    chatMode: user.chatMode,
   });
 
   await chat.save();

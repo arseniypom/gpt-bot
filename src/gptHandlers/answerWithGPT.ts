@@ -39,19 +39,6 @@ export const answerWithGPT = async (ctx: MyContext, mode: AiRequestMode) => {
         );
         ctx.session.isNotifiedAboutImageMode = true;
       }
-    } else if (!ctx.session.isNotifiedAboutChatMode) {
-      const chatModeLabel = ChatModeLabel[user.chatMode];
-      const description =
-        user.chatMode === 'basic'
-          ? 'Бот не запоминает историю чата'
-          : 'Бот запоминает историю чата и может вести диалог';
-      await ctx.reply(
-        `*Режим чата: ${chatModeLabel}*\n_→ ${description}_\nСменить режим: /settings`,
-        {
-          parse_mode: 'MarkdownV2',
-        },
-      );
-      ctx.session.isNotifiedAboutChatMode = true;
     }
 
     const responseMessage = await ctx.reply('⏳ Загрузка...');

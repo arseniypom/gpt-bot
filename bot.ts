@@ -15,6 +15,7 @@ import {
   SubscriptionLevel,
   SubscriptionLevels,
   TokenPackageName,
+  AssistantRoleLabels,
 } from './src/types/types';
 import { isValidImageGenerationQuality } from './src/types/typeguards';
 import User from './db/User';
@@ -57,6 +58,8 @@ import {
   getUnsubscribeReason,
   unsubscribeFinalStep,
   initiateChangeSubscriptionLevel,
+  chooseRoleMenu,
+  setRole,
 } from './src/commands';
 import { imageConversation } from './src/conversations/imageConversation';
 import { supportConversation } from './src/conversations/supportConversation';
@@ -330,6 +333,8 @@ bot.callbackQuery('void', async (ctx) => {
   await ctx.answerCallbackQuery();
 });
 bot.callbackQuery('refreshStats', refreshStats);
+bot.callbackQuery('roles', chooseRoleMenu);
+bot.callbackQuery(Object.keys(AssistantRoleLabels), setRole);
 
 // User commands
 bot.command('start', startStep1);

@@ -35,3 +35,4 @@ export {
   changeSubscriptionLevel,
 } from './changeSubscriptionLevel';
 export { referralProgram } from './referralProgram';
+export { chooseRoleMenu, setRole } from './roles';

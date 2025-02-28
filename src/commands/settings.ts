@@ -7,34 +7,19 @@ import { getSettingsMessage, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
 import { isValidAiModel } from '../types/typeguards';
 import Chat from '../../db/Chat';
 
-export const getSettingsKeyboardv2 = (
-  activeModel: AiModelsLabels,
-  activeChatMode: ChatMode,
-) => {
+export const getSettingsKeyboardv2 = (activeModel: AiModelsLabels) => {
   const aiModelsBtns = Object.entries(AiModelsLabels).map(([name, label]) => {
     const isActive = activeModel === label;
-    const labelText = isActive ? `✅ ${label}` : `${label}`;
-    return [labelText, name];
-  });
-  const chatModesBtns = [
-    ['basic', 'Обычный'],
-    ['dialogue', 'Диалог'],
-  ].map(([name, label]) => {
-    const isActive = activeChatMode === name;
     const labelText = isActive ? `✅ ${label}` : `${label}`;
     return [labelText, name];
   });
   const aiModelsRow = aiModelsBtns.map(([label, data]) =>
     InlineKeyboard.text(label, data),
   );
-  const chatModesRow = chatModesBtns.map(([label, data]) =>
-    InlineKeyboard.text(label, data),
-  );
   return InlineKeyboard.from([
     [InlineKeyboard.text('ИИ-модель:', 'void')],
     [...aiModelsRow],
-    [InlineKeyboard.text('Режим чата:', 'void')],
-    [...chatModesRow],
+    [InlineKeyboard.text('🎭 Выбор роли', 'roles')],
     [InlineKeyboard.text('🔄 Начать новый чат', 'newChat')],
   ]);
 };
@@ -53,11 +38,10 @@ export const settings = async (
       await ctx.reply('Пожалуйста, начните с команды /start.');
       return;
     }
-    const chatMode = user.chatMode;
     const activeModel = AiModelsLabels[user.selectedModel];
-    await ctx.reply(getSettingsMessage(activeModel, chatMode), {
+    await ctx.reply(getSettingsMessage(activeModel), {
       parse_mode: 'MarkdownV2',
-      reply_markup: getSettingsKeyboardv2(activeModel, chatMode),
+      reply_markup: getSettingsKeyboardv2(activeModel),
     });
   } catch (error) {
     await ctx.reply(
@@ -103,16 +87,10 @@ export const settingsChangeModel = async (
     user.updatedAt = new Date();
     await user.save();
 
-    await ctx.callbackQuery.message?.editText(
-      getSettingsMessage(activeModel, chatMode),
-      {
-        reply_markup: getSettingsKeyboardv2(
-          AiModelsLabels[selectedModel],
-          chatMode,
-        ),
-        parse_mode: 'MarkdownV2',
-      },
-    );
+    await ctx.callbackQuery.message?.editText(getSettingsMessage(activeModel), {
+      reply_markup: getSettingsKeyboardv2(AiModelsLabels[selectedModel]),
+      parse_mode: 'MarkdownV2',
+    });
     return;
   } catch (error) {
     await ctx.reply(
@@ -148,7 +126,6 @@ export const settingsChangeChatMode = async (
     const activeModel = AiModelsLabels[user.selectedModel];
     user.chatMode = chatMode;
     await user.save();
-    ctx.session.isNotifiedAboutChatMode = false;
 
     if (chatMode === 'dialogue') {
       const chat = await Chat.create({
@@ -160,13 +137,10 @@ export const settingsChangeChatMode = async (
     user.updatedAt = new Date();
     await user.save();
 
-    await ctx.callbackQuery.message?.editText(
-      getSettingsMessage(activeModel, chatMode),
-      {
-        reply_markup: getSettingsKeyboardv2(activeModel, chatMode),
-        parse_mode: 'MarkdownV2',
-      },
-    );
+    await ctx.callbackQuery.message?.editText(getSettingsMessage(activeModel), {
+      reply_markup: getSettingsKeyboardv2(activeModel),
+      parse_mode: 'MarkdownV2',
+    });
     return;
   } catch (error) {
     await ctx.reply(
