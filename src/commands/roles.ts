@@ -2,7 +2,10 @@ import { User as TelegramUser } from '@grammyjs/types';
 import { CallbackQueryContext } from 'grammy';
 import { AssistantRoleLabels, AssistantRole, MyContext } from '../types/types';
 import User from '../../db/User';
-import { SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
+import {
+  SUPPORT_MESSAGE_POSTFIX,
+  ROLES_DESCRIPTION_MESSAGE,
+} from '../utils/consts';
 import { logError } from '../utils/utilFunctions';
 import { InlineKeyboard } from 'grammy';
 
@@ -32,8 +35,9 @@ export const chooseRoleMenu = async (ctx: CallbackQueryContext<MyContext>) => {
       return;
     }
     const role = user.assistantRole;
-    await ctx.reply('Выберите роль ассистента', {
+    await ctx.reply(ROLES_DESCRIPTION_MESSAGE, {
       reply_markup: getRolesKeyboard(role),
+      parse_mode: 'MarkdownV2',
     });
   } catch (error) {
     await ctx.reply(
@@ -41,6 +45,9 @@ export const chooseRoleMenu = async (ctx: CallbackQueryContext<MyContext>) => {
     );
     logError({
       message: 'Error in chooseRoleMenu command',
+      error,
+      telegramId: id,
+      username: ctx.from?.username,
     });
   }
 };
@@ -57,10 +64,18 @@ export const setRole = async (ctx: CallbackQueryContext<MyContext>) => {
     }
 
     const role = ctx.callbackQuery.data as AssistantRole;
+
+    if (role === user.assistantRole) {
+      return;
+    }
+
     user.assistantRole = role;
     await user.save();
 
-    await ctx.reply(`Роль успешно изменена на ${AssistantRoleLabels[role]}`);
+    await ctx.callbackQuery.message?.editText(ROLES_DESCRIPTION_MESSAGE, {
+      reply_markup: getRolesKeyboard(role),
+      parse_mode: 'MarkdownV2',
+    });
   } catch (error) {
     await ctx.reply(
       `Произошла ошибка при выборе роли. ${SUPPORT_MESSAGE_POSTFIX}`,

@@ -37,7 +37,7 @@ export type AssistantRole = 'general' | 'translator';
 
 export enum AssistantRoleLabels {
   general = 'Обычный',
-  translator = 'ИИ-переводчик',
+  translator = 'Переводчик (RU-EN)',
 }
 
 export enum AiModels {
