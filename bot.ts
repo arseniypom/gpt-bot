@@ -51,7 +51,6 @@ import {
   helpBackHandler,
   settings,
   settingsChangeModel,
-  settingsChangeChatMode,
   subscriptionManage,
   changeSubscriptionLevel,
   unsubscribeInitiate,
@@ -133,7 +132,9 @@ bot.callbackQuery('startStep6', startStep6);
 bot.callbackQuery('checkChannelJoinAndGoToStep6', checkChannelJoinAndGoToStep6);
 bot.callbackQuery(['startStep7', 'startSkip'], startStep7);
 bot.callbackQuery(Object.keys(AiModelsLabels), settingsChangeModel);
-bot.callbackQuery(['basic', 'dialogue'], settingsChangeChatMode);
+bot.callbackQuery(['basic', 'dialogue'], async (ctx) => {
+  await ctx.answerCallbackQuery();
+});
 bot.callbackQuery('newChat', createNewChat);
 bot.callbackQuery('cancelImageGeneration', async (ctx) => {
   await ctx.answerCallbackQuery('Отменено ✅');
@@ -262,7 +263,13 @@ bot.callbackQuery('backToSubscriptions', async (ctx) => {
   await ctx.conversation.exit('buySubscriptionConversation');
   await subscription(ctx);
 });
-bot.callbackQuery('settings', settings);
+bot.callbackQuery('settings', async (ctx) => {
+  await settings(ctx);
+});
+bot.callbackQuery('backToSettings', async (ctx) => {
+  await ctx.answerCallbackQuery();
+  await settings(ctx, true);
+});
 bot.callbackQuery(
   ['subscriptionManage', 'backToSubscriptionManage'],
   subscriptionManage,
@@ -346,7 +353,9 @@ bot.command('topup', topup);
 bot.command('subscription', subscription);
 bot.command('profile', myProfile);
 bot.command('support', support);
-bot.command('settings', settings);
+bot.command('settings', async (ctx) => {
+  await settings(ctx);
+});
 bot.command('promocode', async (ctx) => {
   await ctx.conversation.enter('promocodeConversation');
 });
@@ -385,7 +394,9 @@ bot.hears(BUTTON_LABELS.subscribe, subscription);
 bot.hears(BUTTON_LABELS.buyTokens, topup);
 bot.hears(BUTTON_LABELS.profile, myProfile);
 bot.hears(BUTTON_LABELS.image, generateImage);
-bot.hears([BUTTON_LABELS.settings, BUTTON_LABELS.settingsNew], settings);
+bot.hears([BUTTON_LABELS.settings, BUTTON_LABELS.settingsNew], async (ctx) => {
+  await settings(ctx);
+});
 bot.hears(BUTTON_LABELS.help, help);
 bot.hears(BUTTON_LABELS.support, support);
 

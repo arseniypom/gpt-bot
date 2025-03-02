@@ -21,7 +21,10 @@ const getRolesKeyboard = (activeRole: AssistantRole | undefined) => {
   const rolesRow = rolesBtns.map(([label, data]) =>
     InlineKeyboard.text(label, data),
   );
-  return InlineKeyboard.from([[...rolesRow]]);
+  return InlineKeyboard.from([
+    [...rolesRow],
+    [InlineKeyboard.text('← Назад', 'backToSettings')],
+  ]);
 };
 
 export const chooseRoleMenu = async (ctx: CallbackQueryContext<MyContext>) => {
@@ -35,7 +38,7 @@ export const chooseRoleMenu = async (ctx: CallbackQueryContext<MyContext>) => {
       return;
     }
     const role = user.assistantRole;
-    await ctx.reply(ROLES_DESCRIPTION_MESSAGE, {
+    await ctx.callbackQuery.message?.editText(ROLES_DESCRIPTION_MESSAGE, {
       reply_markup: getRolesKeyboard(role),
       parse_mode: 'MarkdownV2',
     });

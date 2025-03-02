@@ -5,6 +5,7 @@ import {
   AiModel,
   AiModelsLabels,
   AiRequestMode,
+  AssistantRoleLabels,
   SubscriptionLevels,
 } from '../types/types';
 import { TOKEN_PACKAGES } from '../bot-token-packages';
@@ -632,18 +633,20 @@ _\\*Подробнее о токенах\nи видах запросов: /help_
   `;
 };
 
-export const getSettingsMessage = (activeModel: AiModelsLabels) => {
+export const getSettingsMessage = (
+  activeModel: AiModelsLabels,
+  activeRole: AssistantRoleLabels,
+) => {
   const modelLabel = activeModel.replace(/-/g, '\\-');
   return `
 *Текущие настройки ⚙️*
 → ИИ\\-модель: *${modelLabel.replace(/[()]/g, '\\$&')}* ${
-    activeModel === AiModelsLabels.GPT_4O_MINI
-      ? '\\(Базовые запросы\\)'
-      : '\\(PRO запросы\\)'
+    activeModel === AiModelsLabels.GPT_4O_MINI ? '\\(Базовая\\)' : '\\(PRO\\)'
   }
-"Начать новый чат" – сброс контекста чата в режиме Диалог
+→ Роль ассистента: *${activeRole.replace(/[()]/g, '\\$&')}*
 
-_Подробнее про режимы и модели: /help_
+🔄 Начать новый чат – сброс контекста чата
+_Подробнее про модели: /help_
   `;
 };
 

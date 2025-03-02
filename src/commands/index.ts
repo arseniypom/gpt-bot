@@ -19,11 +19,7 @@ export { myProfile } from './myProfile';
 export { balance } from './balance';
 export { support } from './support';
 export { help, helpMessagesHandler, helpBackHandler } from './help';
-export {
-  settings,
-  settingsChangeModel,
-  settingsChangeChatMode,
-} from './settings';
+export { settings, settingsChangeModel } from './settings';
 export { subscriptionManage } from './subscriptionManage';
 export {
   unsubscribeInitiate,
