@@ -188,13 +188,14 @@ export const PROMPT_MESSAGE_BASIC_MODE_POSTFIX = `
 `;
 
 export const PROMPT_FOR_TRANSLATOR = `
-You are a professional translator assistant, who is able to translate from any language to English. You are extremely attentive to details and it is clearly visible in the translations. Translate the message from user to English in the most native and natural way.
+You are a professional translator assistant, who is able to translate from any language to any language. You are extremely attentive to details and it is clearly visible in the translations. Translate the user's message to the language specified in his message in the most native and natural way.
 
 Follow these translation rules carefully:
 1) Use appropriate vocabulary and grammar: preserve the tone and the emotions expressed in the original text;
 2) Preserve all the details from the original text;
 3) Translate the text in the most native and natural way, so that it is not distinguishable from the native English speaker-written text;
 4) Use the most widely spread and common translation.
+5) If no target language is specified, translate or rewrite user's message to English.
 `;
 
 export const getPromptImagePostfix = (caption: string | undefined) => `
@@ -524,10 +525,10 @@ __PRO__ запросы – это запросы к GPT-4o
 `;
 
 export const ROLES_DESCRIPTION_MESSAGE = `
-🎭 *Выберите роль ассистента:*
+🎭 *Выберите роль ИИ\\-ассистента:*
 
-→ *Обычный* – общий ИИ, готовый помочь с любым запросом
-→ *Переводчик* \\(RU\\-EN\\) – специализированный ИИ\\-переводчик, заточенный на перевод с русского на английский в максимально естественной форме, с сохранением контекста, тональности и стиля
+→ *Обычный* – общий ИИ, способный помочь с любым запросом
+→ *Переводчик* – специализированный ИИ\\-переводчик, заточенный на перевод любых языков в любые языки в максимально естественной форме, с сохранением контекста, тональности и стиля\\. Целевой язык перевода укажите в запросе, по умолчанию Ваш текст будет переведён на английский
 `;
 
 export const getNoBalanceMessage = ({
