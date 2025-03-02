@@ -10,6 +10,7 @@ export interface IMessage {
   model?: AiModelLabel;
   chatMode?: ChatMode;
   createdAt: Date;
+  imageData?: Buffer;
 }
 
 const messageSchema = new Schema<IMessage>({
@@ -24,6 +25,7 @@ const messageSchema = new Schema<IMessage>({
     type: Date,
     default: () => Date.now(),
   },
+  imageData: { type: Buffer },
 });
 
 export default mongoose.model<IMessage>('message', messageSchema);

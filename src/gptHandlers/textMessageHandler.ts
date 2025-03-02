@@ -66,7 +66,6 @@ export const handleTextMessage = async ({
     content: messageText,
     voiceFileId,
     model: user.selectedModel,
-    chatMode: user.chatMode,
   });
 
   const history = await getMessagesHistory({

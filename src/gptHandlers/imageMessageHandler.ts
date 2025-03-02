@@ -3,7 +3,7 @@ import { GrammyError } from 'grammy';
 import { Document, Types } from 'mongoose';
 import { Message as TelegramMessage } from '@grammyjs/types';
 import { MessageXFragment } from '@grammyjs/hydrate/out/data/message';
-import { MyContext, SubscriptionLevels } from '../types/types';
+import { AiModels, MyContext, SubscriptionLevels } from '../types/types';
 import { IUser } from '../../db/User';
 import {
   getBotApiKey,
@@ -16,6 +16,7 @@ import {
   sanitizeGptAnswer,
 } from '../utils/gpt';
 import { IMAGE_ANALYSIS_COST, SUPPORT_MESSAGE_POSTFIX } from '../utils/consts';
+import Message from '../../db/Message';
 
 export const handleImageMessage = async ({
   user,
@@ -71,6 +72,25 @@ export const handleImageMessage = async ({
     user.tokensBalance -= IMAGE_ANALYSIS_COST;
     await user.save();
   }
+
+  const imageResponse = await axios.get(url, { responseType: 'arraybuffer' });
+  const imageData = Buffer.from(imageResponse.data, 'binary');
+
+  await Message.create({
+    chatId: ctx.session.chatId,
+    userId: user._id,
+    role: 'user',
+    content: ctx.message?.caption || '',
+    imageData,
+    model: 'GPT_4O',
+  });
+  await Message.create({
+    chatId: ctx.session.chatId,
+    userId: user._id,
+    role: 'assistant',
+    content: sanitizedAnswer,
+    model: 'GPT_4O',
+  });
 
   try {
     await responseMessage.editText(sanitizedAnswer, {

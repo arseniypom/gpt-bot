@@ -49,12 +49,29 @@ export const getResponseFromOpenAIGpt = async ({
   assistantRole: AssistantRole;
   modelName?: AiModel;
 }): Promise<string | null> => {
-  const formattedHistoryMessages = chatHistory.map((msg) => ({
-    role: msg.role as 'system' | 'user' | 'assistant' | 'developer',
-    content: [{ type: 'text', text: msg.content }] as [
-      { type: 'text'; text: string },
-    ],
-  }));
+  let formattedHistoryMessages: ChatCompletionMessageParam[] = [];
+
+  chatHistory.forEach((msg) => {
+    const content: ChatCompletionMessageParam['content'] = [
+      { type: 'text', text: msg.content },
+    ];
+    if (msg.imageData) {
+      content.push({
+        // TODO: fix type error
+        // @ts-ignore
+        type: 'image_url',
+        image_url: {
+          url: `data:image/jpeg;base64,${msg.imageData.toString('base64')}`,
+        },
+      });
+    }
+    // TODO: fix type error
+    // @ts-ignore
+    formattedHistoryMessages.push({
+      role: msg.role,
+      content,
+    });
+  });
 
   if (!isValidAiModel(modelName)) {
     throw new Error('Invalid model name');
@@ -314,7 +331,10 @@ export const getMessagesHistory = async ({
       break;
   }
   const messages = await Message.find({ chatId }).sort({ createdAt: 1 }).lean();
-  history = messages.slice(-maxHistoryLength);
+  history = messages.slice(-maxHistoryLength).map((msg) => ({
+    ...msg,
+    imageData: msg.imageData ? Buffer.from(msg.imageData.buffer) : undefined,
+  }));
 
   return history;
 };

@@ -29,16 +29,6 @@ export const answerWithGPT = async (ctx: MyContext, mode: AiRequestMode) => {
       await ctx.reply(FIRST_REQUEST_GIFT_MESSAGE, {
         parse_mode: 'MarkdownV2',
       });
-    } else if (mode === 'imageVision') {
-      if (!ctx.session.isNotifiedAboutImageMode) {
-        await ctx.reply(
-          `*Режим обработки изображений*\n_→ В этом режиме бот анализирует изображение и выполняет задачу, подписанную Вами в сообщении с фото\\.\n❗ В настоящий момент при обработке изображений доступен только режим "Обычный", в котором бот не запоминает историю чата, а также может принимать только ОДНО изображение\\._`,
-          {
-            parse_mode: 'MarkdownV2',
-          },
-        );
-        ctx.session.isNotifiedAboutImageMode = true;
-      }
     }
 
     const responseMessage = await ctx.reply('⏳ Загрузка...');
