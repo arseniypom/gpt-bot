@@ -79,12 +79,13 @@ export const handleImageMessage = async ({
     user.subscriptionLevel === SubscriptionLevels.START
   ) {
     user.tokensBalance -= IMAGE_ANALYSIS_COST;
+    user.stats.proReqsMade += 1;
+    user.markModified('stats');
     await user.save();
   }
 
   const imageResponse = await axios.get(url, { responseType: 'arraybuffer' });
   const imageData = Buffer.from(imageResponse.data, 'binary');
-
 
   await Message.create({
     chatId: chat._id,
