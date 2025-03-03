@@ -12,6 +12,7 @@ import {
 } from '../utils/utilFunctions';
 import axios from 'axios';
 import {
+  getLatestChat,
   getVisionResponseFromOpenAIGpt,
   sanitizeGptAnswer,
 } from '../utils/gpt';
@@ -36,6 +37,14 @@ export const handleImageMessage = async ({
   const filePath = file.file_path;
   if (!filePath) {
     await ctx.reply('🖼️ Произошла ошибка при получении изображения');
+    return;
+  }
+
+  const chat = await getLatestChat({ user, ctx, responseMessage });
+  if (!chat) {
+    await ctx.reply(
+      'Чат не найден. Пожалуйста, начните новый чат с помощью команды /start',
+    );
     return;
   }
 
@@ -76,8 +85,9 @@ export const handleImageMessage = async ({
   const imageResponse = await axios.get(url, { responseType: 'arraybuffer' });
   const imageData = Buffer.from(imageResponse.data, 'binary');
 
+
   await Message.create({
-    chatId: ctx.session.chatId,
+    chatId: chat._id,
     userId: user._id,
     role: 'user',
     content: ctx.message?.caption || '',
@@ -85,7 +95,7 @@ export const handleImageMessage = async ({
     model: 'GPT_4O',
   });
   await Message.create({
-    chatId: ctx.session.chatId,
+    chatId: chat._id,
     userId: user._id,
     role: 'assistant',
     content: sanitizedAnswer,
