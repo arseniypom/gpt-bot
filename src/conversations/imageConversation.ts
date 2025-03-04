@@ -26,12 +26,12 @@ const cancelKeyboard = new InlineKeyboard().text(
   'cancelImageGeneration',
 );
 
-const addSubscriptionKeyboard = new InlineKeyboard().text(
+export const addSubscriptionKeyboard = new InlineKeyboard().text(
   INLINE_BUTTON_LABELS.subscription,
   'subscription',
 );
 
-const addSubscriptionKeyboardWithTrial = new InlineKeyboard()
+export const addSubscriptionKeyboardWithTrial = new InlineKeyboard()
   .text(
     INLINE_BUTTON_LABELS.subscriptionTrial,
     `${SubscriptionLevels.OPTIMUM_TRIAL}-no-delete`,
