@@ -142,6 +142,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     default: {
       basicReqsMade: 0,
       proReqsMade: 0,
+      o1ReqsMade: 0,
       imgGensMade: 0,
     },
   },

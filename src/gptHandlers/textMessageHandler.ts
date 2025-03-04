@@ -101,30 +101,41 @@ export const handleTextMessage = async ({
 
   await chat.save();
 
-  if (AiModels[user.selectedModel] === AiModels.GPT_4O) {
-    if (user.proRequestsLeftThisMonth > 0) {
+  switch (AiModels[user.selectedModel]) {
+    case AiModels.GPT_4O_MINI:
+      if (user.basicRequestsLeftThisWeek > 0 && !voiceFileId) {
+        user.basicRequestsLeftThisWeek -= 1;
+      } else if (user.basicRequestsLeftToday > 0) {
+        user.basicRequestsLeftToday -= 1;
+      } else {
+        const cost = voiceFileId
+          ? BASIC_REQUEST_COST + VOICE_ADDITIONAL_COST
+          : BASIC_REQUEST_COST;
+        user.tokensBalance -= cost;
+      }
+      user.stats.basicReqsMade += 1;
+      break;
+    case AiModels.GPT_4O:
+      if (user.proRequestsLeftThisMonth > 0) {
+        user.proRequestsLeftThisMonth -= 1;
+      } else {
+        const cost = voiceFileId
+          ? PRO_REQUEST_COST + VOICE_ADDITIONAL_COST
+          : PRO_REQUEST_COST;
+        user.tokensBalance -= cost;
+      }
+      user.stats.proReqsMade += 1;
+      break;
+    case AiModels.O1:
       user.proRequestsLeftThisMonth -= 1;
-    } else {
-      const cost = voiceFileId
-        ? PRO_REQUEST_COST + VOICE_ADDITIONAL_COST
-        : PRO_REQUEST_COST;
-      user.tokensBalance -= cost;
-    }
-    user.stats.proReqsMade += 1;
-  } else {
-    if (user.basicRequestsLeftThisWeek > 0 && !voiceFileId) {
-      user.basicRequestsLeftThisWeek -= 1;
-    } else if (user.basicRequestsLeftToday > 0) {
-      user.basicRequestsLeftToday -= 1;
-    } else {
-      const cost = voiceFileId
-        ? BASIC_REQUEST_COST + VOICE_ADDITIONAL_COST
-        : BASIC_REQUEST_COST;
-      user.tokensBalance -= cost;
-    }
-    user.stats.basicReqsMade += 1;
+      user.stats.o1ReqsMade = user.stats.o1ReqsMade
+        ? user.stats.o1ReqsMade + 1
+        : 1;
+      break;
   }
+
   user.markModified('stats');
+
   // if (
   //   user.subscriptionLevel === 'FREE' &&
   //   user.userStage === UserStages.SUBSCRIBED_TO_CHANNEL
