@@ -53,7 +53,7 @@ export const getResponseFromOpenAIGpt = async ({
 
   chatHistory.forEach((msg) => {
     const content: ChatCompletionMessageParam['content'] = [
-      { type: 'text', text: msg.content },
+      { type: 'text', text: msg.content || '' },
     ];
     if (msg.imageData) {
       content.push({
