@@ -16,7 +16,10 @@ cron.schedule('00 22 * * *', async () => {
   console.log('running refresh requests cron job');
 
   try {
-    const users = await User.find();
+    const users = await User.find({
+      isDeactivated: false,
+      isBlockedBot: false,
+    });
     const totalUsers = users.length;
 
     let processedUsers = 0;

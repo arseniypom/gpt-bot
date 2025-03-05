@@ -4,7 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { Document, Types } from 'mongoose';
 import bot from '../../bot';
 import User, { IUser } from '../../db/User';
-import { logError, setUserBlocked } from '../utils/utilFunctions';
+import {
+  logError,
+  setUserBlocked,
+  setUserDeactivated,
+} from '../utils/utilFunctions';
 import { SubscriptionLevels } from '../types/types';
 import { SUBSCRIPTIONS } from '../bot-subscriptions';
 import { ICreatePayment } from '../types/yookassaTypes';
@@ -230,6 +234,12 @@ cron.schedule('0 21 * * *', async () => {
             /block/.test(error.description)
           ) {
             await setUserBlocked(error.payload.chat_id as number);
+          } else if (
+            error instanceof GrammyError &&
+            error.error_code === 403 &&
+            /deactivated/.test(error.description)
+          ) {
+            await setUserDeactivated(error.payload.chat_id as number);
           }
         }
         logError({

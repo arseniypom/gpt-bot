@@ -124,3 +124,15 @@ export const setUserBlocked = async (telegramId: number) => {
     });
   }
 };
+
+export const setUserDeactivated = async (telegramId: number) => {
+  try {
+    await User.updateOne({ telegramId }, { $set: { isDeactivated: true } });
+  } catch (error) {
+    logError({
+      message: 'Error insetUserDeactivated util func',
+      telegramId,
+      error,
+    });
+  }
+};

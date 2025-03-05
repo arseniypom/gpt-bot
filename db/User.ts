@@ -40,6 +40,7 @@ export interface IUser {
   tokensBalance: number;
   userStage: UserStage;
   isBlockedBot: boolean;
+  isDeactivated: boolean;
   stats: UserStats;
   referralProgram: ReferralProgram;
   adCampaignCode: string | null;
@@ -134,6 +135,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     default: UserStages.REGISTERED,
   },
   isBlockedBot: {
+    type: Boolean,
+    default: false,
+  },
+  isDeactivated: {
     type: Boolean,
     default: false,
   },
