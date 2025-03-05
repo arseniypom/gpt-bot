@@ -70,6 +70,13 @@ export async function buySubscriptionConversation(
   user.email = email;
   await user.save();
 
+  if (subscriptionLevel === 'OPTIMUM_TRIAL' && !user.canActivateTrial) {
+    await ctx.reply(
+      'Вы не можете приобрести пробную подписку повторно. Пожалуйста, выберите другой уровень подписки',
+    );
+    return;
+  }
+
   // Creating payment
   try {
     const subscriptionData = SUBSCRIPTIONS[subscriptionLevel];
