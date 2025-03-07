@@ -63,6 +63,7 @@ export const handleTextMessage = async ({
     chatId: chat._id,
     userId: user._id,
     role: 'user',
+    assistantRole: user.assistantRole || 'general',
     content: messageText,
     voiceFileId,
     model: user.selectedModel,
@@ -95,6 +96,7 @@ export const handleTextMessage = async ({
     chatId: chat._id,
     userId: user._id,
     role: 'assistant',
+    assistantRole: user.assistantRole || 'general',
     content: sanitizedAnswer,
     model: user.selectedModel,
   });

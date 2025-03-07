@@ -91,6 +91,7 @@ export const handleImageMessage = async ({
     chatId: chat._id,
     userId: user._id,
     role: 'user',
+    assistantRole: user.assistantRole || 'general',
     content: ctx.message?.caption || '',
     imageData,
     model: 'GPT_4O',
@@ -99,6 +100,7 @@ export const handleImageMessage = async ({
     chatId: chat._id,
     userId: user._id,
     role: 'assistant',
+    assistantRole: user.assistantRole || 'general',
     content: sanitizedAnswer,
     model: 'GPT_4O',
   });
