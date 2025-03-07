@@ -110,7 +110,7 @@ export const INLINE_BUTTON_LABELS = {
   allLevels: '🎉 Все уровни',
   subscriptionManage: '🛠️ Управление подпиской',
   referralProgram: '⚡ Бесплатные запросы',
-  subscriptionTrial: '🔥 3 дня за 1 рубль',
+  subscriptionTrial: '🔥 8 дней за 1 рубль',
 };
 
 export const COSTS_LABELS = {
@@ -283,7 +283,7 @@ export const START_MESSAGE_STEP_4 = `
 → Есть *бесплатная версия* – даёт 20 запросов к базовой модели \\(GPT\\-4o mini\\) в неделю
 → И *платная* – отвечает на голосовые сообщения, даёт доступ к PRO моделям, генерации картинок и расширенной памяти в диалоге
 
-*🔥 Вы можете попробовать подписку Оптимум всего за 1 рубль на 3 дня\\!*
+*🔥 Вы можете попробовать подписку Оптимум всего за 1 рубль на 8 дней\\!*
 
 *Оптимум подписка – это:*
 \\+ прием голосовых сообщений
@@ -493,7 +493,7 @@ export const SUBSCRIPTIONS_MESSAGE_WITH_TRIAL = `
 – Возможность отправлять голосовые сообщения
 – _Стандартный_ размер памяти в диалоге (${MAX_HISTORY_LENGTH_START_OPTIMUM} сообщений)
 
-*${SUBSCRIPTIONS.OPTIMUM.icon} ${SUBSCRIPTIONS.OPTIMUM.title}*  \\| ~${SUBSCRIPTIONS.OPTIMUM.price}₽~ *${SUBSCRIPTIONS.OPTIMUM_TRIAL.price}₽* на 3 дня 🌟
+*${SUBSCRIPTIONS.OPTIMUM.icon} ${SUBSCRIPTIONS.OPTIMUM.title}*  \\| ~${SUBSCRIPTIONS.OPTIMUM.price}₽~ *${SUBSCRIPTIONS.OPTIMUM_TRIAL.price}₽* на 8 дней 🌟
 – ${SUBSCRIPTIONS.OPTIMUM.basicRequestsPerDay} базовых запросов / день
 – ${SUBSCRIPTIONS.OPTIMUM.proRequestsPerMonth} PRO запросов / месяц
 – ${SUBSCRIPTIONS.OPTIMUM.imageGenerationPerMonth} генераций изображений / месяц
@@ -668,7 +668,7 @@ export const getProfileMessage = (user: IUser) => {
     : '';
   const trialMessage =
     isFreeSubscription && user.canActivateTrial
-      ? `\n🎁 Попробуйте Оптимум: 3 дня за ${SUBSCRIPTIONS.OPTIMUM_TRIAL.price}₽\\!\nЖмите "Подключить подписку" ↓`
+      ? `\n🎁 Попробуйте Оптимум: 8 дней за ${SUBSCRIPTIONS.OPTIMUM_TRIAL.price}₽\\!\nЖмите "Подключить подписку" ↓`
       : '';
 
   // Paid user
