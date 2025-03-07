@@ -81,7 +81,7 @@ export const mainSubscribedUserKeyboard = new Keyboard()
   .persistent();
 
 const step1Keyboard = new InlineKeyboard()
-  .text('Знакомство ☃️', 'startStep2')
+  .text('Знакомство 🌱', 'startStep2')
   .row()
   .text('Пропустить знакомство', 'startSkip');
 
